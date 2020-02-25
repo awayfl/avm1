@@ -19,7 +19,7 @@ import {AVM1ActionsData, AVM1Context} from "../context";
 import {
 	alDefineObjectProperties, AVM1NativeFunction, AVM1PropertyFlags
 } from "../runtime";
-import {isNullOrUndefined, Debug, release, AVM1ClipEvents} from "@awayjs/swf-viewer";
+import {isNullOrUndefined, Debug, release, AVM1ClipEvents} from "@awayfl/swf-loader";
 import {AVM1ArrayNative} from "../natives";
 
 import {DisplayObject, TextField, MovieClip, DisplayObjectContainer } from "@awayjs/scene";

@@ -2,7 +2,7 @@ import { IDisplayObjectAdapter, DisplayObject } from "@awayjs/scene";
 import { IAVM1Context, AVM1PropertyFlags, alToString, alIsName, IAVM1Callable, AVM1DefaultValueHint, alIsFunction } from "../runtime";
 import { IAsset } from "@awayjs/core";
 import { AVM1Context } from "../context";
-import { release, Debug } from "@awayjs/swf-viewer";
+import { release, Debug } from "@awayfl/swf-loader";
 import { AVM1PropertyDescriptor } from "./AVM1PropertyDescriptor";
 
 /**

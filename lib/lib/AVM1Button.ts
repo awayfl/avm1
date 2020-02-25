@@ -20,7 +20,7 @@ import {EventDispatcher, AudioManager} from "@awayjs/core";
 import {MovieClip} from "@awayjs/scene";
 import {AVM1Object} from "../runtime/AVM1Object";
 import { AVM1EventHandler } from "./AVM1EventHandler";
-import {AVM1ClipEvents, notImplemented, somewhatImplemented, warning, release, assert} from "@awayjs/swf-viewer";
+import {AVM1ClipEvents, notImplemented, somewhatImplemented, warning, release, assert} from "@awayfl/swf-loader";
 import { AVM1MovieClip } from './AVM1MovieClip';
 import {ClipEventMappings,EventsListForButton} from "./AVM1EventHandler";
 

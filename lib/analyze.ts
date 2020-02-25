@@ -17,7 +17,7 @@
 //module Shumway.AVM1 {
 
 import {ActionCode, ActionsDataParser, ParsedAction} from "./parser";
-import { release } from "@awayjs/swf-viewer";
+import { release } from "@awayfl/swf-loader";
 
 export interface ActionCodeBlock {
 	label: number;

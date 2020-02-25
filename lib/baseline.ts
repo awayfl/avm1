@@ -21,7 +21,7 @@ import {ActionCode, ParsedPushConstantAction, ParsedPushRegisterAction} from "./
 import {AVM1ActionsData, AVM1Context} from "./context";
 import {avm1DebuggerEnabled} from "./settings";
 import {ActionsDataStream} from "./stream";
-import {notImplemented} from "@awayjs/swf-viewer";
+import {notImplemented} from "@awayfl/swf-loader";
 
 interface IExecutionContext {
 	constantPool: any[];

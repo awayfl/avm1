@@ -15,7 +15,7 @@
  */
 
 
-import {Debug, notImplemented, release, isNullOrUndefined} from "@awayjs/swf-viewer";
+import {Debug, notImplemented, release, isNullOrUndefined} from "@awayfl/swf-loader";
 
 import {AVM1Context} from "../context";
 import {

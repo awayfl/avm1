@@ -1,4 +1,4 @@
-import { SWFParser, PromiseWrapper } from "@awayjs/swf-viewer";
+import { SWFParser, PromiseWrapper } from "@awayfl/swf-loader";
 import {AVM1Globals} from "./AVM1Globals";
 import { Loader, URLLoaderEvent, LoaderEvent, AssetEvent, IAsset, AssetLibrary, URLRequest } from "@awayjs/core";
 import { AVM1Context } from "../context";

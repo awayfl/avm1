@@ -21,7 +21,7 @@ import {
 	alToInteger, alToString,
 	AVM1PropertyFlags
 } from "../runtime";
-import {Debug, release, isNullOrUndefined} from "@awayjs/swf-viewer";
+import {Debug, release, isNullOrUndefined} from "@awayfl/swf-loader";
 import {IAVM1DataObject, loadAVM1DataObject} from "./AVM1LoadVars";
 import {avm1BroadcastEvent} from "./AVM1Utils";
 import {XMLNode} from "../customAway/xml/XMLNode";

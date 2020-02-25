@@ -16,7 +16,7 @@
 
 
 
-import {shumwayOptions, Option, OptionSet} from "@awayjs/swf-viewer";
+import {shumwayOptions, Option, OptionSet} from "@awayfl/swf-loader";
 
 var avm1Options = shumwayOptions.register(new OptionSet("AVM1"));
 export var avm1TraceEnabled = avm1Options.register(new Option("t1", "traceAvm1", "boolean", false, "trace AVM1 execution"));

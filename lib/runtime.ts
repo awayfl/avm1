@@ -25,7 +25,7 @@ import { AVM1Function } from "./runtime/AVM1Function";
 import { AVM1Globals } from "./lib/AVM1Globals";
 import { AVM1PropertyDescriptor } from "./runtime/AVM1PropertyDescriptor";
 import Big from "big.js";
-import { Debug, release, isNullOrUndefined, isIndex } from '@awayjs/swf-viewer';
+import { Debug, release, isNullOrUndefined, isIndex } from '@awayfl/swf-loader';
 
 // Just assigning class prototype to null will not work, using next best thing.
 //NullPrototypeObject.prototype = Object.create(null);

@@ -18,7 +18,7 @@ import {alCoerceNumber, alCoerceString, alToBoolean, alToInt32, alToNumber, alTo
 import {AVM1Context} from "../context";
 import {AVM1Rectangle, toAS3Rectangle} from "./AVM1Rectangle";
 import {toAS3Point} from "./AVM1Point";
-import {Debug, isNullOrUndefined} from "@awayjs/swf-viewer";
+import {Debug, isNullOrUndefined} from "@awayfl/swf-loader";
 import {AVM1ArrayNative} from "../natives";
 import {BlendModesMap, IHasAS3ObjectReference, wrapAVM1NativeClass} from "./AVM1Utils";
 // import {convertToAS3Filter} from "./AVM1Filters";

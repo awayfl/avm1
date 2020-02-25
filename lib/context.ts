@@ -22,7 +22,7 @@ import {AnalyzerResults} from "./analyze";
 import {alCoerceString, alToString, IAVM1Builtins, IAVM1Context} from "./runtime";
 import {AVM1Globals} from "./lib/AVM1Globals";
 import {installBuiltins} from "./natives";
-import {MapObject, Debug, release, assert} from "@awayjs/swf-viewer";
+import {MapObject, Debug, release, assert} from "@awayfl/swf-loader";
 import {AVM1Key} from "./lib/AVM1Key";
 import {AVM1Mouse} from "./lib/AVM1Mouse";
 import {AVM1Stage} from "./lib/AVM1Stage";

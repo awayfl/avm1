@@ -8,7 +8,7 @@ import {
 	IAVM1SymbolBase, toTwipFloor, toTwipRound, away2avmDepth
 } from "./AVM1Utils";
 import {AVM1Context, IAVM1EventPropertyObserver} from "../context";
-import {isNullOrUndefined, MapObject, notImplemented, somewhatImplemented, warning, release, assert} from "@awayjs/swf-viewer";
+import {isNullOrUndefined, MapObject, notImplemented, somewhatImplemented, warning, release, assert} from "@awayfl/swf-loader";
 import {DisplayObjectContainer} from "@awayjs/scene";
 import {AVM1MovieClip} from "./AVM1MovieClip";
 import {AVM1Rectangle, toAS3Rectangle} from "./AVM1Rectangle";

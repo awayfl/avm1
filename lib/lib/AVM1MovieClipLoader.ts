@@ -19,7 +19,7 @@ import {AVM1Context} from "../context";
 import {wrapAVM1NativeClass} from "./AVM1Utils";
 import {AVM1MovieClip} from "./AVM1MovieClip";
 import {AVM1Broadcaster} from "./AVM1Broadcaster";
-import {notImplemented} from "@awayjs/swf-viewer";
+import {notImplemented} from "@awayfl/swf-loader";
 import { AVM1LoaderHelper } from './AVM1LoaderHelper';
 
 

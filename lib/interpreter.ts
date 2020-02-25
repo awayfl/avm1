@@ -19,7 +19,7 @@ import {
 } from "./runtime";
 
 import {AVM1Globals, AVM1NativeActions} from "./lib/AVM1Globals";
-import {ErrorTypes, Telemetry, isNullOrUndefined, Debug, release, assert} from "@awayjs/swf-viewer";
+import {ErrorTypes, Telemetry, isNullOrUndefined, Debug, release, assert} from "@awayfl/swf-loader";
 import {hasAwayJSAdaptee} from "./lib/AVM1Utils";
 import {AVM1MovieClip} from "./lib/AVM1MovieClip";
 import {AVM1ArrayNative} from "./natives";

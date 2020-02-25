@@ -33,7 +33,7 @@ import {
 	alToObject, alToPrimitive, alToString, AVM1DefaultValueHint, AVM1PropertyFlags,
 	IAVM1Context
 } from "./runtime";
-import {Debug, release, isIndex} from "@awayjs/swf-viewer";
+import {Debug, release, isIndex} from "@awayfl/swf-loader";
 import {AVM1Object} from "./runtime/AVM1Object";
 import {AVM1Globals} from "./lib/AVM1Globals";
 import { AVM1Function } from "./runtime/AVM1Function";

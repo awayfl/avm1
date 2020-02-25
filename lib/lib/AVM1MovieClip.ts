@@ -27,7 +27,7 @@ import {
 	alToString, AVM1PropertyFlags
 } from "../runtime";
 import { AVM1Context } from "../context";
-import { isNullOrUndefined, release, assert, Debug, notImplemented, somewhatImplemented, warning } from "@awayjs/swf-viewer";
+import { isNullOrUndefined, release, assert, Debug, notImplemented, somewhatImplemented, warning } from "@awayfl/swf-loader";
 import { AVM1BitmapData, toAS3BitmapData } from "./AVM1BitmapData";
 import { toAS3Matrix } from "./AVM1Matrix";
 import { AVM1ArrayNative } from "../natives";

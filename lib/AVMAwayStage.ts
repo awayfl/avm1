@@ -11,7 +11,7 @@ import {View, BasicPartition, PickGroup} from "@awayjs/view";
 import {StageManager, Stage, ImageUtils, BitmapImage2D} from "@awayjs/stage";
 import {MouseEvent as MouseEventAway, KeyboardEvent, DisplayObject, Sprite, DisplayObjectContainer as AwayDisplayObjectContainer} from "@awayjs/scene";
 
-import { release, StageScaleMode, StageAlign, MovieClipSoundsManager } from "@awayjs/swf-viewer";
+import { release, StageScaleMode, StageAlign, MovieClipSoundsManager } from "@awayfl/swf-loader";
 import { AVM1TextField } from './lib/AVM1TextField';
 import { AVM1EventProps } from './lib/AVM1EventHandler';
 

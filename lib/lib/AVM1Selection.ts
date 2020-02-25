@@ -1,7 +1,7 @@
 import {wrapAVM1NativeClass} from "./AVM1Utils";
 import {DisplayObject, TextField, MouseManager} from "@awayjs/scene";
 import {AVM1Context} from "../context";
-import {notImplemented, warning} from "@awayjs/swf-viewer";
+import {notImplemented, warning} from "@awayfl/swf-loader";
 import {PickGroup} from "@awayjs/view";
 import { AVM1Object } from "../runtime/AVM1Object";
 import { AVM1Stage } from './AVM1Stage';

@@ -1,5 +1,5 @@
 
-import {AVM1ClipEvents} from "@awayjs/swf-viewer";
+import {AVM1ClipEvents} from "@awayfl/swf-loader";
 import {MouseEvent, KeyboardEvent, FocusEvent, TextfieldEvent} from "@awayjs/scene";
 
 export class AVM1EventHandler {

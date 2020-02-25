@@ -24,7 +24,7 @@ import {AVM1Context} from "../context";
 import {IHasAS3ObjectReference, wrapAVM1NativeClass} from "./AVM1Utils";
 import {TextField, TextFormat} from "@awayjs/scene";
 import {AVM1Object} from "../runtime/AVM1Object";
-import {notImplemented} from "@awayjs/swf-viewer";
+import {notImplemented} from "@awayfl/swf-loader";
 
 export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference {
 	static createAVM1Class(context: AVM1Context): AVM1Object {

@@ -20,7 +20,7 @@ import {
 import {AVM1Context} from "../context";
 import {getAVM1Object, wrapAVM1NativeClass, toTwipFloor, toTwipRound} from "./AVM1Utils";
 import {AVM1TextFormat} from "./AVM1TextFormat";
-import {notImplemented} from "@awayjs/swf-viewer";
+import {notImplemented} from "@awayfl/swf-loader";
 import {EventBase as Event} from "@awayjs/core";
 import {TextField, KeyboardEvent, TextFormat, TextfieldEvent, DisplayObject, DisplayObjectContainer, MouseManager} from "@awayjs/scene";
 import {AVM1Key} from "./AVM1Key";

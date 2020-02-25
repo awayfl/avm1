@@ -16,7 +16,7 @@
 
 import {AVM1Object} from "../runtime/AVM1Object";
 import {AVM1Context} from "../context";
-import {warning} from "@awayjs/swf-viewer";
+import {warning} from "@awayfl/swf-loader";
 import {IAVM1SymbolBase, wrapAVM1NativeClass} from "./AVM1Utils";
 import {AVM1MovieClip} from "./AVM1MovieClip";
 import {WaveAudio, AssetLibrary} from "@awayjs/core";

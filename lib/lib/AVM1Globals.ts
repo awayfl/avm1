@@ -16,7 +16,7 @@
 
 //module Shumway.AVM1.Lib {
 
-	import {jsGlobal, notImplemented, release, Debug, somewhatImplemented, warning} from "@awayjs/swf-viewer";
+	import {jsGlobal, notImplemented, release, Debug, somewhatImplemented, warning} from "@awayfl/swf-loader";
 	
 	import {
 		avm1BroadcastEvent, DEPTH_OFFSET, getAwayJSAdaptee, getAVM1Object, IAVM1SymbolBase,
