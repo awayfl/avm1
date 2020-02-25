@@ -24,7 +24,7 @@ import {
 import {
 	alCoerceString, alForEachProperty, alInstanceOf, alIsName, alNewObject, alToBoolean, alToInt32,
 	alToNumber,
-	alToString, AVM1PropertyFlags
+	alToString, AVM1PropertyFlags, alIsArray
 } from "../runtime";
 import { AVM1Context } from "../context";
 import { isNullOrUndefined, release, assert, Debug, notImplemented, somewhatImplemented, warning } from "@awayfl/swf-loader";
@@ -596,6 +596,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		if (!this._constructMovieClipSymbol)
 			return;
+		if(alIsArray(this.context, name)){
+			name=name.value[0];
+		}
 		var mc = this._constructMovieClipSymbol(symbolId, name);
 		if (!mc) {
 			return undefined;
