@@ -752,6 +752,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		var avmMC: AVM1MovieClip = <AVM1MovieClip>this._insertChildAtDepth(mc, avm2AwayDepth(depth));
 		avmMC.dynamicallyCreated = true;
 		this.registerScriptObject(mc, false);
+		
+		// set mouseEnabled to false. if any listener is applied, this will than be set back to true
+		mc.mouseEnabled=false;
+		mc.mouseChildren=false;
 		// dynamicallyCreated needs to be set after adding child, otherwise it gets reset
 		return avmMC;
 	}
