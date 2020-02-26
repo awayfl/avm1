@@ -101,7 +101,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				'play', 'prevFrame', '_quality#', 'removeMovieClip', '_root#', '_rotation#',
 				'scale9Grid#', 'scrollRect#', 'setMask', '_soundbuftime#', 'startDrag',
 				'stop', 'stopDrag', 'swapDepths', 'tabChildren#', 'tabEnabled#', 'tabIndex#',
-				'_target#', '_totalframes#', 'trackAsMenu#', 'toString',
+				'_target#', '_totalframes#', 'trackAsMenu#', 'transform#', 'toString',
 				'unloadMovie', '_url#', 'useHandCursor#', '_visible#', '_width#',
 				'_x#', '_xmouse#', '_xscale#', '_y#', '_ymouse#', '_yscale#']);
 	}
@@ -1002,7 +1002,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 
 		if (typeof frame === "string") {
-			if (this.adaptee.timeline._labels[frame.toLowerCase()] == null) {
+			// todo: check correct swfVersion for this 
+			var labelName=this.context.swfVersion>9?frame:frame.toLowerCase();
+			if (this.adaptee.timeline._labels[labelName] == null) {
 				frame = parseInt(frame);
 				if (!isNaN(frame)) {
 					this.adaptee.currentFrameIndex = (<number>frame) - 1;
@@ -1045,14 +1047,16 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		if (typeof frame === "string") {
 
-			if (this.adaptee.timeline._labels[frame.toLowerCase()] == null) {
+			// todo: check correct swfVersion for this 
+			var labelName=this.context.swfVersion>9?frame:frame.toLowerCase();
+			if (this.adaptee.timeline._labels[labelName] == null) {
 				frame = parseInt(frame);
 				if (!isNaN(frame)) {
 					this.adaptee.currentFrameIndex = (<number>frame) - 1;
 				}
 				return;
 			}
-			this.adaptee.jumpToLabel(<string>frame.toLowerCase());
+			this.adaptee.jumpToLabel(<string>labelName);
 		}
 		else {
 			this.adaptee.currentFrameIndex = (<number>frame) - 1;

@@ -183,7 +183,7 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		blendMode = typeof blendMode === 'number' ? BlendModesMap[blendMode] : alCoerceString(this.context, blendMode);
 		blendMode  = blendMode || null;
 		smooth = alToBoolean(this.context, smooth);
-
+		//this.as3BitmapData.fillRect(this.as3BitmapData.rect, 0xffffffff);
 		this.as3BitmapData.draw(as3BitmapData, as3Matrix, as3ColorTransform, blendMode, as3ClipRect, smooth);
 	}
 

@@ -524,14 +524,15 @@
 				}
 			} 
 			if (typeof frame === "string"){
-				if(mc.timeline._labels[frame.toLowerCase()]===null){
+				var labelName=this.context.swfVersion>9?frame:frame.toLowerCase();
+				if(mc.timeline._labels[labelName]===null){
 					frame=parseInt(frame);
 					if(!isNaN(frame)){
 						mc.currentFrameIndex = (<number>frame) - 1;
 					}
 					return;
 				}
-				mc.jumpToLabel(<string>frame.toLowerCase(), offset);
+				mc.jumpToLabel(labelName, offset);
 			}
 			else
 				mc.currentFrameIndex = (<number>frame) - 1;

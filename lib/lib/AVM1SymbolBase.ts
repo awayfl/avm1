@@ -19,6 +19,8 @@ import { AVM1EventHandler } from "./AVM1EventHandler";
 import { AVM1Color } from './AVM1Color';
 import { PickGroup } from '@awayjs/view';
 import { AVM1Stage } from './AVM1Stage';
+import { AVM1Transform } from './AVM1Transform';
+import { AVM1Function } from '../runtime/AVM1Function';
 
 export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object implements IAVM1SymbolBase, IAVM1EventPropertyObserver {
 	adaptee: T;
@@ -546,22 +548,25 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 			this.adaptee.parent.removeChild(this.adaptee);		    
 		
     }
-	/*
-	// transform is only available in FP8, and cause problems in FP6
-	public getTransform(): AVM1Object {
-		somewhatImplemented("AVM1SymbolBase.setTransform");
-		var transformCtor = <AVM1Function>this.context.globals.Transform;
-		return transformCtor.alConstruct([this]);
+	private _avmTransform: AVM1Transform;
+	// transform is only available in FP8
+	public getTransform(): AVM1Transform {
+		//var transformCtor = <AVM1Function>this.context.globals.Transform;
+		if(!this._avmTransform){
+			
+			this._avmTransform = <AVM1Transform> (<AVM1Function>this.context.globals.Transform).alConstruct([this]);
+			
+		}
+		return this._avmTransform;
 	}
-
 	public setTransform(value: AVM1Transform) {
 		if (!(value instanceof AVM1Transform)) {
 			return;
 		}
-		var as3Transform = value.as3Transform;
-		notImplemented("AVM1SymbolBase.setTransform");
+		
+		console.log("not implemented: AVM1SymbolBase.setTransform");
 		//this.adaptee.transform = as3Transform;
-	}*/
+	}
 
 	public get_visible(): boolean {
 		return this.adaptee.visible;
