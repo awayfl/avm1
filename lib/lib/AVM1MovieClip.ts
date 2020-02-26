@@ -1412,9 +1412,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	private _resolveLevelNProperty(name: string): AVM1MovieClip {
 		release || assert(alIsName(this.context, name));
-		if (name === '_level0') {
-			return this.context.resolveLevel(0);
-		} else if (name === '_root') {
+		if (name === '_level0' || name === '_level') {
+			return this.context.resolveRoot();
+		}
+		else if (name === '_root') {
 			return this.context.resolveRoot();
 		} else if (name.indexOf('_level') === 0) {
 			var level = name.substring(6);
