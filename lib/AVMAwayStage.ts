@@ -510,7 +510,8 @@ export class AVMAwayStage extends Sprite{
             if(this.avm1Listener[mouseEvent.type] && this.avm1Listener[mouseEvent.type][this._collectedDispatcher[i].id]){
 				dispatcherLen=this.avm1Listener[mouseEvent.type][this._collectedDispatcher[i].id].length;
 				for(var e:number=0; e<dispatcherLen; e++){
-					this.avm1Listener[mouseEvent.type][this._collectedDispatcher[i].id][e].callback();
+					if(this.avm1Listener[mouseEvent.type][this._collectedDispatcher[i].id] && this.avm1Listener[mouseEvent.type][this._collectedDispatcher[i].id][e])
+						this.avm1Listener[mouseEvent.type][this._collectedDispatcher[i].id][e].callback();
 				}
             }
         }
