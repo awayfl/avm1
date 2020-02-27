@@ -678,6 +678,7 @@
 		public nextFrame() {
 			var nativeTarget:AVM1MovieClip = <AVM1MovieClip>this.context.resolveTarget(null);
 			var awayObject:MovieClip = <MovieClip>getAwayJSAdaptee(nativeTarget);
+			awayObject.stop();
 			++awayObject.currentFrameIndex;
 		}
 	
@@ -697,8 +698,8 @@
 	
 		public prevFrame() {
 			var awayObject:MovieClip = <MovieClip>getAwayJSAdaptee(<AVM1MovieClip>this.context.resolveTarget(null));
-            --awayObject.currentFrameIndex;
             awayObject.stop();
+            --awayObject.currentFrameIndex;
 		}
 	
 		public prevScene() {

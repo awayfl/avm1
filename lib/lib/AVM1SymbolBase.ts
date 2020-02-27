@@ -544,7 +544,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		if (this.adaptee.isAVMScene) {
 			return; // let's not remove root symbol
 		}
-		if(this.adaptee.parent && away2avmDepth(this.adaptee._depthID)>=0)
+		if(this.adaptee.parent && away2avmDepth(this.adaptee._depthID)>=-1)
 			this.adaptee.parent.removeChild(this.adaptee);		    
 		
     }

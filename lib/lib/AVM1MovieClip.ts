@@ -1182,6 +1182,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public nextFrame() {
+		this.adaptee.stop();
 		++this.adaptee.currentFrameIndex;
 	}
 
@@ -1194,8 +1195,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public prevFrame() {
-		--this.adaptee.currentFrameIndex;
 		this.adaptee.stop();
+		--this.adaptee.currentFrameIndex;
 	}
 
 	public prevScene() {
