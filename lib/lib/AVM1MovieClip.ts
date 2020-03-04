@@ -223,16 +223,30 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		var translatedScripts: any[] = [];
 		for (let i = 0; i < allscripts.length; i++) {
 			let scripts = allscripts[i];
-			for (let s = 0; s < scripts.length; s++) {
-				let script = scripts[s];
-				var mcName: any = this.adaptee.name;
-				if (typeof mcName != "string") {
-					mcName = mcName.toString();
-				}
-				script.data = (<AVM1Context>this._avm1Context).actionsDataFactory.createActionsData(
-					script.actionsData, 'script_' + mcName.replace(/[^\w]/g, '') + "_" + this.adaptee.id + '_frame_' + frameIdx + '_idx_' + i);
-				translatedScripts[translatedScripts.length] = script;
-			}
+            if(Array.isArray(scripts)){
+                for (let s = 0; s < scripts.length; s++) {
+                    let script = scripts[s];
+                    var mcName: any = this.adaptee.name;
+                    if (typeof mcName != "string") {
+                        mcName = mcName.toString();
+                    }
+                    script.data = (<AVM1Context>this._avm1Context).actionsDataFactory.createActionsData(
+                        script.actionsData, 'script_' + mcName.replace(/[^\w]/g, '') + "_" + this.adaptee.id + '_frame_' + frameIdx + '_idx_' + i);
+                    translatedScripts[translatedScripts.length] = script;
+                }
+            }
+            
+            else{
+                let script = scripts;
+                var mcName: any = this.adaptee.name;
+                if (typeof mcName != "string") {
+                    mcName = mcName.toString();
+                }
+                script.data = (<AVM1Context>this._avm1Context).actionsDataFactory.createActionsData(
+                    script.actionsData, 'script_' + mcName.replace(/[^\w]/g, '') + "_" + this.adaptee.id + '_frame_' + frameIdx + '_idx_' + i);
+                translatedScripts[translatedScripts.length] = script;
+
+            }
 		}
 		return translatedScripts;
 	}
@@ -332,8 +346,18 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 			var hasVar = this.alHasOwnProperty(name);
 			if (fromTimeline && hasVar) {
+
 				// there exists a avm1 var for this name. Object registration should fail
+                var ownDesc= this.alGetOwnProperty(name);
+                if((<any>ownDesc).isTextVar){                    
+                    //var registered for textfields-variables are a special case. they do not block registration
+                    // instead we update the var to the new object
+                    this.alPut(name, getAVM1Object(child, this.context));
+                }
+                else{
 				return;
+
+                }
 			}
 
 			//	only register object if:
@@ -414,6 +438,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			// 	in AVM1 FP<8, all names ignore case, so we can just convert everything to lower case
 			//	for FP>=8, only method names can be handled this way, object names need to keep their case
 			name = name.toLowerCase();
+            this.alDeleteOwnProperty(name);
 			if (this._childrenByName[name] && this._childrenByName[name].adaptee.id == child.id) {
 
 				if (this._childrenByName[name] && this._childrenByName[name].avmColor) {
@@ -596,16 +621,20 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		if (!this._constructMovieClipSymbol)
 			return;
-		if(alIsArray(this.context, name)){
+		if(name && alIsArray(this.context, name)){
 			name=name.value[0];
 		}
 		var mc = this._constructMovieClipSymbol(symbolId, name);
 		if (!mc) {
 			return undefined;
 		}
+		if (!mc.name) {
+			mc.name="";
+		}
 		depth = alToNumber(this.context, depth);
 
-		var oldAVMMC = this._childrenByName[name.toLowerCase()];
+		if(name)
+		    var oldAVMMC = this._childrenByName[name.toLowerCase()];
 
 		//console.log("attachMovie", name, avm2AwayDepth(depth));
 		var avmMc = <AVM1MovieClip>this._insertChildAtDepth(mc, avm2AwayDepth(depth));
@@ -619,7 +648,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			mc.addButtonListeners();
 		}
 		avmMc.dynamicallyCreated = true;
-		this.registerScriptObject(mc, false);
+		
+		if(name)
+		    this.registerScriptObject(mc, false);
 		return avmMc;
 	}
 
@@ -1217,7 +1248,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public startDrag(lock?: boolean, left?: number, top?: number, right?: number, bottom?: number): void {
-		if(AVM1MovieClip.currentDraggedMC){
+		if(AVM1MovieClip.currentDraggedMC && AVM1MovieClip.currentDraggedMC != this){
 			AVM1MovieClip.currentDraggedMC.stopDrag();
 		}
 		AVM1MovieClip.currentDraggedMC = this;
