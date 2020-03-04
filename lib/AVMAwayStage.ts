@@ -300,31 +300,32 @@ export class AVMAwayStage extends Sprite{
 
 	//---------------------------stuff added to make it work:
 
-	public takeSnapShot():HTMLCanvasElement
+	public screenshot(callback:Function)
 	{
 
-		var myBitmap:BitmapImage2D=new BitmapImage2D(550, 400, true, 0xffffffff, false);
+		var myBitmap:BitmapImage2D=new BitmapImage2D(this._stageWidth, this._stageHeight, true, 0xffffffff, false);
 
 		(<DefaultRenderer>this._scene.renderer).queueSnapshot(myBitmap);
 
-
+		(<DefaultRenderer>this._scene.renderer).view.target = myBitmap	
 		this._scene.render();
 
+		(<DefaultRenderer>this._scene.renderer).view.target = null	
 		myBitmap.invalidate();
 
 		// flip vertical:
 
 		var oldData=myBitmap.data;
-		var myBitmap2:BitmapImage2D=new BitmapImage2D(550, 400, true, 0xff00ffff, false);
+		var myBitmap2:BitmapImage2D=new BitmapImage2D(this._stageWidth, this._stageHeight, true, 0xff00ffff, false);
 		var x = 0;
 		var y = 0;
 		var idx=0;
 		var color=0;
 		var awayPixels:number[]=[];
 		// get all pixels of our image (BitmapData)
-		for (y = 0; y< 400; y++) {
-			for (x = 0; x < 550; x++) {
-				idx=((399-y)*550+x)*4;
+		for (y = 0; y< this._stageHeight; y++) {
+			for (x = 0; x < this._stageWidth; x++) {
+				idx=((this._stageHeight-1-y)*this._stageWidth+x)*4;
 				color=ColorUtils.ARGBtoFloat32(oldData[idx+3], oldData[idx], oldData[idx+1], oldData[idx+2]);
 				awayPixels[awayPixels.length]=color;
 				myBitmap2.setPixel32(x, y, color);
@@ -345,7 +346,11 @@ export class AVMAwayStage extends Sprite{
 		imageData.data.set(myBitmap2.data);
 		context.putImageData(imageData, 0, 0);	
 
-		return htmlImage;
+		if(callback)
+			callback(htmlImage);
+
+
+
 
 	}
 
@@ -600,6 +605,11 @@ export class AVMAwayStage extends Sprite{
 
 
 	}
+	private _customExitFrameCallback:Function;
+	public registerCustomExitFrameCallback(callback: Function)
+	{
+		this._customExitFrameCallback=callback;
+	}
 	/**
 	 * Render loop
 	 */
@@ -648,6 +658,7 @@ export class AVMAwayStage extends Sprite{
 
 				}
 				*/
+				!this._customExitFrameCallback || this._customExitFrameCallback();
 			}
 				
 		
