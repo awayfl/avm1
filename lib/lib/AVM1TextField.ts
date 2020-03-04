@@ -713,22 +713,26 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 		if (!avm1ContextUtils.hasProperty(this._textVarHolder, this._textVarPropName)) {
 			// the textvar does not exists yet. we create it and fill it with text-content
 			if(instance.html){	
+                var v={
+                    isTextVar:true,
+                    value:undefined
+                }
                 if(instance.htmlText!=""){
-                    avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName, instance.htmlText);
+                    v.value=instance.htmlText;
                 }
-                else{
-                    avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName, undefined);
-                }
+                avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName, v);                
 				avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName+"_internal_TF", this);
 				this._prevTextVarContent=instance.htmlText;
 				return;
-			}
+            }            
+            var v={
+                isTextVar:true,
+                value:undefined
+            }
             if(instance.text!=""){
-                avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName, instance.text);
+                v.value=instance.text
             }
-            else{
-                avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName, undefined);
-            }
+            avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName, v);      
 			avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName+"_internal_TF", this);
 			this._prevTextVarContent=instance.text;
 			return;
