@@ -48,7 +48,7 @@
 	import {AVM1ColorTransformFunction} from "./AVM1ColorTransform";
 	import {AVM1ExternalInterface} from "./AVM1ExternalInterface";
 	import {createFiltersClasses} from "./AVM1Filters";
-	import {URLLoaderEvent, AudioManager, URLRequest, URLLoader, URLLoaderDataFormat} from "@awayjs/core";
+	import {URLLoaderEvent, AudioManager, URLRequest, URLLoader, URLLoaderDataFormat, IStringMap} from "@awayjs/core";
 	import {MovieClip, FrameScriptManager} from "@awayjs/scene";
 	import {create, RandomSeed} from "random-seed";
 
@@ -79,18 +79,33 @@
 	}
 	
 	export class AVM1Globals extends AVM1Object {
+		
 		public static _scenegraphFactory:any;
 		public static instance:AVM1Globals;
 		public static lessonStartTime:number;
 		public static _registeredCustomClasses:any={};
 		public static _registeredCustomClassInstances:any={};
 		public static randomProvider:RandomSeed;
-		public static setRandom(seed:string=null){
+		public static GENERATE_SEED:string="GENERATE_SEED";
+		private static generateRandomSeed():string{
+            var str:string="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var len:number=10+Math.round(Math.random()*10);
+            var seed:string="";
+            for(var i:number=0; i<len; i++){
+                seed+=str[Math.floor(Math.random()*str.length)];
+            }
+            return seed; 
+        }
+		public static setRandom(seed:string=null):string{
 			if(seed){
+                if(seed==AVM1Globals.GENERATE_SEED){
+                    seed=AVM1Globals.generateRandomSeed();
+                }
 				AVM1Globals.randomProvider=create(seed);
-				return;
+				return seed;
 			}
 			AVM1Globals.randomProvider=null;
+            return null;
 		}
 		public static softKeyboardManager:ISoftKeyboardManager;
 		public static registerCustomClass(name:string, avm1Class:any) {
@@ -698,8 +713,8 @@
 	
 		public prevFrame() {
 			var awayObject:MovieClip = <MovieClip>getAwayJSAdaptee(<AVM1MovieClip>this.context.resolveTarget(null));
-            awayObject.stop();
             --awayObject.currentFrameIndex;
+            awayObject.stop();
 		}
 	
 		public prevScene() {
