@@ -461,14 +461,14 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_rotation(): number {
-		var value= this.adaptee.rotationZ;
+		var value= Math.round(this.adaptee.rotationZ*10000)/10000;
 		while(value>180){
 			value-=360;
 		}
 		while(value<-180){
 			value+=360;
 		}
-		return Math.round(value*10000)/10000;
+		return value;
 	}
 
 	public set_rotation(value: number) {
@@ -552,6 +552,9 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	// transform is only available in FP8
 	public getTransform(): AVM1Transform {
 		//var transformCtor = <AVM1Function>this.context.globals.Transform;
+		if(this.context.swfVersion<8){
+			return this._ownProperties["transform"];
+		}
 		if(!this._avmTransform){
 			
 			this._avmTransform = <AVM1Transform> (<AVM1Function>this.context.globals.Transform).alConstruct([this]);
@@ -560,6 +563,10 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		return this._avmTransform;
 	}
 	public setTransform(value: AVM1Transform) {
+		if(this.context.swfVersion<8){
+			this._ownProperties["transform"]=value;
+			return;
+		}
 		if (!(value instanceof AVM1Transform)) {
 			return;
 		}
