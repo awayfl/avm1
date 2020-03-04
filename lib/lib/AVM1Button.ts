@@ -183,7 +183,7 @@ export class AVM1Button extends AVM1MovieClip {
 			return;
 		this.enabled = value;		
         this.setEnabledListener(value);
-        this.adaptee.mouseEnabled=true;
+        this.adaptee.mouseEnabled=value;
 	}
 
 	public getTrackAsMenu(): boolean {
