@@ -233,9 +233,9 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 			return undefined;
 		}
 		if ((desc.flags & AVM1PropertyFlags.DATA)) {
-            if(desc.value && desc.value.adaptee && desc.value.adaptee instanceof DisplayObject && !desc.value.adaptee.parent){
-                return undefined;
-            }
+            //if(desc.value && desc.value.adaptee && desc.value.adaptee instanceof DisplayObject && !desc.value.adaptee.parent){
+             //   return undefined;
+            //}
 			return desc.value;
 		}
 		release || Debug.assert((desc.flags & AVM1PropertyFlags.ACCESSOR));
@@ -244,9 +244,9 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 			return undefined;
         }
         var value=getter.alCall(this);
-        if(value && value.adaptee && value.adaptee instanceof DisplayObject && !value.adaptee.parent){
-           return undefined;
-        }
+        //if(value && value.adaptee && value.adaptee instanceof DisplayObject && !value.adaptee.parent){
+        //   return undefined;
+        //}
 		return value;
 	}
 
@@ -319,9 +319,18 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 				release || Debug.assert(desc.flags & AVM1PropertyFlags.DATA);
 				v = desc.watcher.callback.alCall(this,
 					[desc.watcher.name, desc.value, v, desc.watcher.userData]);
-			}
-			var newDesc = new AVM1PropertyDescriptor(desc ? desc.flags : AVM1PropertyFlags.DATA, v);
-			this.alSetOwnProperty(originalName, newDesc);
+            }
+            if(v && v.isTextVar){
+                v=v.value;
+                var newDesc = new AVM1PropertyDescriptor(desc ? desc.flags : AVM1PropertyFlags.DATA, v);
+                (<any>newDesc).isTextVar=true;
+                this.alSetOwnProperty(originalName, newDesc);
+            }
+            else{
+                var newDesc = new AVM1PropertyDescriptor(desc ? desc.flags : AVM1PropertyFlags.DATA, v);
+                this.alSetOwnProperty(originalName, newDesc);
+            }
+            
 		}
 	}
 
