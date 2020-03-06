@@ -548,12 +548,14 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 			this.adaptee.parent.removeChild(this.adaptee);		    
 		
     }
-	private _avmTransform: AVM1Transform;
+    private _avmTransform: AVM1Transform;
+    
 	// transform is only available in FP8
 	public getTransform(): AVM1Transform {
-		//var transformCtor = <AVM1Function>this.context.globals.Transform;
+
 		if(this.context.swfVersion<8){
-			return this._ownProperties["transform"];
+            // special case: transform used as var name in FP<8
+			return this["transformPreFP8"];
 		}
 		if(!this._avmTransform){
 			
@@ -564,7 +566,8 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 	public setTransform(value: AVM1Transform) {
 		if(this.context.swfVersion<8){
-			this._ownProperties["transform"]=value;
+            // special case: transform used as var name in FP<8
+			this["transformPreFP8"]=value;
 			return;
 		}
 		if (!(value instanceof AVM1Transform)) {
