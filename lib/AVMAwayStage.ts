@@ -1373,11 +1373,11 @@ export class AVMAwayStage extends Sprite{
 		var child;
 		for(var i=0;i<len;i++) {
 			myLayer=this._layers[i];
-			numChilds = myLayer.numChildren;
-			for (var c = 0; c < numChilds; ++c) {
-				child = myLayer.getChildAt(c);
-				child.dispose();
-			}
+            numChilds = myLayer.numChildren;
+            while(numChilds > 0){
+                numChilds--;
+				myLayer.removeChildAt(numChilds);
+            }
 		}
 		this._layers.length=0;
 		AVM1TextField.allTextfields={};
