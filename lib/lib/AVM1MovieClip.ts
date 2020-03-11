@@ -642,7 +642,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		if(name)
 		    var oldAVMMC = this._childrenByName[name.toLowerCase()];
-
+        
+        mc.reset();
 		//console.log("attachMovie", name, avm2AwayDepth(depth));
 		var avmMc = <AVM1MovieClip>this._insertChildAtDepth(mc, avm2AwayDepth(depth));
 		if (initObject) {
