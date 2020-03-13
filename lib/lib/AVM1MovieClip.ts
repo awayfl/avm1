@@ -883,7 +883,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			//mc = constructClassFromSymbol(nativeAS3Object._symbol, nativeAS3Object.axClass);
 		} else {
 			mc = (<any>this).clone().adaptee;//new this.context.sec.flash.display.MovieClip();
-		}
+        }
+        mc.reset();
 		mc.name = name;
 		(<any>mc.adapter).placeObjectTag = (<any>this).placeObjectTag;
 		(<any>mc.adapter).initEvents = (<any>this).initEvents;
