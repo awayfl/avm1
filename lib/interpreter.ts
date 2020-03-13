@@ -15,8 +15,7 @@ import {
 	alCoerceString, alDefineObjectProperties, alForEachProperty, alIsFunction, alIsName, alNewObject, alToBoolean,
 	alToInt32,
 	alToNumber, alToObject, alToPrimitive, alToString, AVM1EvalFunction, AVM1NativeFunction,
-	AVM1PropertyFlags,
-	bToRuntimeBool
+	AVM1PropertyFlags
 } from "./runtime";
 
 import {AVM1Globals, AVM1NativeActions} from "./lib/AVM1Globals";
@@ -1606,17 +1605,13 @@ function avm1_0x11_ActionOr(ectx: ExecutionContext) {
 }
 
 function avm1_0x12_ActionNot(ectx: ExecutionContext) {
-	const avm = ectx.context;
-	const stack = ectx.stack;
-	const v = stack.pop();
-
-	/*
-	if(ectx.context.swfVersion <= 6 && typeof v === 'string'){
-		v = false;
-	}*/
-	const f = !alToBoolean(avm, v);
-	
-	stack.push(bToRuntimeBool(avm, f));
+	var stack = ectx.stack;
+	var isSwfVersion5 = ectx.isSwfVersion5;
+    var v=stack.pop();
+    if(typeof v === 'string')
+        v=false;
+	var f = !alToBoolean(ectx.context, v);
+	stack.push(isSwfVersion5 ? <any>f : f ? 1 : 0);
 }
 
 function avm1_0x13_ActionStringEquals(ectx: ExecutionContext) {
