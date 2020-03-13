@@ -1,6 +1,6 @@
 {
   "name": "@awayfl/avm1",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "Virtual machine for executing AS1 and AS2 code",
   "main": "bundle/awayfl-avm1.umd.js",
   "module": "dist/index.js",
