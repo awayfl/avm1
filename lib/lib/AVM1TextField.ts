@@ -788,7 +788,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 		this.adaptee.wordWrap = value;
 	}
 
-	private _initEventsHandlers() {
+	protected _initEventsHandlers() {
 		this.bindEvents(EventsListForMC);
 	}
 }
