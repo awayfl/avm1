@@ -82,7 +82,9 @@
 		
 		public static _scenegraphFactory:any;
 		public static instance:AVM1Globals;
-		public static lessonStartTime:number;
+		
+		public static lessonStartTime = Date.now();
+
 		public static _registeredCustomClasses:any={};
 		public static _registeredCustomClassInstances:any={};
 		public static randomProvider:RandomSeed;
@@ -480,7 +482,7 @@
 		}
 	
 		public getTimer(): number {
-			return new Date().getTime() - AVM1Globals.lessonStartTime;
+			return Date.now() - AVM1Globals.lessonStartTime;
 		}
 	
 		public getURL(url, target?, method?) {
