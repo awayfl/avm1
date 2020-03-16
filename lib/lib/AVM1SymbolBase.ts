@@ -108,9 +108,13 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		this._eventsMap = null;
 		this._eventsListeners = null;
 		this._eventHandlers = null;
-	}
+    }
+    protected _initEventsHandlers(){
+        throw("AVM1SymbolBase _initEventsHandlers must be overwritten")
+    }
 	public updateEventByPropName(eventName) {
         if(!this._eventsMap){
+            this._initEventsHandlers();
             console.log("no eventsmap set", this)
         }
         else if(this._eventsMap[eventName]){
