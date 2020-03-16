@@ -154,7 +154,20 @@ export function alToPrimitive(context: IAVM1Context, v, preferredType?: AVM1Defa
 	return preferredType !== undefined ? obj.alDefaultValue(preferredType) : obj.alDefaultValue();
 }
 
+export function bToRuntimeBool (context: IAVM1Context, v: boolean | number): boolean | number  {
+	const is5 = context.swfVersion >= 5;
+	const is7 = context.swfVersion >= 7;
+	
+	if(is5) {
+		return !!v;
+	}
+
+	return +v;
+}
+
 export function alToBoolean(context: IAVM1Context, v): boolean {
+	const is7 = context.swfVersion >= 7;
+	
 	switch (typeof v) {
 		case 'undefined':
 			return false;
@@ -162,7 +175,16 @@ export function alToBoolean(context: IAVM1Context, v): boolean {
 			return v !== null;
 		case 'boolean':
 			return v;
-		case 'string':
+		case 'string':{
+			if(is7) {
+				// In files published for Flash Player 7 and later, the result is true if the string has a length
+				// greater than 0; the value is false for an empty string.
+				return !!v;
+			}
+			// In files published for Flash Player 6 and earlier, the string is first converted to a number.
+			// The value is true if the number is not 0, otherwise the return value is false. 
+			return !isNaN(+v) && (+v) !== 0;
+		}
 		case 'number':
 			return !!v;
 		default:
