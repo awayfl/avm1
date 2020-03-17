@@ -214,25 +214,36 @@
 			return decodeURIComponent(str);
 		}
 	
-		public setInterval(): any {
+		// TS support multiannotated method, used only for human 
+		public setInterval(obj: AVM1Object, funName: string, time: number, ...args: any[]): number | undefined;
+		public setInterval(func: AVM1Function, time: number, ...args: any[]): number | undefined;
+		
+		public setInterval() {
 			// AVM1 setInterval silently swallows everything that vaguely looks like an error.
 			if (arguments.length < 2) {
 				return undefined;
 			}
+
 			var context = this.context;
 			var fn:Function;
-			var time= alToInteger(context, arguments[1]);
-            var argsStartIdx:number=2;
+			var time: number | undefined = undefined;
+            var argsStartIdx:number = 2;
+
 			if (alIsFunction(arguments[0])) {
 				fn = arguments[0].toJSFunction();
+				time = arguments[1];
 			} else {
+
 				if (arguments.length < 3) {
 					return undefined;
 				}
+
 				var obj: any = arguments[0];
 				var funName: string = arguments[1];
-                time= alToInteger(context, arguments[2]);
-                argsStartIdx=3;
+				
+				time = arguments[2]
+                argsStartIdx = 3;
+				
 				if (!(obj instanceof AVM1Object) || typeof funName !== 'string') {
 					return undefined;
 				}
@@ -241,22 +252,32 @@
 					if (!alIsFunction(avmFn)) {
 						return;
 					}
+
+					// internal arguments
 					var args = Array.prototype.slice.call(arguments, 0);
 					context.executeFunction(avmFn, obj, args);
 				};
 			}
-			var args: any[] = [];
-			var argsLength:number=arguments.length;
-			for (var i = argsStartIdx; i < argsLength; i++) {
-				args.push(arguments[i]);
+			
+			// AS2 skip setInterval when interval is invalid
+			if(time === undefined) {
+				return undefined;
 			}
-	
+
+			// Invalid cast. Return 0 for NaN/undefined.
+			time = alToInteger(context, time);
+
+			var args: any[] = Array.prototype.slice.call(arguments, argsStartIdx);
+
 			// Unconditionally coerce interval to int, as one would do.
 			var internalId;
+
 			if(fn){
 				var callback=function(){
 					fn.apply(null, args);
 				}
+				
+				// or interval manager must skip invalid intervals and return undef instead number
 				internalId = FrameScriptManager.setInterval(callback, time);
 			}
 			return _internalTimeouts.push(internalId);
