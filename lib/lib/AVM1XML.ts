@@ -480,8 +480,12 @@ class AVM1XMLPrototype extends AVM1Object implements IAVM1DataObject {
 
 	initializeDocument(text: string) {
 		text = alCoerceString(this.context, text) || null;
-		var as3Doc = new XMLDocument();
-		as3Doc.body.innerHTML=text;
+		
+		// XMLDocument not callable, you must execute DOMParser for it
+		
+		var oParser = new DOMParser();
+		var as3Doc = oParser.parseFromString(text, "application/xml");
+
 		AVM1XMLNodePrototype.prototype.initializeFromAS3Node.call(this, as3Doc);
 		this.as3XMLDocument = <any>as3Doc;
 	}
