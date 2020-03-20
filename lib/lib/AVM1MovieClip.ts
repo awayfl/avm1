@@ -988,6 +988,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public getNextHighestDepth(): number {
+        if(this.context.swfVersion<7)
+            return 0;
 		return away2avmDepth(this.adaptee.getNextHighestDepth());
 	}
 
