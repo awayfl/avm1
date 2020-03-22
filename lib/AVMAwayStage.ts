@@ -1352,10 +1352,15 @@ export class AVMAwayStage extends Sprite{
 
 	
 	public dispose(){
+        
 		if(this._scene && this._scene.renderer && this._scene.renderer.view && this._scene.renderer && this._scene.renderer.stage && this._scene.renderer.stage.container)
 			MouseManager.getInstance(PickGroup.getInstance(this._scene.renderer.view)).unregisterContainer(this._scene.renderer.stage.container);
-		if(this._scene)
-			this._scene.dispose();
+		if(this._scene){
+            if(this._scene.view){
+                this._scene.view.dispose();
+            }
+            this._scene.dispose();
+        }
 
 		this._scene=null;
 		AVMAwayStage._colorMaterials={};
