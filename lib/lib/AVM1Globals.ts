@@ -48,7 +48,7 @@
 	import {AVM1ColorTransformFunction} from "./AVM1ColorTransform";
 	import {AVM1ExternalInterface} from "./AVM1ExternalInterface";
 	import {createFiltersClasses} from "./AVM1Filters";
-	import {URLLoaderEvent, AudioManager, URLRequest, URLLoader, URLLoaderDataFormat, IStringMap} from "@awayjs/core";
+	import {URLLoaderEvent, AudioManager, URLRequest, URLLoader, URLLoaderDataFormat} from "@awayjs/core";
 	import {MovieClip, FrameScriptManager} from "@awayjs/scene";
 	import {create, RandomSeed} from "random-seed";
 
