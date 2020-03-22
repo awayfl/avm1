@@ -368,24 +368,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				|| (this._childrenByName[name].adaptee && this._childrenByName[name].adaptee.parent == null)
 				|| (this._childrenByName[name].adaptee && this._childrenByName[name].adaptee._depthID > child._depthID)) {
 
-				if (this._childrenByName[name] && this._childrenByName[name].avmColor) {
-					// if a object already is registered for this name, and we are going to replace it, 
-					// we need to check if it is tinted by a color-class, and if so change the target of the color class to the new object		
-					this.unregisteredColors[name] = this._childrenByName[name].avmColor;
-
-				}
 				//register new object
 				this._childrenByName[name] = getAVM1Object(child, this.context);
 				if(!fromTimeline){
 					this.alPut(name, this._childrenByName[name]);
 				}
 
-				// if a object was previous unregistered for this name, we need to check if it was tinted by a color 
-				// and if so, we need to apply the tint to the new object
-				if (this.unregisteredColors[name]) {
-					this.unregisteredColors[name].changeTarget(child.adapter);
-					this.unregisteredColors[name] = null;
-				}
 			}
 
 
@@ -431,8 +419,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	private unregisteredColors: any = {};
 	public unregisterScriptObject(child: DisplayObject): void {
-		if (child && child.adapter != child)
-			(<any>child.adapter).alPut("onEnterFrame", null);
+		//if (child && child.adapter != child)
+		//	(<any>child.adapter).alPut("onEnterFrame", null);
 		var name = child.name;
 		if (name) {
 			// 	in AVM1 FP<8, all names ignore case, so we can just convert everything to lower case
@@ -448,9 +436,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 			if (this._childrenByName[name] && this._childrenByName[name].adaptee.id == child.id) {
 
-				if (this._childrenByName[name] && this._childrenByName[name].avmColor) {
+				/*if (this._childrenByName[name] && this._childrenByName[name].avmColor) {
 					this.unregisteredColors[name] = this._childrenByName[name].avmColor;
-				}
+				}*/
 
 				// 	check if there is another child with the same name on the movieclip
 				//	and if so, register it instead
@@ -475,10 +463,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				if (newChild) {
 					this._childrenByName[name] = getAVM1Object(newChild, this.context);
 
-					if (this.unregisteredColors[name]) {
-						this.unregisteredColors[name].changeTarget(newChild.adapter);
-						this.unregisteredColors[name] = null;
-					}
+					//if (this.unregisteredColors[name]) {
+					//	this.unregisteredColors[name].changeTarget(newChild.adapter);
+					//	this.unregisteredColors[name] = null;
+					//}
 				}
 				else {
 					delete this._childrenByName[name];
@@ -988,6 +976,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public getNextHighestDepth(): number {
+        if(this.context.swfVersion<7)
+            return 0;
 		return away2avmDepth(this.adaptee.getNextHighestDepth());
 	}
 
