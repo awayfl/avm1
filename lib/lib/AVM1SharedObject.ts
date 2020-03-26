@@ -84,7 +84,7 @@ export class AVM1SharedObject extends AVM1Object {
 	}
 
 	public clear(): void {
-		//this._as3SharedObject.clear();
+		localStorage.removeItem(this._storage_name);
 	}
 
 	private getAVM1Value(jsValue:any):any{
@@ -136,7 +136,8 @@ export class AVM1SharedObject extends AVM1Object {
 		}
 		console.log("unknown datatype");
 	}
-	public flush(minDiskSpace?: number): any {
+
+	public flush(minDiskSpace?: number): string | boolean {
 		//minDiskSpace = alCoerceNumber(this.context, minDiskSpace);
 		//this._as3SharedObject.flush(minDiskSpace);
 		var jsValue=this.getJSValue(this._data);
