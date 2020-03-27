@@ -626,6 +626,7 @@ export class AVMAwayStage extends Sprite{
 
 			if (this._stageTime >= frameMarker) {
 				MovieClipSoundsManager.enterFrame();
+				this._scene.fireMouseEvents();
 				this._stage.clear();
 				this.onEnterFrame(this._stageTime);
 				this._stageTime -= frameMarker;
@@ -642,7 +643,7 @@ export class AVMAwayStage extends Sprite{
 				} 
 
 				this._currentFps++;
-				this._scene.render();
+				this._scene.render(false);
 				MovieClipSoundsManager.exitFrame();
 
 
