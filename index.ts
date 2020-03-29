@@ -1,6 +1,6 @@
 
 
-console.debug("AwayFL - 0.2.6");
+console.debug("AwayFL - 0.2.8");
 
 export {AVMAwayStage} from "./lib/AVMAwayStage";
 export {AVM1SceneGraphFactory} from "./lib/AVM1SceneGraphFactory";
