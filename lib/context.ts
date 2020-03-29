@@ -16,23 +16,23 @@
 
 //module Shumway.AVM1 {
 //import flash = flash;
-import {AVM1Movie} from "./AVM1Movie";
+import { AVM1Movie } from "./AVM1Movie";
 
-import {AnalyzerResults} from "./analyze";
-import {alCoerceString, alToString, IAVM1Builtins, IAVM1Context} from "./runtime";
-import {AVM1Globals} from "./lib/AVM1Globals";
-import {installBuiltins} from "./natives";
-import {MapObject, Debug, release, assert} from "@awayfl/swf-loader";
-import {AVM1Key} from "./lib/AVM1Key";
-import {AVM1Mouse} from "./lib/AVM1Mouse";
-import {AVM1Stage} from "./lib/AVM1Stage";
-import {AVM1MovieClip} from "./lib/AVM1MovieClip";
-import {getAVM1Object} from "./lib/AVM1Utils";
-import {LoaderInfo} from "./customAway/LoaderInfo";
-import {AVMAwayStage} from "./AVMAwayStage";
+import { AnalyzerResults } from "./analyze";
+import { alCoerceString, alToString, IAVM1Builtins, IAVM1Context } from "./runtime";
+import { AVM1Globals } from "./lib/AVM1Globals";
+import { installBuiltins } from "./natives";
+import { MapObject, Debug, release, assert } from "@awayfl/swf-loader";
+import { AVM1Key } from "./lib/AVM1Key";
+import { AVM1Mouse } from "./lib/AVM1Mouse";
+import { AVM1Stage } from "./lib/AVM1Stage";
+import { AVM1MovieClip } from "./lib/AVM1MovieClip";
+import { getAVM1Object } from "./lib/AVM1Utils";
+import { LoaderInfo } from "./customAway/LoaderInfo";
+import { AVMAwayStage } from "./AVMAwayStage";
 import { AVM1Object } from "./runtime/AVM1Object";
 import { AVM1Function } from "./runtime/AVM1Function";
-import {AssetLibrary} from "@awayjs/core";
+import { AssetLibrary } from "@awayjs/core";
 import { SecurityDomain } from './SecurityDomain';
 
 //import {WeakMap} from "es6-weak-map";
@@ -115,7 +115,7 @@ export class AVM1Context implements IAVM1Context {
 		this.assets = {};
 		this.assetsSymbols = [];
 		this.assetsClasses = [];
-		this.awayAssets={};
+		this.awayAssets = {};
 		this.staticStates = new WeakMap<typeof AVM1Object, any>();
 	}
 
@@ -123,12 +123,12 @@ export class AVM1Context implements IAVM1Context {
 
 	public static create: (loaderInfo: LoaderInfo) => AVM1Context;
 
-	public resolveTarget(target): any {}
-	public resolveRoot(): any {}
-	public checkTimeout() {}
+	public resolveTarget(target): any { }
+	public resolveRoot(): any { }
+	public checkTimeout() { }
 
-	public executeActions(actionsData: AVM1ActionsData, scopeObj): void {}
-	public executeFunction(fn: AVM1Function, thisArg, args: any): any {}
+	public executeActions(actionsData: AVM1ActionsData, scopeObj): void { }
+	public executeFunction(fn: AVM1Function, thisArg, args: any): any { }
 
 	/**
 	 * Normalize the name according to the current AVM1Context's settings.
@@ -140,18 +140,18 @@ export class AVM1Context implements IAVM1Context {
 	 */
 	public normalizeName: (name) => string;
 
-	private normalizeNameCaseSensitive(name:any): string {
+	private normalizeNameCaseSensitive(name: any): string {
 		switch (typeof name) {
 			case 'number':
 			case 'string':
-				return <string> name;
+				return <string>name;
 			default:
 				return alToString(this, name);
 		}
 	}
 
 	private _nameCache: Map<string, string>;
-	private normalizeNameCaseInsensitive(name:any): string {
+	private normalizeNameCaseInsensitive(name: any): string {
 		switch (typeof name) {
 			case 'number':
 				return name.toString();
@@ -213,22 +213,22 @@ export class AVM1Context implements IAVM1Context {
 		this.assets[className.toLowerCase()] = symbolId;
 		this.assetsSymbols[symbolId] = symbolProps;
 		//80pro: directly store assets in dictionary
-		this.awayAssets[className.toLowerCase()]=symbolProps;
+		this.awayAssets[className.toLowerCase()] = symbolProps;
 	}
 	public registerClass(className: string, theClass: AVM1Object): void {
 		className = alCoerceString(this, className);
 		if (className === null) {
 			this.utils.warn('Cannot register class for symbol: className is missing');
 			return null;
-        }
-        var myAsset:any=AssetLibrary.getAsset(className, AVM1MovieClip.currentMCAssetNameSpace);
-        if(!myAsset.adaptee){
-            console.warn("can not find symbol to register class "+className);
-            return;
-        }
-        console.log("register", myAsset.adaptee.name, myAsset.adaptee.id);
-        (<any>myAsset.adaptee).avm1Symbol=theClass;
-        /*
+		}
+		var myAsset: any = AssetLibrary.getAsset(className, AVM1MovieClip.currentMCAssetNameSpace);
+		if (!myAsset.adaptee) {
+			console.warn("can not find symbol to register class " + className);
+			return;
+		}
+		//console.log("register", myAsset.adaptee.name, myAsset.adaptee.id);
+		(<any>myAsset.adaptee).avm1Symbol = theClass;
+		/*
 		var symbolId = this.assets[className.toLowerCase()];
 		if (symbolId === undefined) {
 			this.utils.warn('Cannot register ' + className + ' class for symbol');
@@ -236,10 +236,10 @@ export class AVM1Context implements IAVM1Context {
 		}
 		this.assetsClasses[symbolId] = theClass;*/
 	}
-	public getSymbolClass(symbolId: number) : AVM1Object {
+	public getSymbolClass(symbolId: number): AVM1Object {
 		return this.assetsClasses[symbolId] || null;
 	}
-	public getAsset(className: string) : AVM1ExportedSymbol {
+	public getAsset(className: string): AVM1ExportedSymbol {
 		className = alCoerceString(this, className);
 		if (className === null) {
 			return undefined;
@@ -266,12 +266,12 @@ export class AVM1Context implements IAVM1Context {
 	}
 
 	public reset(): void {
-		
+
 		this.eventObservers = Object.create(null);
 		this.assets = {};
 		this.assetsSymbols = [];
 		this.assetsClasses = [];
-		this.awayAssets={};
+		this.awayAssets = {};
 		this.staticStates = new WeakMap<typeof AVM1Object, any>();
 		/*
 		function removescripts(){
@@ -293,8 +293,8 @@ export class AVM1Context implements IAVM1Context {
 		AVM1Stage.bindStage(this, this.globals.Stage, null, null);
 
 	}
-	private htmlElement:any;
-	public setStage(stage: AVMAwayStage, htmlElement:any): void {
+	private htmlElement: any;
+	public setStage(stage: AVMAwayStage, htmlElement: any): void {
 		AVM1Key.bindStage(this, this.globals.Key, stage, htmlElement);
 		AVM1Mouse.bindStage(this, this.globals.Mouse, stage, htmlElement);
 		AVM1Stage.bindStage(this, this.globals.Stage, stage, htmlElement);
