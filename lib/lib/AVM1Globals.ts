@@ -49,7 +49,7 @@
 	import {AVM1ExternalInterface} from "./AVM1ExternalInterface";
 	import {createFiltersClasses} from "./AVM1Filters";
 	import {URLLoaderEvent, AudioManager, URLRequest, URLLoader, URLLoaderDataFormat} from "@awayjs/core";
-	import {MovieClip, FrameScriptManager} from "@awayjs/scene";
+	import {MovieClip, FrameScriptManager, DisplayObject, DisplayObjectContainer} from "@awayjs/scene";
 	import {create, RandomSeed} from "random-seed";
 
 	import {AVM1Object} from "../runtime/AVM1Object";
@@ -790,9 +790,24 @@
 			var nativeTarget = <AVM1MovieClip>this.context.resolveTarget(null);
 			nativeTarget.stop();
 		}
-		public stopAllSounds() {
-			AudioManager.stopAllSounds();
+		private _stopSoundsOnObjectsRecursivly(obj:DisplayObjectContainer){
+			if(!obj._children)
+				return;
+			for(var i=0; i<obj._children.length; i++){
+				if(obj._children[i].isAsset(MovieClip)){
+					(<MovieClip>obj._children[i]).stopSounds();
+				}
+				else
+					this._stopSoundsOnObjectsRecursivly(<DisplayObjectContainer>obj._children[i]);
+			}
 		}
+		
+		public stopAllSounds() {			
+			AudioManager.stopAllSounds();
+			var stage=AVM1Stage.stage;
+			this._stopSoundsOnObjectsRecursivly(stage.getLayer(0));
+		}
+
 		public stopDrag() {
             if(AVM1MovieClip.currentDraggedMC){
                 AVM1MovieClip.currentDraggedMC.stopDrag();
