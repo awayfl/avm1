@@ -38,11 +38,24 @@ import { SecurityDomain } from './SecurityDomain';
 //import {WeakMap} from "es6-weak-map";
 //import {Map} from "es6-map";
 
+interface IEncryptedActionData {
+	data: Uint8Array,
+	size: ui32,
+	bytePos: ui32,
+	rawTagId: ui8
+}
+
 export class AVM1ActionsData {
 	public ir: AnalyzerResults;
 	public compiled: Function;
 
-	constructor(public bytes: Uint8Array, public id: string, public parent: AVM1ActionsData = null) {
+	constructor(
+		public bytes: Uint8Array, 
+		public id: string, 
+		public parent: AVM1ActionsData = null, 
+		public encryptedData?: IEncryptedActionData ) 
+	{
+		
 		release || assert(bytes instanceof Uint8Array);
 		this.ir = null;
 		this.compiled = null;
@@ -65,15 +78,27 @@ export interface IAVM1EventPropertyObserver {
 	onEventPropertyModified(name: string);
 }
 
+interface IActonBlock {
+	actionsData: Uint8Array;
+	encryptedData: any;
+}
+
 export class ActionsDataFactory {
 	private _cache: WeakMap<Uint8Array, AVM1ActionsData> = new WeakMap<Uint8Array, AVM1ActionsData>();
-	public createActionsData(bytes: Uint8Array, id: string, parent: AVM1ActionsData = null): AVM1ActionsData {
-		var actionsData = this._cache.get(bytes);
+	public createActionsData(actionData: Uint8Array | IActonBlock, id: string, parent: AVM1ActionsData = null): AVM1ActionsData {
+		
+		const isArray = (actionData instanceof Uint8Array);
+		
+		let bytes: Uint8Array = isArray ? <Uint8Array>actionData : (<IActonBlock>actionData).actionsData
+		let encryptedData = isArray ? undefined : (<IActonBlock>actionData).encryptedData
+		let actionsData = this._cache.get(bytes);
+		
 		if (!actionsData) {
-			actionsData = new AVM1ActionsData(bytes, id, parent);
+			actionsData = new AVM1ActionsData(bytes, id, parent, encryptedData);
 			this._cache.set(bytes, actionsData);
 		}
-		release || assert(actionsData.bytes === bytes && actionsData.id === id && actionsData.parent === parent);
+
+		release || assert(actionsData.bytes === actionData && actionsData.id === id && actionsData.parent === parent);
 		return actionsData;
 	}
 }

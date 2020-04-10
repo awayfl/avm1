@@ -158,7 +158,7 @@ export class ActionsDataParser {
 	public dataId: string;
 	private _stream: ActionsDataStream;
 	private _actionsData: AVM1ActionsData;
-	constructor(actionsData: AVM1ActionsData, swfVersion: number) {
+	constructor(actionsData: AVM1ActionsData, public swfVersion: number) {
 		this._actionsData = actionsData;
 		this.dataId = actionsData.id;
 		this._stream = new ActionsDataStream(actionsData.bytes, swfVersion);
