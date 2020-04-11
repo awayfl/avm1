@@ -3185,7 +3185,6 @@ function analyzeAndCompileActionsData(ectx: ExecutionContext, actionsData: AVM1A
 			return;
 		}
 	}*/
-
 	var parser = new ActionsDataParser(actionsData, context.swfVersion);
 	var analyzer = new ActionsDataAnalyzer();
 	analyzer.registersLimit = ectx.registers.length;
