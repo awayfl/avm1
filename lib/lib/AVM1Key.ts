@@ -18,8 +18,8 @@
 import {AVM1Context} from "../context";
 import {alCallProperty,} from "../runtime";
 import {wrapAVM1NativeClass} from "./AVM1Utils";
-import {AVMAwayStage} from "../AVMAwayStage";
 import {AVM1Object} from "../runtime/AVM1Object";
+import { AVMStage } from '@awayfl/swf-loader';
 
 export class AVM1Key extends AVM1Object {
 	public static BACKSPACE: number = 8;
@@ -61,7 +61,9 @@ export class AVM1Key extends AVM1Object {
 	public static keyDownDelegate:any=null; 
 	public static keyUpDelegate:any=null; 
 
-	public static bindStage(context: AVM1Context, cls: AVM1Object, stage: AVMAwayStage, htmlElement:HTMLElement): void {
+	public static bindStage(context: AVM1Context, cls: AVM1Object, stage: AVMStage, htmlElement:HTMLElement): void {
+
+		// TODO: should be listening on MouseManager for key-input ?
 
 		if(AVM1Key.keyDownDelegate)
 			htmlElement.removeEventListener('keydown', AVM1Key.keyDownDelegate);

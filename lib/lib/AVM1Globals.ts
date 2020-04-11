@@ -804,8 +804,7 @@
 		
 		public stopAllSounds() {			
 			AudioManager.stopAllSounds();
-			var stage=AVM1Stage.stage;
-			this._stopSoundsOnObjectsRecursivly(stage.getLayer(0));
+			this._stopSoundsOnObjectsRecursivly(AVM1Stage.avmStage);
 		}
 
 		public stopDrag() {

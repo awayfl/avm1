@@ -63,12 +63,12 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	public dispatchKeyEvent(keyCode, isShift, isCTRL, isAlt){
 		// this is called from the adaptee whenever a text-input occurs
 		if(!(<AVM1Stage>this.context.globals.Stage) 
-		|| !(<AVM1Stage>this.context.globals.Stage)._awayAVMStage
-		|| !(<AVM1Stage>this.context.globals.Stage)._awayAVMStage.scene){
+		|| !(<AVM1Stage>this.context.globals.Stage).avmStage
+		|| !(<AVM1Stage>this.context.globals.Stage).avmStage.scene){
 			return;
 		}
         //console.log("dispatch keyEvent", (<AVM1Stage>this.context.globals.Stage)._awayAVMStage.scene.mouseManager.useSoftkeyboard)
-		if((<AVM1Stage>this.context.globals.Stage)._awayAVMStage.scene.mouseManager.useSoftkeyboard){
+		if((<AVM1Stage>this.context.globals.Stage).avmStage.scene.mouseManager.useSoftkeyboard){
             //console.log("dispatch keyEvent")
             var staticState: typeof AVM1Key = this.context.getStaticState(AVM1Key);
 			staticState._lastKeyCode = keyCode;
@@ -79,7 +79,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
             newEvent.isShift = isShift;
             newEvent.isCTRL = isCTRL;
             newEvent.isAlt = isAlt;
-            (<AVM1Stage>this.context.globals.Stage)._awayAVMStage.dispatchEvent(newEvent);
+            (<AVM1Stage>this.context.globals.Stage).avmStage.dispatchEvent(newEvent);
 			delete staticState._keyStates[keyCode];
             alCallProperty(AVM1Globals.instance.Key, 'broadcastMessage', ['onKeyUp']);
             
@@ -87,7 +87,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
             newEvent.isShift = isShift;
             newEvent.isCTRL = isCTRL;
             newEvent.isAlt = isAlt;
-            (<AVM1Stage>this.context.globals.Stage)._awayAVMStage.dispatchEvent(newEvent);
+            (<AVM1Stage>this.context.globals.Stage).avmStage.dispatchEvent(newEvent);
 		}
 	}
 
@@ -447,8 +447,8 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
             value=false;
         }
 		value = alToBoolean(this.context, value);
-		if(!value && (<AVM1Stage>this.context.globals.Stage)._awayAVMStage.scene.mouseManager.getFocus()==this.adaptee){
-			(<AVM1Stage>this.context.globals.Stage)._awayAVMStage.scene.mouseManager.setFocus(null);
+		if(!value && (<AVM1Stage>this.context.globals.Stage).avmStage.scene.mouseManager.getFocus()==this.adaptee){
+			(<AVM1Stage>this.context.globals.Stage).avmStage.scene.mouseManager.setFocus(null);
 		}
 		this.adaptee.selectable = value;
 	}

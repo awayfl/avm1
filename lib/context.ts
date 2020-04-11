@@ -22,18 +22,18 @@ import { AnalyzerResults } from "./analyze";
 import { alCoerceString, alToString, IAVM1Builtins, IAVM1Context } from "./runtime";
 import { AVM1Globals } from "./lib/AVM1Globals";
 import { installBuiltins } from "./natives";
-import { MapObject, Debug, release, assert } from "@awayfl/swf-loader";
+import { MapObject, Debug, release, assert, AVMStage } from "@awayfl/swf-loader";
 import { AVM1Key } from "./lib/AVM1Key";
 import { AVM1Mouse } from "./lib/AVM1Mouse";
 import { AVM1Stage } from "./lib/AVM1Stage";
 import { AVM1MovieClip } from "./lib/AVM1MovieClip";
 import { getAVM1Object } from "./lib/AVM1Utils";
 import { LoaderInfo } from "./customAway/LoaderInfo";
-import { AVMAwayStage } from "./AVMAwayStage";
 import { AVM1Object } from "./runtime/AVM1Object";
 import { AVM1Function } from "./runtime/AVM1Function";
 import { AssetLibrary } from "@awayjs/core";
 import { SecurityDomain } from './SecurityDomain';
+import { AVM1Handler } from './AVM1Handler';
 
 //import {WeakMap} from "es6-weak-map";
 //import {Map} from "es6-map";
@@ -290,14 +290,14 @@ export class AVM1Context implements IAVM1Context {
 			delete ActionsDataCompiler.allScripts[i];
 		}
 		ActionsDataCompiler.allScripts.length=0;*/
-		AVM1Stage.bindStage(this, this.globals.Stage, null, null);
+		AVM1Stage.bindStage(this, this.globals.Stage, null, null, null);
 
 	}
-	private htmlElement: any;
-	public setStage(stage: AVMAwayStage, htmlElement: any): void {
-		AVM1Key.bindStage(this, this.globals.Key, stage, htmlElement);
-		AVM1Mouse.bindStage(this, this.globals.Mouse, stage, htmlElement);
-		AVM1Stage.bindStage(this, this.globals.Stage, stage, htmlElement);
+	private htmlElement:any;
+	public setStage(avmStage: AVMStage, avm1Handler:AVM1Handler, htmlElement:any): void {
+		AVM1Key.bindStage(this, this.globals.Key, avmStage, htmlElement);
+		AVM1Mouse.bindStage(this, this.globals.Mouse, avmStage, htmlElement);
+		AVM1Stage.bindStage(this, this.globals.Stage, avmStage, avm1Handler, htmlElement);
 	}
 
 	public getStaticState(cls): any {

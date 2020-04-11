@@ -17,7 +17,7 @@ import { DisplayObject as AwayDisplayObject } from "@awayjs/scene"
 //import {BitmapImage2D as BitmapData} from "@awayjs/stage"
 import {XMLDocumentAway} from "./customAway/xml/XMLDocumentAway"
 
-import { AVMAwayStage } from './AVMAwayStage';
+import { AVM1Stage } from './lib/AVM1Stage';
 
 export class AVM1Movie extends AwayDisplayObject {
 	_getLevelForRoot(root: AwayDisplayObject): number{return 0;};
@@ -40,7 +40,7 @@ export class SecurityDomain{
 	public flash= {
 		display: {
 			AVM1Movie: AVM1Movie,
-			Stage: AVMAwayStage
+			Stage: AVM1Stage
 		},
 		events: {
 			Event: Event,
