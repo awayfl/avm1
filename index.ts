@@ -1,8 +1,8 @@
 
 
-console.debug("AwayFL - 0.2.8");
+console.debug("AwayFL - AVM1 - 0.2.8");
 
-export {AVMAwayStage} from "./lib/AVMAwayStage";
+export {AVM1Handler} from "./lib/AVM1Handler";
 export {AVM1SceneGraphFactory} from "./lib/AVM1SceneGraphFactory";
 export {AVM1ContextImpl} from "./lib/interpreter";
 export {LoaderInfo} from "./lib/customAway/LoaderInfo";
