@@ -35,12 +35,15 @@ export class AVM1Handler implements IAVMHandler {
 		}
 		this._avmStage = avmStage;
 
-		this._avmStage.scene.mousePicker.shapeFlag = true;
-		this._avmStage.scene.forceMouseMove = true;
-
+		// 	we only do this in AVM1: 
+		//	stage is registered on MouseManager so we can dispatch events on it without event-bubbling
+		//	AVM1 doesnt use veent bubbling, but has those onMouseDown / onMouseUp events that listen on stage, 
+		//	no matter what object they are assigned to.
+		//	todo verify this is AVM1 only
 		this._avmStage.scene.mouseManager._stage = this._avmStage;
 		this._avmStage.scene.mouseManager.eventBubbling = false;
 
+		// todo: loaderinfo
 		var loaderInfo = new LoaderInfo();
 
 		this._factory = new AVM1SceneGraphFactory(new AVM1ContextImpl(loaderInfo));
