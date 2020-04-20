@@ -37,7 +37,6 @@ import { IMovieClipAdapter, DisplayObject, MovieClip, TextField, Billboard, Text
 import { AssetLibrary, Matrix3D, Point, WaveAudio, URLRequest, Rectangle } from "@awayjs/core";
 import { AVM1TextField } from "./AVM1TextField";
 import { Graphics, LineScaleMode, GradientType } from "@awayjs/graphics";
-import { LoaderInfo } from "../customAway/LoaderInfo";
 import { AVM1SymbolBase } from "./AVM1SymbolBase";
 import { AVM1Object } from "../runtime/AVM1Object";
 import { AVM1Stage } from "./AVM1Stage";
@@ -990,7 +989,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public getSWFVersion(): number {
-		var loaderInfo = <LoaderInfo>this.adaptee.loaderInfo;
+		notImplemented('AVM1MovieClip.getSWFVersion');
 		return 0;//loaderInfo.swfVersion;
 	}
 

@@ -7,7 +7,6 @@ import { AVMVERSION } from "@awayfl/swf-loader";
 import { PickGroup } from "@awayjs/view";
 import { AVM1ContextImpl } from "./interpreter";
 import { SecurityDomain } from "./SecurityDomain";
-import { LoaderInfo } from "./customAway/LoaderInfo";
 import { AVM1Globals, TraceLevel } from "./lib/AVM1Globals";
 import { AVM1MovieClip } from './lib/AVM1MovieClip';
 import { AVM1EventProps } from './lib/AVM1EventHandler';
@@ -43,10 +42,7 @@ export class AVM1Handler implements IAVMHandler {
 		this._avmStage.scene.mouseManager._stage = this._avmStage;
 		this._avmStage.scene.mouseManager.eventBubbling = false;
 
-		// todo: loaderinfo
-		var loaderInfo = new LoaderInfo();
-
-		this._factory = new AVM1SceneGraphFactory(new AVM1ContextImpl(loaderInfo));
+		this._factory = new AVM1SceneGraphFactory(new AVM1ContextImpl(swfFile.swfVersion));
 		this._factory.avm1Context.sec = new SecurityDomain();
 		this._factory.avm1Context.setStage(this._avmStage, this, document);
 

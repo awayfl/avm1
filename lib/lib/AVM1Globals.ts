@@ -146,7 +146,7 @@
 	
 			this._initBuiltins(context);
 	
-			var swfVersion = context.loaderInfo.swfVersion;
+			var swfVersion = context.swfVersion;
 			//if (swfVersion >= 8) {
 				this._initializeFlashObject(context);
 			//}

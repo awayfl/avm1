@@ -24,7 +24,6 @@ import {ErrorTypes, Telemetry, isNullOrUndefined, Debug, release, assert} from "
 import {hasAwayJSAdaptee} from "./lib/AVM1Utils";
 import {AVM1MovieClip} from "./lib/AVM1MovieClip";
 import {AVM1ArrayNative} from "./natives";
-import {LoaderInfo} from "./customAway/LoaderInfo";
 
 import { AVM1Object } from "./runtime/AVM1Object";
 import { AVM1Function } from "./runtime/AVM1Function";
@@ -172,12 +171,9 @@ export class AVM1ContextImpl extends AVM1Context {
 	deferScriptExecution: boolean;
 	actions: AVM1NativeActions;
 
-	constructor(loaderInfo: LoaderInfo) {
-		var swfVersion = loaderInfo.swfVersion;
+	constructor(swfVersion: number) {
 		super(swfVersion);
 
-		this.loaderInfo = loaderInfo;
-		this.sec = loaderInfo.sec; // REDUX:
 		this.globals = AVM1Globals.createGlobalsObject(this);
 		this.actions = new AVM1NativeActions(this);
 		this.initialScope = new AVM1ScopeListItem(this.globals, null);
@@ -283,8 +279,8 @@ export class AVM1ContextImpl extends AVM1Context {
 	}
 }
 
-AVM1Context.create = function (loaderInfo: LoaderInfo): AVM1Context {
-	return new AVM1ContextImpl(loaderInfo);
+AVM1Context.create = function (swfVersion: number): AVM1Context {
+	return new AVM1ContextImpl(swfVersion);
 };
 
 class AVM1Error {

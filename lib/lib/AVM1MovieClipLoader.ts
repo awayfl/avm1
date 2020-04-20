@@ -59,10 +59,10 @@ export class AVM1MovieClipLoader extends AVM1Object {
 		this._loaderHelper = loaderHelper;
 		this._target = null;
 
-		var loaderInfo = loaderHelper.loaderInfo;
-
 		//80pro todo
 		/*
+		var loaderInfo = loaderHelper.loaderInfo;
+
 		loaderInfo.addEventListener(Event.OPEN, this.openHandler.bind(this));
 		loaderInfo.addEventListener(ProgressEvent.PROGRESS, this.progressHandler.bind(this));
 		loaderInfo.addEventListener(IOErrorEvent.IO_ERROR, this.ioErrorHandler.bind(this));
@@ -126,7 +126,8 @@ export class AVM1MovieClipLoader extends AVM1Object {
 		return true;
 	}
 	public getProgress(target): number {
-		return this._loaderHelper.loaderInfo.bytesLoaded;
+		notImplemented('AVM1MovieClipLoader.getProgress');
+		return 0;
 	}
 	/*
 

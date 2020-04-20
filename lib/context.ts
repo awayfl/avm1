@@ -28,7 +28,6 @@ import { AVM1Mouse } from "./lib/AVM1Mouse";
 import { AVM1Stage } from "./lib/AVM1Stage";
 import { AVM1MovieClip } from "./lib/AVM1MovieClip";
 import { getAVM1Object } from "./lib/AVM1Utils";
-import { LoaderInfo } from "./customAway/LoaderInfo";
 import { AVM1Object } from "./runtime/AVM1Object";
 import { AVM1Function } from "./runtime/AVM1Function";
 import { AssetLibrary } from "@awayjs/core";
@@ -104,7 +103,6 @@ export class ActionsDataFactory {
 }
 
 export class AVM1Context implements IAVM1Context {
-	public loaderInfo: LoaderInfo;
 	public sec: SecurityDomain;
 	public globals: AVM1Globals;
 	public builtins: IAVM1Builtins;
@@ -146,7 +144,7 @@ export class AVM1Context implements IAVM1Context {
 
 	public utils: IAVM1RuntimeUtils;
 
-	public static create: (loaderInfo: LoaderInfo) => AVM1Context;
+	public static create: (swfVersion: number) => AVM1Context;
 
 	public resolveTarget(target): any { }
 	public resolveRoot(): any { }
