@@ -341,7 +341,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			// 	in AVM1 FP<8, all names ignore case, so we can just convert everything to lower case
 			//	for FP>=8, only method names can be handled this way, object names need to keep their case
 
-			name = name.toLowerCase();
+			if(this.context.swfVersion<8)
+				name = name.toLowerCase();
 
 			var hasVar = this.alHasOwnProperty(name);
 			if (fromTimeline && hasVar) {
