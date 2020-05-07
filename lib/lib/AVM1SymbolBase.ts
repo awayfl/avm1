@@ -9,7 +9,7 @@ import {
 } from "./AVM1Utils";
 import {AVM1Context, IAVM1EventPropertyObserver} from "../context";
 import {isNullOrUndefined, MapObject, notImplemented, somewhatImplemented, warning, release, assert} from "@awayfl/swf-loader";
-import {DisplayObjectContainer} from "@awayjs/scene";
+import {DisplayObjectContainer, IFilter} from "@awayjs/scene";
 import {AVM1MovieClip} from "./AVM1MovieClip";
 import {AVM1Rectangle, toAS3Rectangle} from "./AVM1Rectangle";
 import {Box} from "@awayjs/core";
@@ -64,9 +64,16 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		}
 	}
 
+	public update_filters(newFilters:IFilter[]){
+		let filter:IFilter;
+		for(let f=0; f<newFilters.length; f++){
+			filter=newFilters[f];
+			release || console.log("AVM1Symbol.update_filters not implemented");
+		}
+	}
 
 	// event handling:
-    
+		
 	protected _mouseListenerCount:number;
 	private _eventsMap: MapObject<AVM1EventHandler>;
 	private _events: AVM1EventHandler[];
