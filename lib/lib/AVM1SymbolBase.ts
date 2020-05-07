@@ -64,13 +64,6 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		}
 	}
 
-	public update_filters(newFilters:IFilter[]){
-		let filter:IFilter;
-		for(let f=0; f<newFilters.length; f++){
-			filter=newFilters[f];
-			release || console.log("AVM1Symbol.update_filters not implemented");
-		}
-	}
 
 	// event handling:
 		

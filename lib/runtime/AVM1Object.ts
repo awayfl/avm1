@@ -1,4 +1,4 @@
-import { IDisplayObjectAdapter, DisplayObject } from "@awayjs/scene";
+import { IDisplayObjectAdapter, DisplayObject, IFilter } from "@awayjs/scene";
 import { IAVM1Context, AVM1PropertyFlags, alToString, alIsName, IAVM1Callable, AVM1DefaultValueHint, alIsFunction } from "../runtime";
 import { IAsset } from "@awayjs/core";
 import { AVM1Context } from "../context";
@@ -40,6 +40,14 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 	public dispose(): any{
 
+	}
+	
+	public updateFilters(newFilters:IFilter[]){
+		let filter:IFilter;
+		for(let f=0; f<newFilters.length; f++){
+			filter=newFilters[f];
+			release || console.log("AVM1Object.update_filters not implemented");
+		}
 	}
 	public isBlockedByScript():boolean{
 		return this._blockedByScript;
