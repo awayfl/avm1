@@ -4,6 +4,7 @@ import { Loader, URLLoaderEvent, LoaderEvent, AssetEvent, IAsset, AssetLibrary, 
 import { AVM1Context } from "../context";
 import { DisplayObject, MovieClip } from "@awayjs/scene";
 import { LoaderInfo } from '../customAway/LoaderInfo';
+import { AVM1MovieClip } from './AVM1MovieClip';
 
 export class AVM1LoaderHelper {
 	private _loader:Loader;
@@ -11,6 +12,7 @@ export class AVM1LoaderHelper {
 	private _content: DisplayObject;
 	private result = new PromiseWrapper<DisplayObject>();
 	private _url:string;
+	private _targetMC:AVM1MovieClip;
 
 	public get loader(): Loader {
 		return this._loader;
@@ -24,7 +26,8 @@ export class AVM1LoaderHelper {
 		return this._content;
 	}
 
-	public constructor(context: AVM1Context) {
+	public constructor(context: AVM1Context, targetMC:AVM1MovieClip) {
+		this._targetMC = targetMC;
 		this._context = context;
 		this._onAssetCompleteDelegate = (event: AssetEvent) => this.onAssetComplete(event);
 		this._onLoadCompleteDelegate = (event: LoaderEvent) => this.onLoadComplete(event);
@@ -62,6 +65,7 @@ export class AVM1LoaderHelper {
 	private _onLoadErrorDelegate: (event: URLLoaderEvent) => void;
 
 	private onLoadError(event: URLLoaderEvent): void {
+		this._targetMC.setBytesTotal(-1);
 		AssetLibrary.removeEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
 		AssetLibrary.removeEventListener(LoaderEvent.LOAD_COMPLETE, this._onLoadCompleteDelegate);
 		AssetLibrary.removeEventListener(URLLoaderEvent.LOAD_ERROR, this._onLoadErrorDelegate);

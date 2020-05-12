@@ -109,6 +109,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	public static capStyleMapStringToInt: any = { "none": 0, "round": 1, "square": 2 };
 	public static jointStyleMapStringToInt: any = { "round": 0, "bevel": 1, "miter": 2 };
 
+	private _bytesTotal:number = 100;
+
 	private static noScaleDictionary: Object = {
 		'normal': LineScaleMode.NORMAL,
 		'none': LineScaleMode.NONE,
@@ -935,9 +937,13 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		return this.adaptee.currentFrameIndex >= 0 ? 100 : -1;//loaderInfo.bytesLoaded;
 	}
 
+	public setBytesTotal(value:number) {
+		//var loaderInfo = this.adaptee.loaderInfo;
+		this._bytesTotal=value;//loaderInfo.bytesTotal;
+	}
 	public getBytesTotal() {
 		//var loaderInfo = this.adaptee.loaderInfo;
-		return 100;//loaderInfo.bytesTotal;
+		return this._bytesTotal;//loaderInfo.bytesTotal;
 	}
 
 	public getInstanceAtDepth(depth: number): AVM1MovieClip {
@@ -1171,7 +1177,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public loadMovie(url: string, method: string) {
 
-		var loaderHelper = new AVM1LoaderHelper(this.context);
+		var loaderHelper = new AVM1LoaderHelper(this.context, this);
 		loaderHelper.load(url, method).then(function () {
 			if (loaderHelper.content == null) {
 				warning("loadMovie - content is null");

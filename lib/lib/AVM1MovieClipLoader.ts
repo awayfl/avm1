@@ -55,7 +55,7 @@ export class AVM1MovieClipLoader extends AVM1Object {
 			}
 		}
 
-		var loaderHelper = new AVM1LoaderHelper(this.context);
+		var loaderHelper = new AVM1LoaderHelper(this.context, target_mc);
 		this._loaderHelper = loaderHelper;
 		this._target = null;
 
