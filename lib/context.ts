@@ -54,8 +54,6 @@ export class AVM1ActionsData {
 		public parent: AVM1ActionsData = null, 
 		public encryptedData?: IEncryptedActionData ) 
 	{
-		
-		release || assert(bytes instanceof Uint8Array);
 		this.ir = null;
 		this.compiled = null;
 	}
