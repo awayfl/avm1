@@ -163,6 +163,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				var myThis = this;
 				this.executeConstructor = function () {
 					symbolClass.alCall(myThis);
+					myThis.updateAllEvents();
 				}
 			}
 		}
