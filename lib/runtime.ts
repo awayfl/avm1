@@ -262,7 +262,7 @@ export function alToString(context: IAVM1Context, v): string {
 		case 'boolean':
 			return v ? 'true' : 'false';
 		case 'number':
-			if (!isNaN(v)) {
+			if (isFinite(v)) {
 				var bigv=Big(v);
 				if(Math.abs(bigv.e)<14)
 					bigv=bigv.round(14-bigv.e, 1);

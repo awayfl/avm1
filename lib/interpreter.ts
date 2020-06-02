@@ -1483,14 +1483,36 @@ function avm1_0x0A_ActionAdd(ectx: ExecutionContext) {
 	if (!ectx.isSwfVersion7) {
 		if (typeof a === 'undefined')
 			a = 0;
-		
+
 		if (typeof b === 'undefined')
 			b = 0;
 	}
-		
-	if (isNaN(a) || isNaN(b)) {
-		stack.push(NaN);
-	} else {
+
+
+	//todo: this is copied from avm1_0x47_ActionAdd2 and might not be exact FP behavior:
+
+	// infinity + x = infinity
+	// -infinity + x = -infinity
+	// infinity + x = infinity
+	// infinity + infinity = infinity
+	// -infinity + infinity = NaN
+	// infinity + NaN = NaN
+	// -infinity + NaN = NaN
+	// NaN + infinity = NaN
+
+	if (!isFinite(a) || !isFinite(b)) {
+		if (isNaN(a) || isNaN(b))
+			stack.push(NaN);
+		else if (a === b)
+			stack.push(Infinity);
+		else if (!isFinite(a) && !isFinite(b))
+			stack.push(NaN);
+		else if (!isFinite(a))
+			stack.push(a);
+		else if (!isFinite(b))
+			stack.push(b);
+	}
+	else {
 		stack.push(Number(Big(Number(a)).add(Big(Number(b)))));
 	}
 }
@@ -1504,13 +1526,32 @@ function avm1_0x0B_ActionSubtract(ectx: ExecutionContext) {
 	if (!ectx.isSwfVersion7) {
 		if (typeof a === 'undefined')
 			a = 0;
-		
+
 		if (typeof b === 'undefined')
 			b = 0;
 	}
 
-	if (isNaN(a) || isNaN(b)) {
-		stack.push(NaN);
+	// x - NaN = NaN
+	// NaN - x = NaN
+	// infinity - NaN = NaN
+	// -infinity - NaN = NaN
+	// NaN - infinity = NaN
+	// infinity - infinity = NaN
+
+	// x - infinity = -infinity
+	// infinity - x = infinity
+	// -infinity - x = -infinity
+	// -infinity - infinity = -infinity
+
+	if (!isFinite(a) || !isFinite(b)) {
+		if (isNaN(a) || isNaN(b))
+			stack.push(NaN);
+		else if (a === b)
+			stack.push(NaN);
+		else if (!isFinite(a))
+			stack.push(-Infinity);
+		else if (!isFinite(b))
+			stack.push(b);
 	} else {
 		stack.push(Number(Big(Number(b)).sub(Big(Number(a)))));
 	}
@@ -1525,13 +1566,31 @@ function avm1_0x0C_ActionMultiply(ectx: ExecutionContext) {
 	if (!ectx.isSwfVersion7) {
 		if (typeof a === 'undefined')
 			a = 0;
-		
+
 		if (typeof b === 'undefined')
 			b = 0;
 	}
-		
-	if (isNaN(a) || isNaN(b)) {
-		stack.push(NaN);
+
+
+	// infinity * x = infinity
+	// -infinity * x = -infinity
+	// infinity * infinity = infinity
+	// -infinity * -infinity = infinity
+	// infinity * -infinity = -infinity
+	// infinity * NaN = NaN
+	// -infinity * NaN = NaN
+
+	if (!isFinite(a) || !isFinite(b)) {
+		if (isNaN(a) || isNaN(b))
+			stack.push(NaN);
+		else if (a === b)
+			stack.push(Infinity);
+		else if (!isFinite(a) && !isFinite(b))
+			stack.push(-Infinity);
+		else if (!isFinite(a))
+			stack.push(a);
+		else if (!isFinite(b))
+			stack.push(b);
 	} else {
 		stack.push(Number(Big(Number(a)).mul(Big(Number(b)))));
 	}
@@ -1547,15 +1606,46 @@ function avm1_0x0D_ActionDivide(ectx: ExecutionContext) {
 	if (!ectx.isSwfVersion7) {
 		if (typeof a === 'undefined')
 			a = 0;
-		
+
 		if (typeof b === 'undefined')
 			b = 0;
 	}
-		
-	if (isNaN(a) || isNaN(b) || (a == 0 && b == 0)) {
-		stack.push(NaN);
+
+	// 0 / 0 = NaN
+	// x / 0 = Infinity
+	// -x / 0 = -Infinity
+	// 0 / x = 0
+	// 0 / -x = -0
+	// infinity / 0 = Infinity
+	// -infinity / 0 = -Infinity
+	// 0 / infinity = 0
+	// 0 / -infinity = 0
+	// infinity / x = Infinity
+	// -infinity / x = -Infinity
+	// x / infinity = 0
+	// x / -infinity = 0
+	// infinity / NaN = NaN
+	// -infinity / NaN = NaN
+	// NaN / infinity = NaN
+	// NaN / -infinity = NaN
+	// infinity / infinity = NaN
+	// -infinity / infinity = NaN
+	// -infinity / -infinity = NaN
+	// infinity / -infinity = NaN
+
+	if (!isFinite(a) || !isFinite(b) || (a == 0 && b == 0)) {
+		if ((a == 0 && b == 0) || (!isFinite(a) && !isFinite(b)))
+			stack.push(NaN);
+		else if (a == 0)
+			stack.push(b);
+		else if (b == 0)
+			stack.push(0);
+		else if (!isFinite(b))
+			stack.push(b);
+		else if (!isFinite(a))
+			stack.push(0);
 	} else if (a == 0) {
-		stack.push(isSwfVersion5? '#ERROR#' : (b > 0)? Infinity : -Infinity);
+		stack.push(isSwfVersion5 ? '#ERROR#' : (b > 0) ? Infinity : -Infinity);
 	} else {
 		stack.push(Number(Big(Number(b)).div(Big(Number(a)))));
 	}
@@ -2372,13 +2462,31 @@ function avm1_0x47_ActionAdd2(ectx: ExecutionContext) {
 		if (!ectx.isSwfVersion7) {
 			if (typeof a === 'undefined')
 				a = 0;
-			
+
 			if (typeof b === 'undefined')
 				b = 0;
 		}
 
-		if (isNaN(a) || isNaN(b)) {
-			stack.push(NaN);
+		// infinity + x = infinity
+		// -infinity + x = -infinity
+		// infinity + x = infinity
+		// infinity + infinity = infinity
+		// -infinity + infinity = NaN
+		// infinity + NaN = NaN
+		// -infinity + NaN = NaN
+		// NaN + infinity = NaN
+
+		if (!isFinite(a) || !isFinite(b)) {
+			if (isNaN(a) || isNaN(b))
+				stack.push(NaN);
+			else if (a === b)
+				stack.push(Infinity);
+			else if (!isFinite(a) && !isFinite(b))
+				stack.push(NaN);
+			else if (!isFinite(a))
+				stack.push(a);
+			else if (!isFinite(b))
+				stack.push(b);
 		} else {
 			stack.push(Number(Big(Number(a)).add(Big(Number(b)))));
 		}
@@ -2402,14 +2510,33 @@ function avm1_0x3F_ActionModulo(ectx: ExecutionContext) {
 	if (!ectx.isSwfVersion7) {
 		if (typeof a === 'undefined')
 			a = 0;
-		
+
 		if (typeof b === 'undefined')
 			b = 0;
 	}
+	// 0 % 0 = NaN
+	// x % NaN = NaN
+	// NaN % x = NaN
+	// x % Infinity = x
+	// x % -Initnity = x
+	// Infinity % NaN = NaN
+	// -Infinity % NaN = NaN
+	// NaN % Infinity = NaN
+	// NaN % -Infinity = NaN
+	// Infinity % Infinity = NaN
+	// Infinity % -Initnity = NaN
+	// -Infinity % -Initnity = NaN
+	// -Infinity % Initnity = NaN
 
-	if (isNaN(a) || isNaN(b) || a == 0) {
-		stack.push(NaN);
-	} else {
+	if (!isFinite(a) || !isFinite(b) || (a==0 && b==0)) {
+		if (isNaN(a) || isNaN(b) || (!isFinite(a) && !isFinite(b)))
+			stack.push(NaN);
+		else if (!isFinite(a))
+			stack.push(b);
+		else
+			stack.push(NaN);
+	} 
+	else {
 		stack.push(Number(Big(Number(b)).mod(Big(Number(a)))));
 	}
 }
