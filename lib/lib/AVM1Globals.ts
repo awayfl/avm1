@@ -83,7 +83,7 @@
 		public static _scenegraphFactory:any;
 		public static instance:AVM1Globals;
 		
-		public static lessonStartTime = Date.now();
+		public static swfStartTime = Date.now();
 
 		public static _registeredCustomClasses:any={};
 		public static _registeredCustomClassInstances:any={};
@@ -503,7 +503,7 @@
 		}
 	
 		public getTimer(): number {
-			return Date.now() - AVM1Globals.lessonStartTime;
+			return Date.now() - AVM1Globals.swfStartTime;
 		}
 	
 		public getURL(url, target?, method?) {
