@@ -255,11 +255,15 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	public setEnabledListener(value:any) {
 		if (value!==false && value!==0) {
 			for (var key in this._eventsListeners) {
+				if(!this._eventHandlers[key]){
+					throw("AVM1SymbolBase.setEnabledListener - can not find "+key+" on this._eventsListeners value="+value);
+				}
 				if(this._eventHandlers[key].allowDisable){
                     this.addEventListenerOnAdapter(this._eventHandlers[key], <any>this._eventsListeners[key]);
 				}
 			}
 			for (var key in this._onClipEventsListeners) {
+				throw("AVM1SymbolBase.setEnabledListener - can not find "+key+" on this._onClipEventsListeners value="+value);
 				if(this._onClipEventsListeners[key].event.allowDisable){
                     this.addEventListenerOnAdapter(this._onClipEventsListeners[key].event, <any>this._onClipEventsListeners[key].callback);
 				}
@@ -267,11 +271,13 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		}
 		else {
 			for (var key in this._eventsListeners) {
+				throw("AVM1SymbolBase.setEnabledListener - can not find "+key+" on this._eventsListeners value="+value);
 				if(this._eventHandlers[key].allowDisable){
                     this.removeEventListenerOnAdapter(this._eventHandlers[key], <any>this._eventsListeners[key]);
 				}
 			}
 			for (var key in this._onClipEventsListeners) {
+				throw("AVM1SymbolBase.setEnabledListener - can not find "+key+" on this._onClipEventsListeners value="+value);
 				if(this._onClipEventsListeners[key].event.allowDisable){
                     this.removeEventListenerOnAdapter(this._onClipEventsListeners[key].event, <any>this._onClipEventsListeners[key].callback);
 				}
