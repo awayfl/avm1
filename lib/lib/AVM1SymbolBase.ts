@@ -28,6 +28,13 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 
 	public hasSwappedDepth:boolean=false;
 	public dynamicallyCreated:boolean=false;
+	
+	//	these are used so that we do not rely on values 
+	//	coming from awayJS that might have float-issue:
+	private _xscale:number;
+	private _yscale:number;
+	private _rotation:number;
+
 	public initAVM1SymbolInstance(context: AVM1Context, awayObject: T) {
 		//AVM1Object.call(this, context);
         this.avmType="symbol";
@@ -464,8 +471,10 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		return <AVM1MovieClip>getAVM1Object(awayObject, this.context);
 	}
 
-	public get_rotation(): number {
-		var value= Math.round(this.adaptee.rotationZ*10000)/10000;
+	public get_rotation(): number {		
+		if(typeof this._rotation !== "undefined")
+			return this._rotation;
+		var value= Math.round(this.adaptee.rotationZ);
 		while(value>180){
 			value-=360;
 		}
@@ -481,6 +490,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		if (isNaN(value)) {
 			return;
 		}
+		this._rotation = value;
 		this.adaptee.rotationZ = value;
 	}
 
@@ -633,6 +643,8 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_xscale(): number {
+		if(typeof this._xscale !== "undefined")
+			return this._xscale;
 		return this.adaptee.scaleX * 100;
 	}
 
@@ -642,6 +654,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		if (isNaN(value)) {
 			return;
 		}
+		this._xscale = value;
 		this.adaptee.scaleX = value / 100;
 	}
 
@@ -663,6 +676,8 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_yscale(): number {
+		if(typeof this._yscale !== "undefined")
+			return this._yscale;
 		return this.adaptee.scaleY * 100;
 	}
 
@@ -672,6 +687,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		if (isNaN(value)) {
 			return;
 		}
+		this._yscale = value;
 		this.adaptee.scaleY = value / 100;
 	}
 
