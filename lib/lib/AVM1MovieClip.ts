@@ -187,6 +187,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 	}
 	public executeScript(actionsBlocks: any) {
+		if(typeof actionsBlocks==="number"){
+			actionsBlocks=(<MovieClip>this.adaptee).timeline.get_script_for_frame(<MovieClip>this.adaptee, actionsBlocks);
+			if(!actionsBlocks){
+				return;
+			}
+		}
 		AVM1MovieClip.currentMCAssetNameSpace = this.adaptee.assetNamespace;
 		AVM1TextField.syncQueedTextfields();
 		var name: string = this.adaptee.name.replace(/[^\w]/g, '');
