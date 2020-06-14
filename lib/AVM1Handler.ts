@@ -89,7 +89,6 @@ export class AVM1Handler implements IAVMHandler {
 		var child: DisplayObject;
 		var len: number = this._avmStage.numChildren;
 
-		MovieClip._skipAdvance = true;
 		for (i = 0; i < len; i++) {
 			child = this._avmStage.getChildAt(i);
 			// each child in here should be a swf-scene
@@ -98,7 +97,6 @@ export class AVM1Handler implements IAVMHandler {
 			}
 
 		}
-		MovieClip._skipAdvance = false;
 		FrameScriptManager.execute_queue();
 
 		var enterFramesChilds = [];
