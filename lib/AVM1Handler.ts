@@ -62,6 +62,13 @@ export class AVM1Handler implements IAVMHandler {
 		this._avmStage.addEventListener(KeyboardEvent.KEYDOWN, (evt)=>this.onKeyEvent(evt));
 		this._avmStage.addEventListener(KeyboardEvent.KEYUP, (evt)=>this.onKeyEvent(evt));
 		
+		if(this._avmStage.avmTestHandler){
+			var originaltrace=(<any>this._factory.avm1Context).actions.trace;
+			(<any>this._factory.avm1Context).actions.trace=(expression)=>{
+				originaltrace(expression);
+				this._avmStage.avmTestHandler.addMessage(expression);
+			}
+		}
 
 		callback(true);
 	}
