@@ -159,6 +159,11 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	public copyPixels(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
 					  alphaBitmap?: AVM1BitmapData, alphaPoint?: AVM1Object,
 					  mergeAlpha?: boolean): void {
+
+		if(!sourceBitmap) {
+			console.warn("[AVM1BitmapData::copyPixels] Empty source!")
+			return;
+		}
 		var as3BitmapData = sourceBitmap.as3BitmapData;
 		var as3SourceRect = toAS3Rectangle(sourceRect);
 		var as3DestPoint = toAS3Point(destPoint);
@@ -176,6 +181,12 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 
 	draw(source: AVM1Object, matrix?: AVM1Object, colorTransform?: AVM1Object, blendMode?: any,
 		 clipRect?: AVM1Object, smooth?: boolean): void {
+
+		if(!source) {
+			console.warn("[AVM1BitmapData::draw] Empty source!")
+			return;
+		}
+
 		var as3BitmapData = (<any>source).adaptee; // movies and bitmaps
 		var as3Matrix = matrix ? toAS3Matrix(matrix) : null;
 		var as3ColorTransform = colorTransform ? toAwayColorTransform(<AVM1ColorTransform>colorTransform) : null;
