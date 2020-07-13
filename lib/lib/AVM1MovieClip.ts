@@ -187,20 +187,19 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 	}
 	public executeScript(actionsBlocks: any) {
-		if(typeof actionsBlocks==="number"){
-			actionsBlocks=(<MovieClip>this.adaptee).timeline.get_script_for_frame(<MovieClip>this.adaptee, actionsBlocks);
-			if(!actionsBlocks){
-				return;
-			}
+		if (typeof actionsBlocks === "number") {
+			actionsBlocks = (<MovieClip>this.adaptee).timeline.get_script_for_frame(<MovieClip>this.adaptee, (<MovieClip>this.adaptee).currentFrameIndex);
 		}
 		AVM1MovieClip.currentMCAssetNameSpace = this.adaptee.assetNamespace;
 		AVM1TextField.syncQueedTextfields();
-		var name: string = this.adaptee.name.replace(/[^\w]/g, '');
 		if (!actionsBlocks) {
+			var name: string = this.adaptee.name.replace(/[^\w]/g, '');
 			window.alert("actionsBlocks is empty, can not execute framescript" + name + this.adaptee.currentFrameIndex);
 			return;
 		}
-		var unsortedScripts: any[] = [];
+		if(!this.adaptee.parent)
+			return;
+		const unsortedScripts: any[] = [];
 
 		for (let k = 0; k < actionsBlocks.length; k++) {
 			let actionsBlock: any = actionsBlocks[k];
@@ -216,7 +215,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		if (unsortedScripts.length) {
 			unsortedScripts.sort(this.compareAVM1FrameScripts);
-			var sortedFrameScripts = unsortedScripts;
+			const sortedFrameScripts = unsortedScripts;
 			for (let k = 0; k < sortedFrameScripts.length; k++) {
 				var myScript = sortedFrameScripts[k];
 				var mc = myScript.context;
