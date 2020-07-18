@@ -246,7 +246,7 @@ export class AVM1ContextImpl extends AVM1Context {
 		this.isActive = savedIsActive;
 		if (caughtError) {
 			// Note: this doesn't use `finally` because that's a no-go for performance.
-			//console.log("error in framescripts", caughtError)
+			console.error("error in framescripts", caughtError)
 			//throw caughtError;
 		}
 	}

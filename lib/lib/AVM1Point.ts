@@ -22,6 +22,10 @@ import {AVM1Object} from "../runtime/AVM1Object";
 import { AVM1Function } from "../runtime/AVM1Function";
 
 export function toAS3Point(v: AVM1Object): Point {
+	if(!v) {
+		return new Point(0,0);
+	}
+
 	var context = v.context;
 	var x, y;
 	if (v instanceof AVM1Object) {
