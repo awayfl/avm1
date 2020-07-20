@@ -652,7 +652,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		avmMc.dynamicallyCreated = true;
 
 		if (name)
-			this.registerScriptObject(mc, false);
+			this.registerScriptObject(mc, true);
 		return avmMc;
 	}
 
