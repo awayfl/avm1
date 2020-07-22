@@ -366,11 +366,15 @@ export function initializeAVM1Object(awayObject: any,
 			if (!(flags & (eventFlag | 0))) {
 				continue;
             }
-            if(eventFlag==AVM1ClipEvents.Construct || eventFlag==AVM1ClipEvents.Initialize){
-                handler();
+            else if(eventFlag==AVM1ClipEvents.Construct){
+				awayObject.onConstruct=handler;
                 continue;
-            }
-            if(eventFlag==AVM1ClipEvents.Load){
+			}
+			else if(eventFlag==AVM1ClipEvents.Initialize){
+				awayObject.onInitialize=handler;
+                continue;
+			}
+            else if(eventFlag==AVM1ClipEvents.Load){
 				awayObject.onLoaded=handler;
                 continue;
             }

@@ -55,6 +55,7 @@ export class AVM1SceneGraphFactory extends DefaultSceneGraphFactory implements I
 		else{
 			var avm1MovieClip:AVM1MovieClip=<AVM1MovieClip>getAVM1Object(awayMovieClip, this.avm1Context);
 		}
+		awayMovieClip._symbol=symbol;
 		return awayMovieClip;
 		/*
 		for(let key in timeline.avm1InitActions){

@@ -29,7 +29,7 @@ import { AVM1Object } from "./runtime/AVM1Object";
 import { AVM1Function } from "./runtime/AVM1Function";
 import { AVM1PropertyDescriptor } from "./runtime/AVM1PropertyDescriptor";
 import {MovieClipProperties} from "./interpreter/MovieClipProperties";
-import {TextField} from "@awayjs/scene";
+import {TextField, FrameScriptManager} from "@awayjs/scene";
 
 import Big from "big.js";
 var noVarGetDebug:boolean=true;
@@ -484,7 +484,13 @@ function as2SetProperty(context: AVM1Context, obj: any, name: any, value: any): 
 	}
 	else{
 		avm1Obj.alPut(name, value);
-		as2SyncEvents(context, name, avm1Obj);
+		if(avm1Obj.adaptee){
+			// todo: this might not be the best way
+			// the goal is to not call as2SyncEvents when avm1Obj is a prototype object
+			// but idk how to identify if avm1Obj is prototype.
+			// for now i just use the adaptee to check, because a prototype should not have adaptee set 
+			as2SyncEvents(context, name, avm1Obj);
+		}
 	}
 }
 
@@ -671,6 +677,7 @@ export class ExecutionContext {
 		this.cache = [];
 	}
 
+	framescriptmanager:FrameScriptManager;
 	context: AVM1ContextImpl;
 	actions: AVM1NativeActions;
 	scopeList: AVM1ScopeListItem;
@@ -684,6 +691,7 @@ export class ExecutionContext {
 	isEndOfActions: boolean;
 
 	constructor(context: AVM1ContextImpl, scopeList: AVM1ScopeListItem, constantPool: any[], registerCount: number) {
+		this.framescriptmanager=FrameScriptManager;
 		this.context = context;
 		this.actions = context.actions;
 		this.isSwfVersion5 = context.swfVersion >= 5;

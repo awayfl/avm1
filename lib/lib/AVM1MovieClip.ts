@@ -153,7 +153,25 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	public executeConstructor: Function = null;
 
 	public clone() {
-		return <AVM1MovieClip>getAVM1Object(this.adaptee.clone(), <AVM1Context>this._avm1Context);
+		let clone = <AVM1MovieClip>getAVM1Object(this.adaptee.clone(), <AVM1Context>this._avm1Context);
+		//console.log("this.adaptee._symbol", this.adaptee.name)
+		if(this.adaptee.name == "piratefont"){
+			
+			const timeline = (<any>clone.adaptee).timeline;
+			const targetTimeline = timeline;
+
+			targetTimeline.frame_command_indices = <any>[timeline.frame_command_indices[0]];
+			targetTimeline.frame_recipe = <any>[timeline.frame_recipe[0]];
+			targetTimeline.keyframe_constructframes = [timeline.keyframe_constructframes[0]];
+			targetTimeline.keyframe_durations = <any>[timeline.keyframe_durations[0]];
+			targetTimeline.keyframe_firstframes = [timeline.keyframe_firstframes[0]];
+			targetTimeline.keyframe_indices = [timeline.keyframe_indices[0]];
+		}
+		if(this.adaptee._symbol.className){
+
+			console.log("this.adaptee._symbol", this.adaptee._symbol.className)
+		}
+		return clone;
 	}
 	private attachCustomConstructor() {
 		if (this.adaptee) {
@@ -296,14 +314,13 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		for (var key in this.adaptee.timeline.avm1InitActions)
 			this.executeScript(this.addScript(this.adaptee.timeline.avm1InitActions[key], <any>("initActionsData" + key)));
 
-		// execute the init-actionscript that is stored on timeline
 		if ((<any>this).initEvents) {
 			initializeAVM1Object(this.adaptee, <AVM1Context>this._avm1Context, (<any>this).initEvents);
 		}
 		this.attachCustomConstructor();
 		this.initialDepth = this.adaptee._depthID;
 
-		if ((<any>this.adaptee).onLoaded || this.executeConstructor) {
+		if ((<any>this.adaptee).onLoaded || (<any>this.adaptee).onConstruct || this.executeConstructor) {
 			FrameScriptManager.add_loaded_action_to_queue(this.adaptee);
 		}
 

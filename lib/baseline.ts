@@ -91,7 +91,8 @@ export class ActionsDataCompiler {
 		}
 		return parts.join(',');
 	}
-	private convertAction(item: ActionCodeBlockItem, id: number, res, indexInBlock: number, ir: AnalyzerResults): string {
+	private convertAction(item: ActionCodeBlockItem, id: number, res, indexInBlock: number, ir: AnalyzerResults, prevItem:ActionCodeBlockItem): string {
+		
 		switch (item.action.actionCode) {
 			case ActionCode.ActionJump:
 			case ActionCode.ActionReturn:
@@ -120,6 +121,16 @@ export class ActionsDataCompiler {
 				var result = '  calls.' + item.action.actionName + '(ectx' +
 					(item.action.args ? ',[' + this.convertArgs(item.action.args, id, res, ir) + ']' : '') +
 					');\n';
+				if(item.action.actionName=="ActionCallMethod"){
+					if(prevItem.action.actionCode==ActionCode.ActionPush){
+						let args=this.convertArgs(prevItem.action.args, id-1, res, ir);
+						if(args=='"gotoAndStop"' || args=='"gotoAndPlay"'){
+						//|| args=='"nextFrame"' || args=='"prevFrame"'){							
+							result+="  if(ectx.scopeList && ectx.scopeList.scope && ectx.scopeList.scope.adaptee && !ectx.scopeList.scope.adaptee.parent){ ectx.framescriptmanager.execute_avm1_constructors(); return;}\n"
+
+						}
+					}
+				}
 				return result;
 		}
 	}
@@ -142,8 +153,10 @@ export class ActionsDataCompiler {
 			'switch(position) {\n';
 		blocks.forEach((b: ActionCodeBlock) => {
 			fn += ' case ' + b.label + ':\n';
+			let prevItem;
 			b.items.forEach((item: ActionCodeBlockItem, index: number) => {
-				fn += this.convertAction(item, uniqueId++, res, index, ir);
+				fn += this.convertAction(item, uniqueId++, res, index, ir, prevItem);
+				prevItem=item;
 			});
 			fn += '  position = ' + b.jump + ';\n' +
 				'  checkTimeAfter -= ' + b.items.length + ';\n' +

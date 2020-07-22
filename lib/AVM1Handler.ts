@@ -10,6 +10,7 @@ import { SecurityDomain } from "./SecurityDomain";
 import { AVM1Globals, TraceLevel } from "./lib/AVM1Globals";
 import { AVM1MovieClip } from './lib/AVM1MovieClip';
 import { AVM1EventProps } from './lib/AVM1EventHandler';
+import { getAVM1Object } from './lib/AVM1Utils';
 
 export class AVM1Handler implements IAVMHandler {
 	public avmVersion: string = AVMVERSION.AVM1;
@@ -28,6 +29,7 @@ export class AVM1Handler implements IAVMHandler {
 	}
 	public init(avmStage: AVMStage, swfFile: SWFFile, callback: (hasInit: boolean) => void) {
 
+		FrameScriptManager.useAVM1=true;
 		if (this._avmStage) {
 			callback(false);
 			return;
@@ -63,7 +65,7 @@ export class AVM1Handler implements IAVMHandler {
 		this._avmStage.addEventListener(KeyboardEvent.KEYUP, (evt)=>this.onKeyEvent(evt));
 		
 		if(this._avmStage.avmTestHandler){
-			var originaltrace=(<any>this._factory.avm1Context).actions.trace;
+			let originaltrace=(<any>this._factory.avm1Context).actions.trace;
 			(<any>this._factory.avm1Context).actions.trace=(expression)=>{
 				originaltrace(expression);
 				this._avmStage.avmTestHandler.addMessage(expression);
@@ -238,10 +240,11 @@ export class AVM1Handler implements IAVMHandler {
 	public addAsset(asset: IAsset, addScene: boolean) {
 
 		if (asset.isAsset(MovieClip)) {
-			if (addScene && (<any>asset).isAVMScene) {
-				this._avmStage.addChild(<MovieClip>asset);
+			if (addScene && (<MovieClip>asset).isAVMScene) {
+				let scene = <AVM1MovieClip>getAVM1Object((<MovieClip>asset).clone(), <AVM1ContextImpl>this._factory.avm1Context);
+				//scene.adaptee.reset();
+				this._avmStage.addChild(<MovieClip>scene.adaptee);
 
-				(<AVM1MovieClip>(<MovieClip>asset).adapter).initAdapter();
 				/*if(this._skipFrames>0){
 					FrameScriptManager.execute_queue();
 					if(this._skipFramesCallback){
