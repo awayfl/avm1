@@ -203,6 +203,9 @@ export function alToNumber(context: IAVM1Context, v): number {
 			if (v === null) {
 				return context.swfVersion >= 7 ? NaN : 0;
 			}
+			// for xml nodes we want to get the nodeValue here
+			if(typeof v.nodeValue !== "undefined")
+				return parseFloat(v.nodeValue);
 			return context.swfVersion >= 5 ? NaN : 0;
 		case 'boolean':
 			return v ? 1 : 0;
