@@ -277,11 +277,11 @@ class AVM1XMLNodePrototype extends AVM1Object {
 	}
 
 	appendChild(newChild: AVM1Object): void {
-		this.as3XMLNode.axCallPublicProperty('appendChild', [toAS3XMLNode(newChild)]);
+		this.as3XMLNode.appendChild(toAS3XMLNode(newChild));
 	}
 
 	getAttributes(): AVM1Object {
-		var as3Attributes = this.as3XMLNode.axGetPublicProperty('attributes');
+		var as3Attributes = this.as3XMLNode.attributes;
 		if (isNullOrUndefined(as3Attributes)) {
 			return undefined;
 		}
@@ -325,7 +325,7 @@ class AVM1XMLNodePrototype extends AVM1Object {
 	}
 
 	getFirstChild(): AVM1Object {
-		return fromAS3XMLNode(this.context, this.as3XMLNode.axGetPublicProperty('firstChild'));
+		return fromAS3XMLNode(this.context, this.as3XMLNode.firstChild);
 	}
 
 	getNamespaceForPrefix(prefix: string): string {
@@ -337,7 +337,7 @@ class AVM1XMLNodePrototype extends AVM1Object {
 	}
 
 	hasChildNodes(): boolean {
-		return this.as3XMLNode.axCallPublicProperty('hasChildNodes', null);
+		return this.as3XMLNode.hasChildNodes();
 	}
 
 	insertBefore(newChild: AVM1Object, insertPoint: AVM1Object): void {
@@ -346,57 +346,57 @@ class AVM1XMLNodePrototype extends AVM1Object {
 	}
 
 	getLastChild(): AVM1Object {
-		return fromAS3XMLNode(this.context, this.as3XMLNode.axGetPublicProperty('lastChild'));
+		return fromAS3XMLNode(this.context, this.as3XMLNode.lastChild);
 	}
 
 	getLocalName(): string {
-		return this.as3XMLNode.axGetPublicProperty('localName');
+		return this.as3XMLNode.localName;
 	}
 
 	getNamespaceURI(): string {
-		return this.as3XMLNode.axGetPublicProperty('namespaceURI');
+		return this.as3XMLNode.namespaceURI;
 	}
 
 	getNextSibling(): AVM1Object {
-		return fromAS3XMLNode(this.context, this.as3XMLNode.axGetPublicProperty('nextSibling'));
+		return fromAS3XMLNode(this.context, this.as3XMLNode.nextSibling);
 	}
 
 	getNodeName(): string {
-		return this.as3XMLNode.axGetPublicProperty('nodeName');
+		return this.as3XMLNode.nodeName;
 	}
 
 	setNodeName(value: string) {
 		value = alCoerceString(this.context, value);
-		this.as3XMLNode.axSetPublicProperty('nodeName', value);
+		this.as3XMLNode.nodeName=value;
 	}
 
 	getNodeType(): number {
-		return this.as3XMLNode.axGetPublicProperty('nodeType');
+		return this.as3XMLNode.nodeType;
 	}
 
 	getNodeValue(): string {
-		return this.as3XMLNode.axGetPublicProperty('nodeValue');
+		return this.as3XMLNode.nodeValue;
 	}
 
 	setNodeValue(value: string) {
 		value = alCoerceString(this.context, value);
-		this.as3XMLNode.axSetPublicProperty('nodeValue', value);
+		this.as3XMLNode.nodeValue=value;
 	}
 
 	getParentNode(): AVM1Object {
-		return fromAS3XMLNode(this.context, this.as3XMLNode.axGetPublicProperty('parentNode'));
+		return fromAS3XMLNode(this.context, this.as3XMLNode.parentNode);
 	}
 
 	getPrefix(): string {
-		return this.as3XMLNode.axGetPublicProperty('prefix');
+		return this.as3XMLNode.prefix;
 	}
 
 	getPreviousSibling(): AVM1Object {
-		return fromAS3XMLNode(this.context, this.as3XMLNode.axGetPublicProperty('previousSibling'));
+		return fromAS3XMLNode(this.context, this.as3XMLNode.previousSibling);
 	}
 
 	removeNode(): void {
-		this.as3XMLNode.axCallPublicProperty('removeNode', null);
+		this.as3XMLNode.removeNode();
 	}
 
 	static addMap(as3Node:XMLNode, as2Node: AVM1Object): void {
@@ -541,9 +541,14 @@ class AVM1XMLPrototype extends AVM1Object implements IAVM1DataObject {
 
 	parseXML(value: string): void {
 		value = alCoerceString(this.context, value);
-		this.as3XMLDocument.axSetPublicProperty('ignoreWhite',
+		var oParser = new DOMParser();
+		let as3Doc = <any>oParser.parseFromString(value, "application/xml");
+		
+		AVM1XMLNodePrototype.prototype.initializeFromAS3Node.call(this, as3Doc);
+		this.as3XMLDocument = <any>as3Doc;
+		/*this.as3XMLDocument.axSetPublicProperty('ignoreWhite',
 			alToBoolean(this.context, this.alGet('ignoreWhite')));
-		this.as3XMLDocument.axCallPublicProperty('parseXML', [value]);
+		this.as3XMLDocument.axCallPublicProperty('parseXML', [value]);*/
 	}
 
 	send(url: string, target?: string, method?: string): boolean {

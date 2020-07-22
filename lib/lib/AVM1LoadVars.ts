@@ -36,7 +36,8 @@ export interface IAVM1DataObject {
 export function loadAVM1DataObject(context: AVM1Context, url: string,
 								   method: string, contentType: string,
 								   data: any, target: IAVM1DataObject): void {
-	var request = new URLRequest(url);
+	// todo: use redirects here
+	var request = new URLRequest("/assets/mutiny/"+url);
 	if (method) {
 		request.method = method;
 	}
@@ -53,9 +54,11 @@ export function loadAVM1DataObject(context: AVM1Context, url: string,
 		loader.removeEventListener(Event.LOAD_COMPLETE, completeHandler);
 		release || Debug.assert(typeof loader.data === 'string');
 		avm1BroadcastEvent(context, target, 'onData', [loader.data]);
+		//avm1BroadcastEvent(context, target, 'onLoad', [loader.data]);
 	};
 	loader.addEventListener(Event.LOAD_COMPLETE, completeHandler);
-    target._as3Loader = loader;
+	target._as3Loader = loader;
+	
     loader.load(request);
 }
 
