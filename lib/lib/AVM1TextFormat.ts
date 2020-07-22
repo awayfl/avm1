@@ -270,10 +270,9 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 		result.alPut('textFieldWidth', textWidth + 4);
 		result.alPut('textFieldHeight', textHeight + 4);
 		var metrics = measureTextField.getLineMetrics(0);
-		result.alPut('ascent',
-			metrics.axGetPublicProperty('ascent'));
-		result.alPut('descent',
-			metrics.axGetPublicProperty('descent'));
+		// todo: this causes compile errors:
+		//result.alPut('ascent', metrics.axGetPublicProperty('ascent'));
+		//result.alPut('descent',	metrics.axGetPublicProperty('descent'));
 		return result;
 	}
 
