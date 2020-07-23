@@ -171,7 +171,8 @@ class AVM1XMLNodeAttributes extends AVM1Object {
 
 	public alGetOwnPropertiesKeys(): string[] {
 		var as3Keys = Object.keys(this._as3Attributes);
-		return as3Keys.map((key) => alCoerceString(this.context, key));
+
+		return as3Keys.map((key) => alCoerceString(this.context, this._as3Attributes[key].name));
 	}
 }
 
