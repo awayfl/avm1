@@ -60,6 +60,7 @@ export class AVM1SharedObject extends AVM1Object {
 			var jsData=JSON.parse(localStorage.getItem(name));
 			if(jsData){
 				this._data=this.getAVM1Value(jsData);
+				return;
 			}
 			
 		}
@@ -100,8 +101,7 @@ export class AVM1SharedObject extends AVM1Object {
 		if( typeof jsValue  ==="object"){
 			var newAVM1Obj=alNewObject(this.context);
 			for(var key in jsValue){
-				newAVM1Obj.alSetOwnProperty(key, new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA |
-					AVM1PropertyFlags.DONT_ENUM,
+				newAVM1Obj.alSetOwnProperty(key, new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA,
 					this.getAVM1Value(jsValue[key])));
 			}
 			return newAVM1Obj;
