@@ -169,6 +169,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		if(this.adaptee._symbol.className){
 
+			(<any>this.adaptee).cloneForEveryInstance = true;
+			(<any>clone.adaptee).cloneForEveryInstance = true;
 			console.log("this.adaptee._symbol", this.adaptee._symbol.className)
 		}
 		return clone;
