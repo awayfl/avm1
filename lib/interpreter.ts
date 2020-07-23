@@ -561,7 +561,7 @@ function as2Enumerate(obj, fn: (name) => void, thisArg): void {
 	while(i>0){
         i--;
         avmObj=obj.alGet(props[i]);
-        if(!avmObj || (avmObj.adaptee && avmObj.adaptee.isAsset(TextField) && avmObj.adaptee.isStatic))
+        if(typeof avmObj ==="undefined" || (avmObj.adaptee && avmObj.adaptee.isAsset(TextField) && avmObj.adaptee.isStatic))
             continue;
 		fn.call(thisArg, props[i]);
 	}
