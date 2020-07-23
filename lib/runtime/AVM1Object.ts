@@ -243,7 +243,11 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		if ((desc.flags & AVM1PropertyFlags.DATA)) {
             //if(desc.value && desc.value.adaptee && desc.value.adaptee instanceof DisplayObject && !desc.value.adaptee.parent){
              //   return undefined;
-            //}
+			//}
+			// for xml nodes we need to return the nodeValue
+			if(desc.value && desc.value.nodeValue)
+				return desc.value.nodeValue;
+
 			return desc.value;
 		}
 		release || Debug.assert((desc.flags & AVM1PropertyFlags.ACCESSOR));
