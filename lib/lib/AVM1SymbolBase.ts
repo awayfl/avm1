@@ -622,7 +622,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		if (isNaN(value))
 			return;
 		
-			PickGroup.getInstance((<AVM1Stage>this.context.globals.Stage).avmStage.scene.view).getBoundsPicker(this.adaptee.partition).width = value;
+		PickGroup.getInstance((<AVM1Stage>this.context.globals.Stage).avmStage.scene.view).getBoundsPicker(this.adaptee.partition).width = value;
 	}
 
 	public get_x(): number {
