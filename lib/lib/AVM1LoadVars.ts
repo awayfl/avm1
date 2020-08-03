@@ -15,14 +15,14 @@
  */
 
 
-import {Debug, notImplemented, release, isNullOrUndefined} from "@awayfl/swf-loader";
+import {Debug, notImplemented, release, isNullOrUndefined, matchRedirect} from "@awayfl/swf-loader";
 
 import {AVM1Context} from "../context";
 import {
 	alCoerceString, alDefineObjectProperties, alForEachProperty, alToString
 } from "../runtime";
 import {avm1BroadcastEvent} from "./AVM1Utils";
-import {URLLoaderEvent as Event, URLLoader, URLRequest} from "@awayjs/core";
+import {URLLoaderEvent as Event, URLLoader, URLRequest, URLLoaderEvent, LoaderEvent} from "@awayjs/core";
 import {AVM1Object} from "../runtime/AVM1Object";
 import { AVM1Function } from "../runtime/AVM1Function";
 
@@ -36,8 +36,24 @@ export interface IAVM1DataObject {
 export function loadAVM1DataObject(context: AVM1Context, url: string,
 								   method: string, contentType: string,
 								   data: any, target: IAVM1DataObject): void {
-	// todo: use redirects here
-	var request = new URLRequest("/assets/mutiny/"+url);
+	
+	
+	let request = new URLRequest(url);
+	const directUrl = request.url || '';
+	const cleanUrl = directUrl.replace(/\?.*$/, "");
+	const redirect = matchRedirect(directUrl, null);
+
+	if(redirect) {
+		if(redirect.supressLoad){
+			console.log("[LOADER] Load surpressed ", redirect.url);
+			return;
+
+		}
+		console.log("[LOADER] Override loading url:", redirect.url);
+		request.url = redirect.url;
+	} else {
+		console.log("[LOADER] start loading the url:", cleanUrl);
+	}
 	if (method) {
 		request.method = method;
 	}
@@ -59,6 +75,13 @@ export function loadAVM1DataObject(context: AVM1Context, url: string,
 	loader.addEventListener(Event.LOAD_COMPLETE, completeHandler);
 	target._as3Loader = loader;
 	
+	
+	if(redirect && redirect.supressErrors) {
+		loader.addEventListener(Event.LOAD_ERROR, (event: Event)=>{
+			console.log("[LOADER] Error supressed by redirect rule as empty complete events!", event);
+			loader.dispatchEvent(new Event(Event.LOAD_COMPLETE, loader));
+		})
+	}
     loader.load(request);
 }
 
