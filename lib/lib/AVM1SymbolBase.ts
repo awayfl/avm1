@@ -37,6 +37,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 
 	public initAVM1SymbolInstance(context: AVM1Context, awayObject: T) {
 		//AVM1Object.call(this, context);
+		(<any>this).constructorHasRun=true;
         this.avmType="symbol";
         this.scriptRefsToChilds={};
         this._mouseListenerCount=0;
