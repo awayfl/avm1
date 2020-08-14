@@ -30,6 +30,7 @@ import {AssetLibrary, IAsset} from "@awayjs/core";
 import {AVM1Object} from "../runtime/AVM1Object";
 import {AVM1Stage} from "./AVM1Stage";
 import { BitmapImage2D } from '@awayjs/stage';
+import { AVM1MovieClip } from './AVM1MovieClip';
 
 export function toAS3BitmapData(as2Object: AVM1BitmapData): BitmapData {
 	if (!(as2Object instanceof AVM1BitmapData)) {
@@ -195,7 +196,13 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		blendMode  = blendMode || null;
 		smooth = alToBoolean(this.context, smooth);
 		//this.as3BitmapData.fillRect(this.as3BitmapData.rect, 0xffffffff);
+
+		// IMPORTANT! Preventing unregister object after remove from parent.
+		(source as AVM1MovieClip)._locked = true;
+
 		this.as3BitmapData.draw(as3BitmapData, as3Matrix, as3ColorTransform, blendMode, as3ClipRect, smooth);
+		
+		(source as AVM1MovieClip)._locked = false;
 	}
 
 	fillRect(rect: AVM1Object, color: number): void {

@@ -151,6 +151,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public onLoaded: Function = null;
 	public executeConstructor: Function = null;
+	/**
+	 * Lock object of `unregister` method. Required for AVM1BtimapData.draw
+	 */
+	/*internal*/ _locked: boolean = false;
 
 	public clone() {
 		let clone = <AVM1MovieClip>getAVM1Object(this.adaptee.clone(), <AVM1Context>this._avm1Context);
@@ -202,6 +206,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return i >= b.precedence.length ? 1 : a.precedence[i] - b.precedence[i];
 		}
 	}
+
 	public executeScript(actionsBlocks: any) {
 		if (typeof actionsBlocks === "number") {
 			actionsBlocks = (<MovieClip>this.adaptee).timeline.get_script_for_frame(<MovieClip>this.adaptee, (<MovieClip>this.adaptee).currentFrameIndex);
@@ -239,6 +244,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			}
 		}
 	}
+
 	public addScript(source: any, frameIdx: number): any {
 		let allscripts = source;
 		var translatedScripts: any[] = [];
@@ -293,8 +299,13 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			}
 		}
 	}
+
 	// called from adaptee whenever the mc gets reset
 	public freeFromScript(): void {
+		if(this._locked) {
+			return;
+		}
+
 		//this.stopAllSounds();
 		this.hasSwappedDepth = false;
 		super.freeFromScript();
@@ -440,6 +451,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	private unregisteredColors: any = {};
 	public unregisterScriptObject(child: DisplayObject): void {
+		if((child.adapter as AVM1MovieClip)._locked) {
+			return;
+		}
+
 		//if (child && child.adapter != child)
 		//	(<any>child.adapter).alPut("onEnterFrame", null);
 		var name = child.name;
@@ -753,6 +768,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public _updateChildName(child: AVM1MovieClip, oldName: string, newName: string) {
+		if(oldName === newName) {
+			return;
+		}
+
 		oldName && this._removeChildName(child, oldName);
 		newName && this._addChildName(child, newName);
 	}
