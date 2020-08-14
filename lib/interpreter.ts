@@ -31,7 +31,6 @@ import { AVM1PropertyDescriptor } from "./runtime/AVM1PropertyDescriptor";
 import {MovieClipProperties} from "./interpreter/MovieClipProperties";
 import {TextField, FrameScriptManager} from "@awayjs/scene";
 
-import Big from "big.js";
 var noVarGetDebug:boolean=true;
 
 declare var Proxy;
@@ -345,6 +344,11 @@ function as2Compare(context: AVM1Context, x: any, y: any): boolean {
 function as2Equals(context: AVM1Context, x: any, y: any): boolean {
 	// Spec steps 1 through 13 can be condensed to ...
 	if (typeof x === typeof y) {
+
+		if(typeof x === 'number') {
+			return Math.abs(x - y) < 1e-6;
+		}
+
 		return x === y;
 	}
 	// Spec steps 14 and 15.
@@ -1521,7 +1525,7 @@ function avm1_0x0A_ActionAdd(ectx: ExecutionContext) {
 			stack.push(b);
 	}
 	else {
-		stack.push(Number(Big(Number(a)).add(Big(Number(b)))));
+		stack.push(a + b);
 	}
 }
 
@@ -1561,7 +1565,7 @@ function avm1_0x0B_ActionSubtract(ectx: ExecutionContext) {
 		else if (!isFinite(b))
 			stack.push(b);
 	} else {
-		stack.push(Number(Big(Number(b)).sub(Big(Number(a)))));
+		stack.push(b - a);
 	}
 }
 
@@ -1600,7 +1604,7 @@ function avm1_0x0C_ActionMultiply(ectx: ExecutionContext) {
 		else if (!isFinite(b))
 			stack.push(b);
 	} else {
-		stack.push(Number(Big(Number(a)).mul(Big(Number(b)))));
+		stack.push(a * b);
 	}
 }
 
@@ -1655,7 +1659,7 @@ function avm1_0x0D_ActionDivide(ectx: ExecutionContext) {
 	} else if (a == 0) {
 		stack.push(isSwfVersion5 ? '#ERROR#' : (b > 0) ? Infinity : -Infinity);
 	} else {
-		stack.push(Number(Big(Number(b)).div(Big(Number(a)))));
+		stack.push(b / a);
 	}
 }
 
@@ -1665,7 +1669,8 @@ function avm1_0x0E_ActionEquals(ectx: ExecutionContext) {
 
 	var a = alToNumber(ectx.context, stack.pop());
 	var b = alToNumber(ectx.context, stack.pop());
-	var f = a == b;
+	var f = Math.abs(b - a) < 1e-6;
+
 	stack.push(isSwfVersion5 ? <any>f : f ? 1 : 0);
 }
 
@@ -2496,7 +2501,7 @@ function avm1_0x47_ActionAdd2(ectx: ExecutionContext) {
 			else if (!isFinite(b))
 				stack.push(b);
 		} else {
-			stack.push(Number(Big(Number(a)).add(Big(Number(b)))));
+			stack.push(a + b);
 		}
 	}
 }
@@ -2545,7 +2550,7 @@ function avm1_0x3F_ActionModulo(ectx: ExecutionContext) {
 			stack.push(NaN);
 	} 
 	else {
-		stack.push(Number(Big(Number(b)).mod(Big(Number(a)))));
+		stack.push( b % a);
 	}
 }
 
