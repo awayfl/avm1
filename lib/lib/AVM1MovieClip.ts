@@ -1154,17 +1154,23 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		// 	if the hitArea is set, the mouse-interactions on the ducks stop working
 		//	this.adaptee.hitArea=obj;
 	}
-
-	public hitTest(x: number, y: number, shapeFlag: boolean): boolean {
+	
+	// Alternative method signature: hitTest(target: AVM1Object): boolean
+	public hitTest(object: AVM1Object): boolean;
+	public hitTest(object: number, y: number, shapeFlag: boolean): boolean
+	public hitTest(x: number | AVM1Object, y?: number, shapeFlag?: boolean): boolean	
+	{
 		if (arguments.length <= 1) {
-			// Alternative method signature: hitTest(target: AVM1Object): boolean
-			var target = arguments[0];
+			let target: AVM1Object = x as any;
+		
 			if (typeof target === "string") {
 				target = this.context.resolveTarget(target);
 			}
+
 			if (isNullOrUndefined(target) || !hasAwayJSAdaptee(target)) {
 				return false; // target is undefined or not a AVM1 display object, returning false.
 			}
+
 			return this._pickGroup
 						.getBoundsPicker(this.adaptee.partition)
 						.hitTestObject(
@@ -1175,6 +1181,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		y = alToNumber(this.context, y);
 
 		const r = this.get_root();
+
 		if (!r) {
 			console.warn("[AVM1MovieClip:: hitTest] Root return undef! Return false to prevent crash!")
 			return false;
@@ -1182,7 +1189,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		x += r.get_x();
 		y += r.get_y();
+
 		shapeFlag = alToBoolean(this.context, shapeFlag);
+
 		return this._pickGroup.getBoundsPicker(this.adaptee.partition).hitTestPoint(x, y, shapeFlag);
 	}
 
