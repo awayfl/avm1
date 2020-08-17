@@ -402,11 +402,13 @@ export function toTwipFloor(value: number): number {
 	//return Math.round(value*20)/20;
 	// because AwayJS does not use big.js internally, floats might have this nasty rounding error
 	// we need to floor twips, and add a additional twip in case it had the floating error
+	var isNeg=value<0?-1:1;
+	value=Math.abs(value);
 	var twip:number=Math.floor(value*20)/20;
-	if(value>twip && (value-twip)>0.04995){
+	if(value>twip && (value-twip)>0.04){
 		twip+=0.05;
 	}
-	return twip;
+	return twip*isNeg;
 
 }
 export function toTwipRound(value: number): number {
