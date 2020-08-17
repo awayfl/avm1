@@ -346,7 +346,9 @@ function as2Equals(context: AVM1Context, x: any, y: any): boolean {
 	if (typeof x === typeof y) {
 
 		if(typeof x === 'number') {
-			return Math.abs(x - y) < 1e-6;
+			const sq = Math.sqrt(x*y);
+			const eps = (1e-6) * sq;
+			return Math.abs(x - y) <= eps;
 		}
 
 		return x === y;
@@ -1669,7 +1671,10 @@ function avm1_0x0E_ActionEquals(ectx: ExecutionContext) {
 
 	var a = alToNumber(ectx.context, stack.pop());
 	var b = alToNumber(ectx.context, stack.pop());
-	var f = Math.abs(b - a) < 1e-6;
+	
+	const sq = Math.sqrt(a*b);
+	const eps = (1e-6) * sq;
+	const f = Math.abs(a - b) <= eps;
 
 	stack.push(isSwfVersion5 ? <any>f : f ? 1 : 0);
 }
