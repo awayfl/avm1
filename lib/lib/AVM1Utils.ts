@@ -407,6 +407,9 @@ export function toTwipFloor(value: number): number {
 	var twip:number=Math.floor(value*20)/20;
 	if(value>twip && (value-twip)>0.04){
 		twip+=0.05;
+		// the addition might introduce float issue again, 
+		// so make sure go back to twips 
+		twip=Math.round(twip*20)/20;
 	}
 	return twip*isNeg;
 
