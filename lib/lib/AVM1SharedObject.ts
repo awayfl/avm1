@@ -38,7 +38,8 @@ export class AVM1SharedObject extends AVM1Object {
 		super(context);
 		alDefineObjectProperties(this, {
 			data: {
-				get: this.getData
+				get: this.getData,
+				enumerable: true,
 			},
 			clear: {
 				value: this.clear,
