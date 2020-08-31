@@ -191,7 +191,12 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		let avm1Object: AVM1MovieClip = source as AVM1MovieClip;
 
 		if(typeof source === 'string') {
-			avm1Object = this.context.resolveTarget(source)
+			avm1Object = this.context.resolveTarget(source);
+				
+			if(!avm1Object) {
+				console.warn(`[AVM1BitmapData::draw] Source ${source}  not resolved!`);
+				return;
+			}
 		}
 
 		const as3BitmapData = (<any>avm1Object).adaptee; // movies and bitmaps
