@@ -180,7 +180,7 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		this.as3BitmapData.dispose();
 	}
 
-	draw(source: AVM1Object, matrix?: AVM1Object, colorTransform?: AVM1Object, blendMode?: any,
+	draw(source: AVM1Object | string, matrix?: AVM1Object, colorTransform?: AVM1ColorTransform, blendMode?: any,
 		 clipRect?: AVM1Object, smooth?: boolean): void {
 
 		if(!source) {
@@ -188,21 +188,28 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 			return;
 		}
 
-		var as3BitmapData = (<any>source).adaptee; // movies and bitmaps
-		var as3Matrix = matrix ? toAS3Matrix(matrix) : null;
-		var as3ColorTransform = colorTransform ? toAwayColorTransform(<AVM1ColorTransform>colorTransform) : null;
-		var as3ClipRect = clipRect ? toAS3Rectangle(clipRect) : null;
+		let avm1Object: AVM1MovieClip = source as AVM1MovieClip;
+
+		if(typeof source === 'string') {
+			avm1Object = this.context.resolveTarget(source)
+		}
+
+		const as3BitmapData = (<any>avm1Object).adaptee; // movies and bitmaps
+		const as3Matrix = matrix ? toAS3Matrix(matrix) : null;
+		const as3ColorTransform = colorTransform ? toAwayColorTransform(colorTransform) : null;
+		const as3ClipRect = clipRect ? toAS3Rectangle(clipRect) : null;
+		
 		blendMode = typeof blendMode === 'number' ? BlendModesMap[blendMode] : alCoerceString(this.context, blendMode);
 		blendMode  = blendMode || null;
 		smooth = alToBoolean(this.context, smooth);
 		//this.as3BitmapData.fillRect(this.as3BitmapData.rect, 0xffffffff);
 
 		// IMPORTANT! Preventing unregister object after remove from parent.
-		(source as AVM1MovieClip)._locked = true;
+		avm1Object._locked = true;
 
 		this.as3BitmapData.draw(as3BitmapData, as3Matrix, as3ColorTransform, blendMode, as3ClipRect, smooth);
 		
-		(source as AVM1MovieClip)._locked = false;
+		avm1Object._locked = false;
 	}
 
 	fillRect(rect: AVM1Object, color: number): void {
