@@ -597,23 +597,32 @@
 				this.fscommand(url.substring('fscommand:'.length), target);
 				return;
 			}
+
+			if(url === '' && target) {
+				(target as AVM1MovieClip).unloadMovie();
+				return;
+			}
+
 			var loadLevel: boolean = typeof target === 'string' &&	target.indexOf('_level') === 0;
 			var levelNumber: number;
+
 			if (loadLevel) {
 				var levelStr: string = target.substr(6);
 				levelNumber = parseInt(levelStr, 10);
 				loadLevel = levelNumber.toString() === levelStr;
 			}
+
 			if (loadLevel) {
 				this.loadMovieNum(url, levelNumber, method);
 			} else {
 				var nativeTarget = <AVM1MovieClip>this.context.resolveTarget(target);
 				nativeTarget.loadMovie(url, method);
 			}
+
 		}
 	
 		public loadMovieNum(url, level, method) {
-			notImplemented("AVM1NativeActions.loadMovieNum");
+			console.warn("[NOT IMPLEMENTED] AVM1NativeActions.loadMovieNum:", url, level, method);
 			return;
 			/*
 			url = alCoerceString(this.context, url);
