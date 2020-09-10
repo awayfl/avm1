@@ -1,4 +1,4 @@
-import { SWFParser, PromiseWrapper } from "@awayfl/swf-loader";
+import { SWFParser, PromiseWrapper, matchRedirect } from "@awayfl/swf-loader";
 import {AVM1Globals} from "./AVM1Globals";
 import { Loader, URLLoaderEvent, LoaderEvent, AssetEvent, IAsset, AssetLibrary, URLRequest } from "@awayjs/core";
 import { AVM1Context } from "../context";
@@ -64,7 +64,12 @@ export class AVM1LoaderHelper {
 	}
 	public load(url: string, method: string): Promise<DisplayObject> {
 
-		this._url=url;
+		const rule = matchRedirect(url);
+		if(rule) {
+			url = rule.url;
+		}
+
+		this._url = url;
 		this.result = new PromiseWrapper<DisplayObject>();
 		AssetLibrary.addEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
 		AssetLibrary.addEventListener(LoaderEvent.LOADER_COMPLETE, this._onLoaderCompleteDelegate);

@@ -67,7 +67,7 @@ export class AVM1MovieClipLoader extends AVM1Object {
 		}
 
 		const t = target as AVM1MovieClip;
-		loaderHelper.load("./assets/" + url, 'get').then((obj: DisplayObject) => {
+		loaderHelper.load(url, 'get').then((obj: DisplayObject) => {
 			if (loaderHelper.content == null) {
 				console.warn("load - content is null");
 				return;
