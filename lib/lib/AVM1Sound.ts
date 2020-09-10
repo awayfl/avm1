@@ -125,7 +125,7 @@ export class AVM1Sound extends AVM1Object {
 	}
 	public getBytesTotal(): number { 
 		console.warn("AVM1Sound.getBytesTotal");
-		return 0;
+		return 1;
 	}
 	public getDuration(): number { 
 		console.warn("AVM1Sound.getDuration");
