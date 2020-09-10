@@ -111,7 +111,7 @@ class AVM1XMLNodeChildNodes extends AVM1Object  {
 	}
 
 	get as3ChildNodes(): any[] {
-		return this._as3XMLNode.axGetPublicProperty('childNodes').value; // TODO .childNodes
+		return this._as3XMLNode.childNodes;//axGetPublicProperty('childNodes').value; // TODO .childNodes
 	}
 
 	getLength(): number {
@@ -274,7 +274,9 @@ class AVM1XMLNodePrototype extends AVM1Object {
 	}
 
 	_toString(): string {
-		return this.as3XMLNode.toString();//80pro axCallPublicProperty('toString', null);
+		//	to match FP output we use replace
+		//	to converting "/>" to " />"
+		return new XMLSerializer().serializeToString(<any>this.as3XMLNode).replace(/\/>/g, " />");
 	}
 
 	appendChild(newChild: AVM1Object): void {
