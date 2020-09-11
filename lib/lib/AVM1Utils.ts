@@ -197,7 +197,7 @@ function createAVM1NativeObject(ctor, nativeObject:DisplayObject, context: AVM1C
 	return avm1Object;
 }
 
-export function getAVM1Object(awayObject:DisplayObject, context: AVM1Context): AVM1Object {
+export function getAVM1Object<T extends AVM1Object> (awayObject:DisplayObject, context: AVM1Context): T {
 	if (!awayObject) {
 		return null;
 	}
@@ -224,7 +224,7 @@ export function getAVM1Object(awayObject:DisplayObject, context: AVM1Context): A
 		avmObject.adaptee=awayObject;
 	}
 	(<any>awayObject)._as2Object=avmObject;
-	return avmObject;
+	return avmObject as T;
 
 }
 
