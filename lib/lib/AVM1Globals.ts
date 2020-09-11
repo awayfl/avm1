@@ -16,7 +16,7 @@
 
 //module Shumway.AVM1.Lib {
 
-	import {jsGlobal, notImplemented, release, Debug, somewhatImplemented, warning} from "@awayfl/swf-loader";
+	import {jsGlobal, notImplemented, release, Debug, somewhatImplemented, warning, AVMStage} from "@awayfl/swf-loader";
 	
 	import {
 		avm1BroadcastEvent, DEPTH_OFFSET, getAwayJSAdaptee, getAVM1Object, IAVM1SymbolBase,
@@ -78,12 +78,14 @@
 		public static IMPORTANT:string="important";
 	}
 	
+
 	export class AVM1Globals extends AVM1Object {
 		
 		public static _scenegraphFactory:any;
 		public static instance:AVM1Globals;
 		
 		public static swfStartTime = Date.now();
+		
 
 		public static _registeredCustomClasses:any={};
 		public static _registeredCustomClassInstances:any={};
@@ -154,6 +156,38 @@
 	
 		public flash: AVM1Object;
 	
+		public swf_base_url: string = "";
+		public registeredLevels: NumberMap<MovieClip> = {};
+
+		public _getLevelForRoot(root: DisplayObject): number{
+			for(var key in this.registeredLevels){
+				if(this.registeredLevels[key]===root){
+					return +key;
+				}
+			}
+			return -1;
+		};
+
+		public _getRootForLevel(level: number): DisplayObject{
+			return this.registeredLevels[level];
+		};
+
+		public _addRoot(level: number, root: MovieClip): MovieClip{
+			if(this.registeredLevels[level])
+				return this.registeredLevels[level];
+			getAVM1Object(root, this.context).adaptee;
+			AVM1Stage.avmStage.addChild(root);
+			this.registeredLevels[level]=root;
+			return root;
+		};
+
+		public _removeRoot(level: number): void{
+			if(this.registeredLevels[level]){
+				AVM1Stage.avmStage.removeChild(this.registeredLevels[level]);
+				delete this.registeredLevels[level];
+			}
+		};
+
 		public ASSetPropFlags(obj: any, children: any, flags: any, allowFalse: any): any {
 			// flags (from bit 0): dontenum, dontdelete, readonly, ....
 			// TODO
@@ -603,6 +637,11 @@
 				return;
 			}
 
+			// make all relative urls raltive to first loaded game-swf:
+			if(url!="" && url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0){
+				url=this.context.globals.swf_base_url+url;
+			}
+
 			var loadLevel: boolean = typeof target === 'string' &&	target.indexOf('_level') === 0;
 			var levelNumber: number;
 
@@ -622,9 +661,8 @@
 		}
 	
 		public loadMovieNum(url, level, method) {
-			console.warn("[NOT IMPLEMENTED] AVM1NativeActions.loadMovieNum:", url, level, method);
-			return;
-			/*
+			//console.log("AVM1NativeActions.loadMovieNum:", url, level, method);
+			
 			url = alCoerceString(this.context, url);
 			level = alToInteger(this.context, level);
 			method = alCoerceString(this.context, method);
@@ -634,17 +672,16 @@
 				return this.fscommand(url.substring('fscommand:'.length));
 			}
 	
-			if (level === 0) {
-				release || Debug.notImplemented('loadMovieNum at _level0');
+			let newLevel = this.context.globals._addRoot(level, new MovieClip());
+			if(url=="")
 				return;
+
+			// make all relative urls raltive to first loaded game-swf:
+			if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0){
+				url=this.context.globals.swf_base_url+url;
 			}
-	
-			var avm1LevelHolder = this.context.levelsContainer;
-			var loaderHelper = new AVM1LoaderHelper(this.context);
-			loaderHelper.load(url, method).then(function () {
-				avm1LevelHolder._addRoot(level, loaderHelper.content);
-			});
-			*/
+			(<AVM1MovieClip>newLevel.adapter).loadMovie(url, method);
+			
 		}
 	
 		public loadVariables(url: string, target: any, method: string = ''): void {
@@ -867,9 +904,7 @@
 				notImplemented('unloadMovieNum at _level0');
 				return;
 			}
-	
-			var avm1MovieHolder = this.context.levelsContainer;
-			avm1MovieHolder._removeRoot(level);
+			this.context.globals._removeRoot(level);
 		}
 	}
 	

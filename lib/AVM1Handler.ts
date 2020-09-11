@@ -57,6 +57,8 @@ export class AVM1Handler implements IAVMHandler {
 		AVM1Globals._scenegraphFactory = this._factory;
 		AssetLibrary.enableParser(SWFParser);
 
+		this._factory.avm1Context.globals.swf_base_url=swfFile.url.substring(0, swfFile.url.lastIndexOf("/")+1);
+
         this.clearAllAVM1Listener();
 		this._avmStage.addEventListener(MouseEvent.MOUSE_DOWN, (evt)=>this.onMouseEvent(evt));
 		this._avmStage.addEventListener(MouseEvent.MOUSE_UP, (evt)=>this.onMouseEvent(evt));
@@ -243,7 +245,8 @@ export class AVM1Handler implements IAVMHandler {
 			if (addScene && (<MovieClip>asset).isAVMScene) {
 				let scene = <AVM1MovieClip>getAVM1Object((<MovieClip>asset).clone(), <AVM1ContextImpl>this._factory.avm1Context);
 				//scene.adaptee.reset();
-				this._avmStage.addChild(<MovieClip>scene.adaptee);
+				this._factory.avm1Context.globals._addRoot(0, <MovieClip>scene.adaptee);
+
 
 				/*if(this._skipFrames>0){
 					FrameScriptManager.execute_queue();
