@@ -57,7 +57,8 @@ export class AVM1Handler implements IAVMHandler {
 		AVM1Globals._scenegraphFactory = this._factory;
 		AssetLibrary.enableParser(SWFParser);
 
-		this._factory.avm1Context.globals.SWF_BASE_URL = swfFile.url.substring(0, swfFile.url.lastIndexOf("/") + 1);
+		// field is readonly, and assigned only in this place
+		(<any>this._factory.avm1Context.globals.SWF_BASE_URL) = swfFile.url.substring(0, swfFile.url.lastIndexOf("/") + 1);
 
         this.clearAllAVM1Listener();
 		this._avmStage.addEventListener(MouseEvent.MOUSE_DOWN, (evt)=>this.onMouseEvent(evt));

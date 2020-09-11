@@ -156,7 +156,8 @@
 	
 		public flash: AVM1Object;
 	
-		public SWF_BASE_URL: string = "";
+		// once assigned from AVM1Handler
+		public readonly SWF_BASE_URL: string = "";
 		public registeredLevels: NumberMap<MovieClip> = {};
 
 		public _getLevelForRoot(root: DisplayObject): number{
