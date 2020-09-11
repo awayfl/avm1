@@ -66,6 +66,8 @@ export class AVM1MovieClipLoader extends AVM1Object {
 			return false;
 		}
 
+		url = this.context.globals.SWF_BASE_URL + url;
+
 		const t = target as AVM1MovieClip;
 		loaderHelper.load(url, 'get').then((obj: DisplayObject) => {
 			if (loaderHelper.content == null) {

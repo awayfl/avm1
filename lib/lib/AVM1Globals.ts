@@ -156,7 +156,7 @@
 	
 		public flash: AVM1Object;
 	
-		public swf_base_url: string = "";
+		public SWF_BASE_URL: string = "";
 		public registeredLevels: NumberMap<MovieClip> = {};
 
 		public _getLevelForRoot(root: DisplayObject): number{
@@ -639,7 +639,7 @@
 
 			// make all relative urls raltive to first loaded game-swf:
 			if(url!="" && url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0){
-				url=this.context.globals.swf_base_url+url;
+				url = this.context.globals.SWF_BASE_URL + url;
 			}
 
 			var loadLevel: boolean = typeof target === 'string' &&	target.indexOf('_level') === 0;
@@ -672,16 +672,19 @@
 				return this.fscommand(url.substring('fscommand:'.length));
 			}
 	
-			let newLevel = this.context.globals._addRoot(level, new MovieClip());
-			if(url=="")
+			if(url == "") {
+				this.context.globals._removeRoot(level)
 				return;
+			}
+
+			const newLevel = this.context.globals._addRoot(level, new MovieClip());
 
 			// make all relative urls raltive to first loaded game-swf:
 			if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0){
-				url=this.context.globals.swf_base_url+url;
+				url = this.context.globals.SWF_BASE_URL + url;
 			}
-			(<AVM1MovieClip>newLevel.adapter).loadMovie(url, method);
-			
+
+			(<AVM1MovieClip>newLevel.adapter).loadMovie(url, method);			
 		}
 	
 		public loadVariables(url: string, target: any, method: string = ''): void {

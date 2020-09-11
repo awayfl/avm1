@@ -62,12 +62,14 @@ export class AVM1LoaderHelper {
 		AssetLibrary.removeEventListener(URLLoaderEvent.LOAD_ERROR, this._onLoadErrorDelegate);
 		console.log("load error in loadMovie", event);
 	}
+
 	public load(url: string, method: string): Promise<DisplayObject> {
 
+		/*
 		const rule = matchRedirect(url);
 		if(rule) {
 			url = rule.url;
-		}
+		}*/
 
 		this._url = url;
 		this.result = new PromiseWrapper<DisplayObject>();
