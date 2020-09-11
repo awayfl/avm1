@@ -57,15 +57,13 @@ export class AVM1MovieClipLoader extends AVM1Object {
 			}
 		}
 
-		var loaderHelper = new AVM1LoaderHelper(this.context);
+		const loaderHelper = new AVM1LoaderHelper(this.context);
 		this._loaderHelper = loaderHelper;
 		this._target = null;
 
 		if(!url) {
 			return false;
 		}
-
-		url = this.context.globals.SWF_BASE_URL + url;
 
 		const t = target as AVM1MovieClip;
 
