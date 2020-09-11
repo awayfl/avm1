@@ -21,7 +21,6 @@ import {AVM1MovieClip} from "./AVM1MovieClip";
 import {AVM1Broadcaster} from "./AVM1Broadcaster";
 import {notImplemented} from "@awayfl/swf-loader";
 import { AVM1LoaderHelper } from './AVM1LoaderHelper';
-import { ContextGLDrawMode } from '@awayjs/stage';
 import { DisplayObject, MovieClip } from '@awayjs/scene';
 import { alCallProperty } from '../runtime';
 
@@ -69,18 +68,24 @@ export class AVM1MovieClipLoader extends AVM1Object {
 		url = this.context.globals.SWF_BASE_URL + url;
 
 		const t = target as AVM1MovieClip;
+
+		if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0){
+			url = this.context.globals.SWF_BASE_URL + url;
+		}
+
 		loaderHelper.load(url, 'get').then((obj: DisplayObject) => {
+
 			if (loaderHelper.content == null) {
 				console.warn("load - content is null");
 				return;
 			}
+
 			t.adaptee.timeline = (<MovieClip>loaderHelper.content).timeline;
 			t.adaptee.assetNamespace = loaderHelper.content.assetNamespace;
 			t.adaptee.reset(true);
 
 			alCallProperty(this, 'broadcastMessage', ['onLoadComplete', target]);
-			//this.alGetProperty('onLoadComplete', [this._target]);
-		})
+		});
 
 		//80pro todo
 		/*
