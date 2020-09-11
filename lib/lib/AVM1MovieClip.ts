@@ -586,7 +586,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		var target = this.get_target();
 		var as3Root = this.adaptee.root;
 		release || Debug.assert(as3Root);
-		var level = this.context.levelsContainer._getLevelForRoot(as3Root);
+		var level = this.context.globals._getLevelForRoot(as3Root);
 		release || Debug.assert(level >= 0);
 		var prefix = '_level' + level;
 		return target != '/' ? prefix + target.replace(/\//g, '.') : prefix;
@@ -1253,6 +1253,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			this.adaptee.timeline = (<MovieClip>loaderHelper.content).timeline;
 			this.adaptee.assetNamespace = loaderHelper.content.assetNamespace;
 			this.adaptee.reset(true);
+			
 		}.bind(this));
 	}
 
