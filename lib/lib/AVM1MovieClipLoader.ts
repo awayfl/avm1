@@ -83,6 +83,10 @@ export class AVM1MovieClipLoader extends AVM1Object {
 			t.adaptee.reset(true);
 
 			alCallProperty(this, 'broadcastMessage', ['onLoadComplete', target]);
+
+			setTimeout(()=>{
+				alCallProperty(this, 'broadcastMessage', ['onLoadInit', target]);				
+			})
 		});
 
 		//80pro todo
