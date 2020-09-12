@@ -1852,7 +1852,17 @@ function avm1_0x1C_ActionGetVariable(ectx: ExecutionContext) {
 	var sp = stack.length;
 	stack.push(undefined);
 
+	const method = avm1ResolveVariable(ectx, "__get__" + variableName, AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
 
+	// call __set__
+	if(method && method.value) {
+		const { result, called } = avm1_callableHelper(ectx, method.scope,  method.propertyName, [] );
+
+		if(called) {
+			stack[sp] = result;
+			return;
+		}
+	}
 
 	var resolved = avm1ResolveVariable(ectx, variableName,AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
 	if (isNullOrUndefined(resolved)) {
@@ -1893,23 +1903,34 @@ function avm1_0x1C_ActionGetVariable(ectx: ExecutionContext) {
 }
 
 function avm1_0x1D_ActionSetVariable(ectx: ExecutionContext) {
-	var stack = ectx.stack;
+	const stack = ectx.stack;
+	const value = stack.pop();
 
-	var value = stack.pop();
-	var variableName = '' + stack.pop();
+	const variableName = '' + stack.pop();
 
-	if(variableName == 'maintainAspectRatio'){
-		debugger;
+	const method = avm1ResolveVariable(ectx, "__set__" + variableName, AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
+
+	// call __set__
+	if(method && method.value) {
+		const { result, called } = avm1_callableHelper(ectx, method.scope,  method.propertyName, [value] );
+
+		if(called) {
+			return;
+		}
 	}
 
-	var resolved = avm1ResolveVariable(ectx, variableName, AVM1ResolveVariableFlags.WRITE);
+	const resolved = avm1ResolveVariable(ectx, variableName, AVM1ResolveVariableFlags.WRITE);
+	
+	// try to call __get__name
 	if (!resolved) {
+
 		if (avm1WarningsEnabled.value) {
 			avm1Warn("AVM1 warning: cannot look up variable '" + variableName + "'");
 		}
 		//console.log("avm1_0x1D_ActionSetVariable", resolved, variableName, value);
 		return;
 	}
+
 	release || assert(resolved.propertyName);
 	resolved.scope.alPut(resolved.propertyName, value);
 	as2SyncEvents(ectx.context, resolved.propertyName, resolved.scope);
@@ -2095,17 +2116,18 @@ function avm1_0x52_ActionCallMethod(ectx: ExecutionContext) {
 
 	stack.push(undefined);
 
-	const r = avm1_callableHelper(ectx, obj, methodName, args);
+	const call =  avm1_callableHelper(ectx, obj, methodName, args);
 
-	stack[sp] = r;
+	if(call.called)
+		stack[sp] = call.result;
 }
 
-function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Function, methodName: string, args: any[]): any 
+function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Function, methodName: string, args: any[]): {result: any, called: boolean}
 {
 	// AVM1 simply ignores attempts to invoke methods on non-existing objects.
 	if (isNullOrUndefined(obj)) {
 		avm1Warn("AVM1 warning: method '" + methodName + "' can't be called on undefined object");
-		return;
+		return {called: false, result: undefined};
 	}
 
 	const frame: AVM1CallFrame = ectx.context.frame;
@@ -2113,6 +2135,7 @@ function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Funct
 	let fn: AVM1Function;
 	let target;
 	let result;
+	let called = false;
 
 	// Per spec, a missing or blank method name causes the container to be treated as
 	// a function to call.
@@ -2134,12 +2157,13 @@ function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Funct
 		if (alIsFunction(fn)) {
 			frame.setCallee(target, superArg, fn, args);
 			result = fn.alCall(target, args);
+			called = true;
 			frame.resetCallee();
 		} else {
 			avm1Warn("AVM1 warning: obj '" + obj + (obj ? "' is not callable" : "' is undefined"));
 		}
 		//release || assert(stack.length === sp + 1);
-		return result;
+		return {result, called};
 	}
 
 	if (obj instanceof AVM1SuperWrapper) {
@@ -2159,7 +2183,8 @@ function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Funct
 		// we might have injected js function here, so we call that
 		if (typeof fn === "function") {
 			// do something
-	        result = (<any>fn)(args);
+			result = (<any>fn)(args);
+			called = true;
 		}
 		else{
 			avm1Warn("AVM1 warning: method '" + methodName + "' on object", obj,
@@ -2168,7 +2193,7 @@ function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Funct
 					"is not callable"));
 
 		}		
-		return result;
+		return {result, called};
 	}
 	//release || assert(stack.length === sp + 1);
 	frame.setCallee(target, superArg, fn, args);
@@ -2177,15 +2202,17 @@ function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Funct
             result = (obj as number).toString(16);
         }
         else{
-            result = alToString(ectx.context, obj);
+			result = alToString(ectx.context, obj);
+			called = true;
         }
 	}
 	else{
 		result = fn.alCall(target, args);
+		called = true;
 	}
 	frame.resetCallee();
 
-	return result;
+	return {result, called};
 }
 
 function avm1_0x88_ActionConstantPool(ectx: ExecutionContext, args: any[]) {
