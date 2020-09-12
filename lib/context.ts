@@ -47,6 +47,7 @@ interface IEncryptedActionData {
 export class AVM1ActionsData {
 	public ir: AnalyzerResults;
 	public compiled: Function;
+	public debugPath: string = this.id;
 
 	constructor(
 		public bytes: Uint8Array, 

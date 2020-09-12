@@ -134,7 +134,7 @@ export class ActionsDataCompiler {
 				return result;
 		}
 	}
-	generate(ir: AnalyzerResults): Function {
+	generate(ir: AnalyzerResults, debugPath: string = null): Function {
 		var blocks = ir.blocks;
 		var res = {};
 		var uniqueId = 0;
@@ -164,7 +164,7 @@ export class ActionsDataCompiler {
 		});
 		fn += ' default: ectx.isEndOfActions = true; break;\n}\n}\n' +
 			'return stack.pop();};';
-		fn += '//# sourceURL=' + debugName;
+		fn += '//# sourceURL=http://jit/' + (debugPath ? debugPath: debugName);
 		return (new Function('calls', 'res', fn))(getActionsCalls(), res);
 	}
 }

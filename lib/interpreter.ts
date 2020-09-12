@@ -2758,7 +2758,6 @@ function avm1_0x8E_ActionDefineFunction2(ectx: ExecutionContext, args: any[]) {
 	var registerCount: number = args[3];
 	var registerAllocation = args[4];
 	var suppressArguments = args[5];
-
 	var fn = avm1DefineFunction(ectx, functionBody, functionName,
 		functionParams, registerCount, registerAllocation, suppressArguments);
 	if (functionName) {
@@ -3381,7 +3380,7 @@ function analyzeAndCompileActionsData(ectx: ExecutionContext, actionsData: AVM1A
 	if (avm1CompilerEnabled.value) {
 		try {
 			var c = new ActionsDataCompiler();
-			compiled = c.generate(ir);
+			compiled = c.generate(ir, actionsData.debugPath);
 			actionsData.compiled = compiled;
 		} catch (e) {
 			console.error('Unable to compile AVM1 function: ' + e);

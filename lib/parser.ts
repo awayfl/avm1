@@ -158,6 +158,9 @@ export class ActionsDataParser {
 	public dataId: string;
 	private _stream: ActionsDataStream;
 	private _actionsData: AVM1ActionsData;
+	private _lastPushedValue: any = null;
+	private _lastDefinedConstantPool: any[] = null;
+
 	constructor(actionsData: AVM1ActionsData, public swfVersion: number) {
 		this._actionsData = actionsData;
 		this.dataId = actionsData.id;
@@ -181,8 +184,14 @@ export class ActionsDataParser {
 		var actionCode = stream.readUI8();
 		var length = actionCode >= 0x80 ? stream.readUI16() : 0;
 		var nextPosition = stream.position + length;
-
 		var args: any[] = null;
+
+		if(
+			actionCode !== ActionCode.ActionDefineFunction && 
+			actionCode !== ActionCode.ActionDefineFunction2) {
+				this._lastPushedValue = null;
+		}
+
 		switch (actionCode | 0) {
 			case ActionCode.ActionGotoFrame:
 				var frame = stream.readUI16();
@@ -230,6 +239,7 @@ export class ActionsDataParser {
 					switch (type | 0) {
 						case 0: // STRING
 							value = stream.readString();
+							this._lastPushedValue = value;
 							break;
 						case 1: // FLOAT
 							value = stream.readFloat();
@@ -263,6 +273,7 @@ export class ActionsDataParser {
 							stream.position = nextPosition;
 							continue;
 					}
+					this._lastPushedValue = value;
 					args.push(value);
 				}
 				break;
@@ -295,6 +306,8 @@ export class ActionsDataParser {
 				for (var i = 0; i < count; i++) {
 					constantPool.push(stream.readString());
 				}
+
+				this._lastDefinedConstantPool = constantPool;
 				args = [constantPool];
 				break;
 			case ActionCode.ActionDefineFunction:
@@ -324,6 +337,18 @@ export class ActionsDataParser {
 				args = [register];
 				break;
 			case ActionCode.ActionDefineFunction2:
+
+				let methodName = null;
+				if(this._lastPushedValue instanceof ParsedPushConstantAction 
+					&& this._lastDefinedConstantPool ) 
+				{
+					methodName = this._lastDefinedConstantPool[this._lastPushedValue.constantIndex]
+				}
+
+				if(typeof this._lastPushedValue === 'string') {
+					methodName = this._lastPushedValue
+				}
+
 				var functionName = stream.readString();
 				var count = stream.readUI16();
 				var registerCount = stream.readUI8();
@@ -377,8 +402,15 @@ export class ActionsDataParser {
 
 				var codeSize = stream.readUI16();
 				nextPosition += codeSize;
-				var functionBody = new AVM1ActionsData(stream.readBytes(codeSize),
-					this.dataId + '_f' + stream.position, this._actionsData);
+				let name = this.dataId + '_f' + stream.position;
+
+				if(methodName) {
+					name = methodName + '__' + name;
+				}
+
+				var functionBody = new AVM1ActionsData(stream.readBytes(codeSize), name, this._actionsData);
+
+				functionBody.debugPath = this.dataId + '/' + (methodName ? methodName : ('f' + stream.position));
 
 				args = [functionBody, functionName, functionParams, registerCount,
 					registerAllocation, suppressArguments];

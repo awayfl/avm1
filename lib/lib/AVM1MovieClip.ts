@@ -86,6 +86,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		return wrapAVM1NativeClass(context, true, AVM1MovieClip,
 			[],
 			['$version#', '_alpha#', 'getAwayJSID', 'attachAudio', 'attachBitmap', 'attachMovie',
+				'attachVideo',
 				'beginFill', 'beginBitmapFill', 'beginGradientFill', 'blendMode#',
 				'cacheAsBitmap#', '_callFrame', 'clear', 'createEmptyMovieClip',
 				'createTextField', '_currentframe#', 'curveTo', '_droptarget#',
