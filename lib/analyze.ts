@@ -151,11 +151,11 @@ export class ActionsDataAnalyzer {
 						release || console.error('jump outside the action block;', jumpPosition, action);
 						
 						if(encrParser && jumpPosition < 0) {
-							console.debug(`[LONG JUMP] Script ${actionData.id}, jump outside action ${jumpPosition}\n Try to parse encryptedData`);
+							console.debug(`[LONG JUMP] Script ${actionData.debugPath}, jump outside action ${jumpPosition}\n Try to parse encryptedData`);
 							requireLongJump = true;
 							longJumpPosition = Math.min(jumpPosition);
 						} else {
-							console.warn(`[LONG JUMP] Script ${actionData.id}, jump outside action ${jumpPosition}\n Require encrypted data!`);
+							console.warn(`[LONG JUMP] Script ${actionData.debugPath}, jump outside action ${jumpPosition}\n Require encrypted data!`);
 							jumpPosition = parser.length;
 						}
 						//debugger;

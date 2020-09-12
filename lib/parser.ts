@@ -427,12 +427,28 @@ export class ActionsDataParser {
 
 				nextPosition += trySize + catchSize + finallySize;
 
+				const thisPath = this._actionsData.debugPath;
+				
 				var tryBody = new AVM1ActionsData(stream.readBytes(trySize),
 					this.dataId + '_t' + stream.position, this._actionsData);
+				
+				if(thisPath)
+					tryBody.debugPath = thisPath + '/try_' + this._stream.position;
+					
 				var catchBody = new AVM1ActionsData(stream.readBytes(catchSize),
 					this.dataId + '_c' + stream.position, this._actionsData);
+		
+				if(thisPath){
+					catchBody.debugPath = thisPath + '/catch_' + this._stream.position;
+				}
+
 				var finallyBody = new AVM1ActionsData(stream.readBytes(finallySize),
 					this.dataId + '_z' + stream.position, this._actionsData);
+
+				if(thisPath) {
+					finallyBody.debugPath = thisPath + '/finaly_' + this._stream.position;
+				}
+					
 
 				args = [catchIsRegisterFlag, catchTarget, tryBody,
 					catchBlockFlag, catchBody, finallyBlockFlag, finallyBody];
