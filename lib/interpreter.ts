@@ -1897,6 +1897,11 @@ function avm1_0x1D_ActionSetVariable(ectx: ExecutionContext) {
 
 	var value = stack.pop();
 	var variableName = '' + stack.pop();
+
+	if(variableName == 'maintainAspectRatio'){
+		debugger;
+	}
+
 	var resolved = avm1ResolveVariable(ectx, variableName, AVM1ResolveVariableFlags.WRITE);
 	if (!resolved) {
 		if (avm1WarningsEnabled.value) {
@@ -2082,25 +2087,32 @@ function avm1_0x3D_ActionCallFunction(ectx: ExecutionContext) {
 }
 
 function avm1_0x52_ActionCallMethod(ectx: ExecutionContext) {
-	var stack = ectx.stack;
+	const stack = ectx.stack;
+	const methodName = stack.pop();
+	const obj = stack.pop();
+	const args = avm1ReadFunctionArgs(stack);
+	const sp = stack.length;
 
-	var methodName = stack.pop();
-	var obj = stack.pop();
-	var args = avm1ReadFunctionArgs(stack);
-	var target;
-
-	var sp = stack.length;
 	stack.push(undefined);
 
+	const r = avm1_callableHelper(ectx, obj, methodName, args);
+
+	stack[sp] = r;
+}
+
+function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Function, methodName: string, args: any[]): any 
+{
 	// AVM1 simply ignores attempts to invoke methods on non-existing objects.
 	if (isNullOrUndefined(obj)) {
 		avm1Warn("AVM1 warning: method '" + methodName + "' can't be called on undefined object");
 		return;
 	}
 
-	var frame: AVM1CallFrame = ectx.context.frame;
-	var superArg: AVM1Object;
-	var fn: AVM1Function;
+	const frame: AVM1CallFrame = ectx.context.frame;
+	let superArg: AVM1Object;
+	let fn: AVM1Function;
+	let target;
+	let result;
 
 	// Per spec, a missing or blank method name causes the container to be treated as
 	// a function to call.
@@ -2115,24 +2127,24 @@ function avm1_0x52_ActionCallMethod(ectx: ExecutionContext) {
 		} else {
 			// For non-super calls, we call obj with itself as the target.
 			// TODO: ensure this is correct.
-			fn = obj;
+			fn = obj as AVM1Function;
 			target = obj;
 		}
 		// AVM1 simply ignores attempts to invoke non-functions.
 		if (alIsFunction(fn)) {
 			frame.setCallee(target, superArg, fn, args);
-			stack[sp] = fn.alCall(target, args);
+			result = fn.alCall(target, args);
 			frame.resetCallee();
 		} else {
 			avm1Warn("AVM1 warning: obj '" + obj + (obj ? "' is not callable" : "' is undefined"));
 		}
-		release || assert(stack.length === sp + 1);
-		return;
+		//release || assert(stack.length === sp + 1);
+		return result;
 	}
 
 	if (obj instanceof AVM1SuperWrapper) {
 		var superFrame = (<AVM1SuperWrapper>obj).callFrame;
-		var superArg = avm1FindSuperPropertyOwner(ectx.context, superFrame, methodName);
+		superArg = avm1FindSuperPropertyOwner(ectx.context, superFrame, methodName);
 		if (superArg) {
 			fn = superArg.alGet(methodName);
 			target = superFrame.currentThis;
@@ -2147,7 +2159,7 @@ function avm1_0x52_ActionCallMethod(ectx: ExecutionContext) {
 		// we might have injected js function here, so we call that
 		if (typeof fn === "function") {
 			// do something
-	        stack[sp] = (<any>fn)(args);
+	        result = (<any>fn)(args);
 		}
 		else{
 			avm1Warn("AVM1 warning: method '" + methodName + "' on object", obj,
@@ -2156,22 +2168,24 @@ function avm1_0x52_ActionCallMethod(ectx: ExecutionContext) {
 					"is not callable"));
 
 		}		
-		return;
+		return result;
 	}
-	release || assert(stack.length === sp + 1);
+	//release || assert(stack.length === sp + 1);
 	frame.setCallee(target, superArg, fn, args);
 	if(methodName=="toString" && typeof obj == "number"){			
         if(args.length==1 && args[0]==16){
-            stack[sp]=obj.toString(16).toString();
+            result = (obj as number).toString(16);
         }
         else{
-            stack[sp]=alToString(ectx.context, obj);
+            result = alToString(ectx.context, obj);
         }
 	}
 	else{
-		stack[sp] = fn.alCall(target, args);
+		result = fn.alCall(target, args);
 	}
 	frame.resetCallee();
+
+	return result;
 }
 
 function avm1_0x88_ActionConstantPool(ectx: ExecutionContext, args: any[]) {
