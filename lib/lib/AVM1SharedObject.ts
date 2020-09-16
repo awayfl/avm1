@@ -34,6 +34,9 @@ export class AVM1SharedObject extends AVM1Object {
 	}
 	private _data:AVM1Object;
 	private _storage_name:string;
+	private _flushPending: number = 0;
+	private _bindedFlush: Function;
+
 	constructor(context: AVM1Context) {
 		super(context);
 		alDefineObjectProperties(this, {
@@ -49,22 +52,27 @@ export class AVM1SharedObject extends AVM1Object {
 				value: this.flush,
 				writable: true
 			}
-		})
-		
+		});
+
+		this._bindedFlush = this.flush.bind(this);
 	}
+
 	public setName(name:string){
 
-		this._data = alNewObject(this.context);
 		name = alCoerceString(this.context, name);
+
 		this._storage_name=name;
+
 		if(typeof(Storage) !== "undefined") {
-			var jsData=JSON.parse(localStorage.getItem(name));
-			if(jsData){
-				this._data=this.getAVM1Value(jsData);
+			const jsData = JSON.parse(localStorage.getItem(name));
+			if( jsData ){
+				this._data = this.getAVM1Value(jsData);
 				return;
 			}
-			
 		}
+		
+		this._data = alNewObject(this.context);
+
 		console.log("no shared object found");
 		return null;//context.sec.flash.external.ExternalInterface.axClass.available;
 	}
@@ -81,8 +89,26 @@ export class AVM1SharedObject extends AVM1Object {
 		return newSharedObj;
 	}
 	
+	private applyDataHook(data: AVM1Object) {
+		if(data["__alPutHookApplyed"]) {
+			return data;
+		}
+
+		data["__alPutHookApplyed"] = true;
+		data.alPut = (p: any, v: any) => {
+			AVM1Object.prototype.alPut.call(data, p, v);
+			this.requestFlush();
+		}
+	}
+
+	private requestFlush() {
+		clearTimeout(this._flushPending);
+
+		this._flushPending = setTimeout(this._bindedFlush, 100);
+	}
+
 	public getData(): any {
-		return this._data;
+		return this.applyDataHook(this._data);
 	}
 
 	public clear(): void {
@@ -139,6 +165,11 @@ export class AVM1SharedObject extends AVM1Object {
 	}
 
 	public flush(minDiskSpace?: number): string | boolean {
+		if(this._flushPending) {
+			clearTimeout(this._flushPending);
+			this._flushPending = null;
+		}
+
 		//minDiskSpace = alCoerceNumber(this.context, minDiskSpace);
 		//this._as3SharedObject.flush(minDiskSpace);
 		var jsValue=this.getJSValue(this._data);
