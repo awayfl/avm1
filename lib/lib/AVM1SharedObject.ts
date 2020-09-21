@@ -99,6 +99,8 @@ export class AVM1SharedObject extends AVM1Object {
 			AVM1Object.prototype.alPut.call(data, p, v);
 			this.requestFlush();
 		}
+
+		return data;
 	}
 
 	private requestFlush() {
