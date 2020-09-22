@@ -1246,16 +1246,20 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	public loadMovie(url: string, method: string) {
 
 		var loaderHelper = new AVM1LoaderHelper(this.context);
-		loaderHelper.load(url, method).then(function () {
+
+		loaderHelper.load(url, method).then(() => {
 			if (loaderHelper.content == null) {
 				warning("loadMovie - content is null");
 				return;
 			}
-			this.adaptee.timeline = (<MovieClip>loaderHelper.content).timeline;
-			this.adaptee.assetNamespace = loaderHelper.content.assetNamespace;
+
+			const c = loaderHelper.content as MovieClip;
+			this.adaptee.isAVMScene = c.isAVMScene;
+			this.adaptee.timeline = c.timeline;
+			this.adaptee.assetNamespace = c.assetNamespace;
 			this.adaptee.reset(true);
 			
-		}.bind(this));
+		});
 	}
 
 	public loadVariables(url: string, method?: string) {

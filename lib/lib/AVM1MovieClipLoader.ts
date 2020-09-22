@@ -77,9 +77,10 @@ export class AVM1MovieClipLoader extends AVM1Object {
 				console.warn("load - content is null");
 				return;
 			}
-
-			t.adaptee.timeline = (<MovieClip>loaderHelper.content).timeline;
-			t.adaptee.assetNamespace = loaderHelper.content.assetNamespace;
+			const c = loaderHelper.content as MovieClip;
+			t.adaptee.isAVMScene = c.isAVMScene;
+			t.adaptee.timeline = c.timeline;
+			t.adaptee.assetNamespace = c.assetNamespace;
 			t.adaptee.reset(true);
 
 			alCallProperty(this, 'broadcastMessage', ['onLoadComplete', target]);
