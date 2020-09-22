@@ -71,20 +71,13 @@ export class AVM1MovieClipLoader extends AVM1Object {
 			url = this.context.globals.SWF_BASE_URL + url;
 		}
 
-		loaderHelper.load(url, 'get').then((obj: DisplayObject) => {
-
-			if (loaderHelper.content == null) {
+		loaderHelper.loadMovieAt(url, 'get', t).then((mc: AVM1MovieClip) => {
+			if (!mc) {
 				console.warn("load - content is null");
 				return;
 			}
-			const c = loaderHelper.content as MovieClip;
-			t.adaptee.isAVMScene = c.isAVMScene;
-			t.adaptee.timeline = c.timeline;
-			t.adaptee.assetNamespace = c.assetNamespace;
-			t.adaptee.reset(true);
 
 			alCallProperty(this, 'broadcastMessage', ['onLoadComplete', target]);
-
 			setTimeout(()=>{
 				alCallProperty(this, 'broadcastMessage', ['onLoadInit', target]);				
 			})

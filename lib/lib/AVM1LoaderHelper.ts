@@ -3,6 +3,7 @@ import {AVM1Globals} from "./AVM1Globals";
 import { Loader, URLLoaderEvent, LoaderEvent, AssetEvent, IAsset, AssetLibrary, URLRequest } from "@awayjs/core";
 import { AVM1Context } from "../context";
 import { DisplayObject, MovieClip } from "@awayjs/scene";
+import { AVM1MovieClip } from './AVM1MovieClip';
 
 export class AVM1LoaderHelper {
 	private _loader:Loader;
@@ -61,6 +62,30 @@ export class AVM1LoaderHelper {
 		AssetLibrary.removeEventListener(LoaderEvent.LOADER_COMPLETE, this._onLoaderCompleteDelegate);
 		AssetLibrary.removeEventListener(URLLoaderEvent.LOAD_ERROR, this._onLoadErrorDelegate);
 		console.log("load error in loadMovie", event);
+	}
+
+	public loadMovieAt(url: string, method: string, target: AVM1MovieClip): Promise<AVM1MovieClip | null>
+	{
+		if(!target) {
+			throw new Error("Target can't be null");
+		}
+
+		return this.load(url, method).then(()=>{
+			const c = <MovieClip>this.content;
+
+			if(!c) {
+				return null;
+			}
+
+			const t = target.adaptee;
+
+			t.isAVMScene = c.isAVMScene;
+			t.timeline = c.timeline;
+			t.assetNamespace = c.assetNamespace;
+			t.reset(true);
+			
+			return target;
+		})
 	}
 
 	public load(url: string, method: string): Promise<DisplayObject> {
