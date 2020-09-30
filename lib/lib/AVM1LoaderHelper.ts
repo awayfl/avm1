@@ -6,6 +6,8 @@ import { DisplayObject, MovieClip } from "@awayjs/scene";
 import { AVM1MovieClip } from './AVM1MovieClip';
 
 export class AVM1LoaderHelper {
+	private static _loaderCache: StringMap<MovieClip> = {};
+
 	private _loader:Loader;
 	private _context: AVM1Context;
 	private _content: DisplayObject;
@@ -64,26 +66,39 @@ export class AVM1LoaderHelper {
 		console.log("load error in loadMovie", event);
 	}
 
+	private _loadingCallback(source: MovieClip, target: AVM1MovieClip) {		
+		const t = target.adaptee;
+		const c = source;
+
+		t.isAVMScene = c.isAVMScene;
+		t.timeline = c.timeline;
+		t.assetNamespace = c.assetNamespace;
+		//t.reset(true);
+	}
+
 	public loadMovieAt(url: string, method: string, target: AVM1MovieClip): Promise<AVM1MovieClip | null>
 	{
 		if(!target) {
 			throw new Error("Target can't be null");
 		}
 
-		return this.load(url, method).then(()=>{
-			const c = <MovieClip>this.content;
+		let source = AVM1LoaderHelper._loaderCache[url];
 
-			if(!c) {
+		
+		if (source) {
+			this._loadingCallback(source, target);
+			return Promise.resolve(target)
+		}
+
+		return this.load(url, method).then(()=>{
+			source = <MovieClip>this.content;
+
+			if(!source) {
 				return null;
 			}
 
-			const t = target.adaptee;
-
-			t.isAVMScene = c.isAVMScene;
-			t.timeline = c.timeline;
-			t.assetNamespace = c.assetNamespace;
-			t.reset(true);
-			
+			AVM1LoaderHelper._loaderCache[url] = source;
+			this._loadingCallback(source, target);
 			return target;
 		})
 	}
