@@ -31,3 +31,5 @@ export { alNewObject } from './lib/runtime';
 export { AVM1ArrayNative } from './lib/natives';
 
 export { SecurityDomain } from './lib/SecurityDomain';
+
+export { SharedObjectDebug } from "./lib/lib/AVM1SharedObject";

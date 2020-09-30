@@ -24,6 +24,84 @@ import {AVM1Context} from "../context";
 import {AVM1Object} from "../runtime/AVM1Object";
 import { AVM1ArrayNative } from "../natives";
 
+interface IStorage {
+	getItem(key: string): string;
+	setItem(key: string, value: string): void;
+	removeItem(key: string): void;
+}
+
+let _sharedObjectStorage: IStorage;
+
+class VirtualStorage implements IStorage {
+	_values: StringMap<string> = {};
+	_realStorage: IStorage = null;
+	
+	getItem(key: string) {
+		if(this._realStorage) {
+			this._values[key] = this._realStorage.getItem(key);
+		}
+		return this._values[key];
+	}
+
+	setItem(key: string, value: string) {
+		if(this._realStorage) {
+			this._realStorage.setItem(key, value);
+		}
+		this._values[key] = value;
+	}
+
+	removeItem(key: string) {
+		if(this._realStorage) {
+			this._realStorage.removeItem(key);
+		}
+		delete this._values[key];
+	}
+}
+
+export function getSharedObjectStorage(): IStorage {
+	if (!_sharedObjectStorage) {
+		_sharedObjectStorage = new VirtualStorage();
+	
+		if(typeof Storage !== 'undefined') {
+			try{
+				(_sharedObjectStorage as VirtualStorage)._realStorage = window.localStorage;
+			} catch(e) {
+				console.warn("[Shared Storage] ", e);
+			}
+		}
+	}
+	return _sharedObjectStorage;
+}
+
+export class SharedObjectDebug {
+	public static _lastRawData: any = null;
+	
+	public static decodedData() {
+		const values = (<VirtualStorage>getSharedObjectStorage())._values;
+		const raw = {};
+		
+		for(let key in values) {
+			raw[key] = JSON.parse(values[key]);
+		}
+
+		this._lastRawData = raw;
+		return raw;
+	}
+
+	public static encodeAndApplyData(): any {
+		if(!this._lastRawData) {
+			throw "Need call decode before encode for detecting a model";
+		}
+
+		const store = <VirtualStorage>getSharedObjectStorage();
+
+		for(let key in this._lastRawData) {
+			store.setItem(key, JSON.stringify(this._lastRawData[key]));
+		}
+
+		return store._values;
+	}
+}
 
 export class AVM1SharedObject extends AVM1Object {
 	static createAVM1Class(context: AVM1Context): AVM1Object {
@@ -64,7 +142,7 @@ export class AVM1SharedObject extends AVM1Object {
 		this._storage_name=name;
 
 		if(typeof(Storage) !== "undefined") {
-			const jsData = JSON.parse(localStorage.getItem(name));
+			const jsData = JSON.parse(getSharedObjectStorage().getItem(name));
 			if( jsData ){
 				this._data = this.getAVM1Value(jsData);
 				return;
@@ -175,7 +253,7 @@ export class AVM1SharedObject extends AVM1Object {
 		//minDiskSpace = alCoerceNumber(this.context, minDiskSpace);
 		//this._as3SharedObject.flush(minDiskSpace);
 		var jsValue=this.getJSValue(this._data);
-		localStorage.setItem(this._storage_name, JSON.stringify(jsValue));
+		getSharedObjectStorage().setItem(this._storage_name, JSON.stringify(jsValue));
 		return false; // can be a string 'pending' or boolean
 	}
 }
