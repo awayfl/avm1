@@ -1144,10 +1144,15 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 	// The original name is saved because the final property name needs to be extracted from
 	// it for property name paths.
 	var originalName = variableName;
-	variableName = ectx.context.normalizeName(variableName);
-    if(typeof variableName==="string")
-        variableName=variableName.replace("_level0", "_root");
 	if (!avm1VariableNameHasPath(variableName)) {
+		variableName = ectx.context.normalizeName(variableName);
+		if(typeof variableName==="string" && variableName.startsWith("_level")){
+			resolved = cachedResolvedVariableResult;
+			resolved.scope = scope;
+			resolved.propertyName = variableName;
+			resolved.value = ectx.context.resolveLevel(+variableName[6]);
+			return resolved;	
+		}
 		//noVarGetDebug || console.log("simple variableName", variableName);
 		var resolvedVar=avm1ResolveSimpleVariable(ectx.scopeList, variableName, flags);
 		noVarGetDebug || console.log("resolved", resolvedVar);
@@ -1268,8 +1273,8 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 		}
 		if (!valueFound && propertyName[0] === '_') {
 			// FIXME hacking to pass some swfdec test cases
-			if (propertyName === '_level0') {
-				obj = ectx.context.resolveLevel(0);
+			if (propertyName.startsWith("_level")) {
+				obj = ectx.context.resolveLevel(+propertyName[6]);
 				valueFound = true;
 			} else if (propertyName === '_root') {
 				obj = avm1ResolveRoot(ectx);

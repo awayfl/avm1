@@ -337,7 +337,7 @@ export class AVM1Context implements IAVM1Context {
 
 	public resolveLevel(level: number): AVM1MovieClip {
 		release || Debug.assert(typeof level === 'number');
-		var as3Root = null;//this.levelsContainer._getRootForLevel(level);
+		var as3Root = this.globals._getRootForLevel(level);
 		if (!as3Root) {
 			this.utils.warn('Unable to resolve level ' + level + ' root');
 			return undefined;
