@@ -46,13 +46,14 @@ export class AVM1Stage extends AVM1Object {
 	public setAlign(value) { this.avmStage.align = value; }
 
 	public getDisplayState() { 
-		release || console.log("not implemented AVM1Stage.getDisplayState")
+		//release || console.log("not implemented AVM1Stage.getDisplayState")
 		//return this._stage.displayState; 
-		return null
+		return this.avmStage.displayState;
 	}
 	public setDisplayState(value) { 
-		release || console.log("not implemented AVM1Stage.setDisplayState")
-		//this._stage.displayState = value; 
+		//release || console.log("not implemented AVM1Stage.setDisplayState")
+		//this._stage.displayState = value;
+		this.avmStage.displayState = value;
 	}
 
 	public getFullScreenSourceRect():Rectangle { 
