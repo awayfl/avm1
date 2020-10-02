@@ -606,7 +606,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return; // TODO stop playing all attached audio source (when implemented).
 		}
 		// TODO implement NetStream and Microphone objects to make this work.
-		notImplemented('AVM1MovieClip.attachAudio');
+		console.warn('[AVM1MovieClip] attachAudio not implemented');
 	}
 
 	public attachBitmap(bmp: AVM1BitmapData, depth: number, pixelSnapping: string = 'auto', smoothing: boolean = false): void {
@@ -718,7 +718,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		repeat = alToBoolean(this.context, repeat);
 		smoothing = alToBoolean(this.context, smoothing);
 
-		notImplemented('AVM1MovieClip.beginBitmapFill');
+		console.warn('[AVM1MovieClip] beginBitmapFill not implemented');
 		//this.graphics.beginBitmapFill(bmpNative.adaptee, matrixNative, repeat, smoothing);
 	}
 
@@ -733,7 +733,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		var ratiosNative = AVM1ArrayNative.mapToJSArray(ratios, (item) => alToNumber(this.context, item));
 		var matrixNative = null;
 		if (isNullOrUndefined(matrix)) {
-			somewhatImplemented('AVM1MovieClip.beginGradientFill');
+			console.warn('[AVM1MovieClip] beginGradientFill not fully implemented');
 		}
 		spreadMethod = alToString(this.context, spreadMethod);
 		interpolationMethod = alToString(this.context, interpolationMethod);
@@ -908,12 +908,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		var parent = this.get_parent();
 		if (!parent) {
-			warning("AVM1MovieClip.duplicateMovieClip could not get parent");
+			console.warn("[AVM1MovieClip] duplicateMovieClip could not get parent");
 			parent = this.context.resolveTarget(null);
 		}
 		var mc: MovieClip;
 		if (this.adaptee._symbol) {
-			notImplemented('AVM1MovieClip.duplicateMovieClip from symbol');
+			console.warn('[AVM1MovieClip] duplicateMovieClip from symbol not implemented');
 			//mc = constructClassFromSymbol(nativeAS3Object._symbol, nativeAS3Object.axClass);
 		} else {
 			mc = (<any>this).clone().adaptee;//new this.context.sec.flash.display.MovieClip();
@@ -954,17 +954,17 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public getForceSmoothing(): boolean {
-		notImplemented('AVM1MovieClip.getForceSmoothing');
+		console.warn('[AVM1MovieClip] getForceSmoothing');
 		return false;
 	}
 
 	public setForceSmoothing(value: boolean) {
 		value = alToBoolean(this.context, value);
-		notImplemented('AVM1MovieClip.setForceSmoothing');
+		console.warn('[AVM1MovieClip] setForceSmoothing');
 	}
 
 	public get_framesloaded() {
-		notImplemented('AVM1MovieClip.get_framesloaded');
+		console.warn('[AVM1MovieClip] get_framesloaded');
 		return 0;//this.adaptee.framesLoaded;
 	}
 
@@ -988,9 +988,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public getInstanceAtDepth(depth: number): AVM1MovieClip {
-		//Debug.notImplemented('AVM1MovieClip.getInstanceAtDepth');
-		// 80pro: why does this always return movieclip ?
-		// todo: check if in as3 this could be a textfield
 		var child: DisplayObject = this.adaptee.getChildAtDepth(avm2AwayDepth(depth));
 		if (!child) {
 			return null;
@@ -1038,19 +1035,19 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public getSWFVersion(): number {
-		notImplemented('AVM1MovieClip.getSWFVersion');
+		console.warn('[AVM1MovieClip] getSWFVersion');
 		return 0;//loaderInfo.swfVersion;
 	}
 
 	public getTextSnapshot() {
-		notImplemented('AVM1MovieClip.getTextSnapshot');
+		console.warn('[AVM1MovieClip] getTextSnapshot');
 	}
 
 	public getURL(url, target, method) {
 		url = String(url);
 
 		if (url.toLowerCase().indexOf('fscommand:') === 0) {
-			console.log("fsCommand not implemented ");
+			console.warn("[AVM1MovieClip] fsCommand not implemented ");
 			return;
 		}
 
@@ -1289,7 +1286,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public nextScene() {
-		notImplemented('AVM1MovieClip.nextScene');
+		console.warn('[AVM1MovieClip] nextScene not implemented');
 	}
 
 	public play() {
@@ -1302,7 +1299,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public prevScene() {
-		notImplemented('AVM1MovieClip.prevScene');
+		console.warn('[AVM1MovieClip] prevScene not implemented');
 	}
 
 
@@ -1427,11 +1424,11 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		var parent: MovieClip = <MovieClip>getAwayJSAdaptee(this.get_parent());
 		if (!parent) {
-			warning("AVM1MovieClip.swapDepth called for object with no parent");
+			console.warn("[AVM1MovieClip] swapDepth called for object with no parent");
 			return;
 		}
 		if (typeof target === 'undefined') {
-			warning("AVM1MovieClip.swapDepth called with undefined as target depth");
+			console.warn("[AVM1MovieClip] swapDepth called with undefined as target depth");
 			return;
 		}
 		if (typeof target === 'number') {
@@ -1473,12 +1470,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public getTrackAsMenu(): boolean {
-		notImplemented("AVM1MovieClip.getTrackAsMenu()");
+		console.warn("[AVM1MovieClip] getTrackAsMenu not implemented");
 		return getAwayObjectOrTemplate(this).trackAsMenu;
 	}
 
 	public setTrackAsMenu(value: boolean) {
-		notImplemented("AVM1MovieClip.setTrackAsMenu()");
+		console.warn("[AVM1MovieClip] setTrackAsMenu not implemented");
 		getAwayObjectOrTemplate(this).trackAsMenu = alToBoolean(this.context, value);
 	}
 
