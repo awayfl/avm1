@@ -177,7 +177,7 @@
 			if(this.registeredLevels[level])
 				return this.registeredLevels[level];
 			getAVM1Object(root, this.context).adaptee;
-			AVM1Stage.avmStage.addChild(root);
+			AVM1Stage.avmStage.addChildAt(root, level);
 			this.registeredLevels[level]=root;
 			return root;
 		};
