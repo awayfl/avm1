@@ -156,28 +156,48 @@ export const enum ArgumentAssignmentType {
 
 export class ActionsDataParser {
 	public dataId: string;
+	
 	private _stream: ActionsDataStream;
 	private _actionsData: AVM1ActionsData;
 	private _lastPushedValue: any = null;
 	private _lastDefinedConstantPool: any[] = null;
+	private _initailPosition: number = 0;
+	private _initilaLen: number = 0;
 
 	constructor(actionsData: AVM1ActionsData, public swfVersion: number) {
 		this._actionsData = actionsData;
 		this.dataId = actionsData.id;
-		this._stream = new ActionsDataStream(actionsData.bytes, swfVersion);
+
+		const bytes = actionsData.bytes;
+		const buffer = new Uint8Array(bytes. buffer, 0);
+		this._initailPosition = bytes.byteOffset;
+		this._initilaLen = bytes.length;
+
+		/**
+		 * This is important, because there are apps with encruption
+		 * We should parse ALL bytes of SWF, because tag253 contains part of bytecodes
+		 */
+		this._stream = new ActionsDataStream(buffer, swfVersion);
+		this._stream.position = this._initailPosition;
+
 	}
+
 	get position(): number {
-		return this._stream.position;
+		return this._stream.position - this._initailPosition;
 	}
+
 	set position(value: number) {
-		this._stream.position = value;
+		this._stream.position = value + this._initailPosition;
 	}
+
 	get eof(): boolean {
-		return this._stream.position >= this._stream.end;
+		return this.position >= this._initilaLen;
 	}
+
 	get length(): number {
-		return this._stream.end;
+		return this._initilaLen;
 	}
+
 	readNext() : ParsedAction {
 		var stream = this._stream;
 		var currentPosition = stream.position;
@@ -460,7 +480,7 @@ export class ActionsDataParser {
 		}
 		stream.position = nextPosition;
 		return {
-			position: currentPosition,
+			position: currentPosition - this._initailPosition,
 			actionCode: actionCode,
 			actionName: ActionNamesMap[actionCode],
 			args: args

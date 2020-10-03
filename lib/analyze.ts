@@ -54,19 +54,6 @@ export class ActionsDataAnalyzer {
 		var constantPoolFound: boolean = false;
 		var singleConstantPoolAt0: any[] = null;
 
-		const actionData: AVM1ActionsData = (<any>parser)._actionsData;
-		const encryptedData = actionData.encryptedData;
-		
-		let encrParser: ActionsDataParser =	undefined;
-
-		if(encryptedData) {
-			encrParser = new ActionsDataParser(
-				new AVM1ActionsData(
-						encryptedData.data, 
-						actionData.id + 'enc'), 
-						parser.swfVersion);
-		}
-
 		// Parsing all actions we can reach. Every action will have next position
 		// and conditional jump location.
 		var queue: number[] = [0];
@@ -79,8 +66,6 @@ export class ActionsDataAnalyzer {
 		var nonConditionalBranching: boolean;
 		var skipCount: number;
 
-		let requireLongJump = false;
-		let longJumpPosition = 0;
 
 		while (queue.length > 0) {
 			position = queue.shift();
@@ -147,19 +132,6 @@ export class ActionsDataAnalyzer {
 						break;
 				}
 				if (branching) {
-					if (jumpPosition < 0 || jumpPosition > parser.length) {
-						release || console.error('jump outside the action block;', jumpPosition, action);
-						
-						if(encrParser && jumpPosition < 0) {
-							console.debug(`[LONG JUMP] Script ${actionData.debugPath}, jump outside action ${jumpPosition}\n Try to parse encryptedData`);
-							requireLongJump = true;
-							longJumpPosition = Math.min(jumpPosition);
-						} else {
-							console.warn(`[LONG JUMP] Script ${actionData.debugPath}, jump outside action ${jumpPosition}\n Require encrypted data!`);
-							jumpPosition = parser.length;
-						}
-						//debugger;
-					}
 					if (nonConditionalBranching) {
 						item.next = jumpPosition;
 					} else {
@@ -178,10 +150,6 @@ export class ActionsDataAnalyzer {
 				}
 				position = nextPosition;
 			}
-		}
-
-		if(!requireLongJump && longJumpPosition) {
-			console.warn('Process long jump!');
 		}
 
 		// Creating blocks for every unique label
