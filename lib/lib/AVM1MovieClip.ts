@@ -718,8 +718,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		repeat = alToBoolean(this.context, repeat);
 		smoothing = alToBoolean(this.context, smoothing);
 
-		console.warn('[AVM1MovieClip] beginBitmapFill not implemented');
-		//this.graphics.beginBitmapFill(bmpNative.adaptee, matrixNative, repeat, smoothing);
+		//console.warn('[AVM1MovieClip] beginBitmapFill not implemented');
+		this.graphics.beginBitmapFill(bmpNative, matrixNative, repeat, smoothing);
 	}
 
 	public beginGradientFill(fillType: GradientType, colors: AVM1Object, alphas: AVM1Object,

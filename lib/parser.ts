@@ -123,6 +123,8 @@ export const enum ActionCode {
 	ActionStrictMode = 0x89
 }
 
+const IS_INVALID_NAME = /[^A-Za-z0-9_]+/g;
+
 export class ParsedPushRegisterAction {
 	constructor(public registerNumber: number) {}
 }
@@ -162,7 +164,7 @@ export class ActionsDataParser {
 	private _lastPushedValue: any = null;
 	private _lastDefinedConstantPool: any[] = null;
 	private _initialPosition: number = 0;
-	private _initilaLen: number = 0;
+	private _initialLen: number = 0;
 
 	constructor(actionsData: AVM1ActionsData, public swfVersion: number) {
 		this._actionsData = actionsData;
@@ -171,7 +173,7 @@ export class ActionsDataParser {
 		const bytes = actionsData.bytes;
 		const buffer = new Uint8Array(bytes.buffer, 0);
 		this._initialPosition = bytes.byteOffset;
-		this._initilaLen = bytes.length;
+		this._initialLen = bytes.length;
 
 		/**
 		 * This is important, because apps with encryption is problem,
@@ -191,11 +193,11 @@ export class ActionsDataParser {
 	}
 
 	get eof(): boolean {
-		return this.position >= this._initilaLen;
+		return this.position >= this._initialLen;
 	}
 
 	get length(): number {
-		return this._initilaLen;
+		return this._initialLen;
 	}
 
 	readNext() : ParsedAction {
@@ -289,7 +291,7 @@ export class ActionsDataParser {
 							value = new ParsedPushConstantAction(stream.readUI16());
 							break;
 						default:
-							console.error('Unknown value type: ' + type);
+							console.error('Unknown value type: ' + type, stream.position);
 							stream.position = nextPosition;
 							continue;
 					}
@@ -358,7 +360,7 @@ export class ActionsDataParser {
 				break;
 			case ActionCode.ActionDefineFunction2:
 
-				let methodName = null;
+				let methodName: string = null;
 				if(this._lastPushedValue instanceof ParsedPushConstantAction 
 					&& this._lastDefinedConstantPool ) 
 				{
@@ -367,6 +369,10 @@ export class ActionsDataParser {
 
 				if(typeof this._lastPushedValue === 'string') {
 					methodName = this._lastPushedValue
+				}
+
+				if(methodName && IS_INVALID_NAME.test(methodName)) {
+					methodName = null;
 				}
 
 				var functionName = stream.readString();
@@ -488,7 +494,7 @@ export class ActionsDataParser {
 	}
 	skip(count) {
 		var stream = this._stream;
-		while (count > 0 && stream.position < stream.end) {
+		while (count > 0 && this.position < this._initialLen) {
 			var actionCode = stream.readUI8();
 			var length = actionCode >= 0x80 ? stream.readUI16() : 0;
 			stream.position += length;

@@ -23,6 +23,8 @@ import {avm1DebuggerEnabled} from "./settings";
 import {ActionsDataStream} from "./stream";
 import {notImplemented} from "@awayfl/swf-loader";
 
+const IS_INVALID_NAME = /[^A-Za-z0-9_/]+/g;
+
 interface IExecutionContext {
 	constantPool: any[];
 	registers: any[];
@@ -122,7 +124,10 @@ export class ActionsDataCompiler {
 					(item.action.args ? ',[' + this.convertArgs(item.action.args, id, res, ir) + ']' : '') +
 					');\n';
 				if(item.action.actionName=="ActionCallMethod"){
-					if(prevItem.action.actionCode==ActionCode.ActionPush){
+					if(!prevItem) {
+						result = `// strange oppcode at ${item.action.position}\n` + result
+					}
+					if(prevItem && prevItem.action.actionCode==ActionCode.ActionPush){
 						let args=this.convertArgs(prevItem.action.args, id-1, res, ir);
 						if(args=='"gotoAndStop"' || args=='"gotoAndPlay"'){
 						//|| args=='"nextFrame"' || args=='"prevFrame"'){							
@@ -138,7 +143,7 @@ export class ActionsDataCompiler {
 		var blocks = ir.blocks;
 		var res = {};
 		var uniqueId = 0;
-		var debugName = ir.dataId;
+		var debugName = ir.dataId.replace(IS_INVALID_NAME, "_");
 		var fn = 'return function ' + debugName + '(ectx) {\n' +
 			'var position = 0;\n' +
 			'var checkTimeAfter = 0;\n' +
@@ -164,8 +169,14 @@ export class ActionsDataCompiler {
 		});
 		fn += ' default: ectx.isEndOfActions = true; break;\n}\n}\n' +
 			'return stack.pop();};';
-		fn += '//# sourceURL=http://jit/' + (debugPath ? debugPath: debugName);
-		return (new Function('calls', 'res', fn))(getActionsCalls(), res);
+		fn += '//# sourceURL=http://jit/' + (debugPath && !IS_INVALID_NAME.test(debugPath) ? debugPath: debugName);
+		
+		try {
+			return (new Function('calls', 'res', fn))(getActionsCalls(), res);
+		} catch (e) {
+			debugger;
+			throw e;
+		}
 	}
 }
 
