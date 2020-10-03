@@ -174,7 +174,7 @@ export class ActionsDataParser {
 		this._initilaLen = bytes.length;
 
 		/**
-		 * This is important, because there are apps with encruption
+		 * This is important, because apps with encryption is problem,
 		 * We should parse ALL bytes of SWF, because tag253 contains part of bytecodes
 		 */
 		this._stream = new ActionsDataStream(buffer, swfVersion);
