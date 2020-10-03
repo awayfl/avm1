@@ -161,7 +161,7 @@ export class ActionsDataParser {
 	private _actionsData: AVM1ActionsData;
 	private _lastPushedValue: any = null;
 	private _lastDefinedConstantPool: any[] = null;
-	private _initailPosition: number = 0;
+	private _initialPosition: number = 0;
 	private _initilaLen: number = 0;
 
 	constructor(actionsData: AVM1ActionsData, public swfVersion: number) {
@@ -169,8 +169,8 @@ export class ActionsDataParser {
 		this.dataId = actionsData.id;
 
 		const bytes = actionsData.bytes;
-		const buffer = new Uint8Array(bytes. buffer, 0);
-		this._initailPosition = bytes.byteOffset;
+		const buffer = new Uint8Array(bytes.buffer, 0);
+		this._initialPosition = bytes.byteOffset;
 		this._initilaLen = bytes.length;
 
 		/**
@@ -178,16 +178,16 @@ export class ActionsDataParser {
 		 * We should parse ALL bytes of SWF, because tag253 contains part of bytecodes
 		 */
 		this._stream = new ActionsDataStream(buffer, swfVersion);
-		this._stream.position = this._initailPosition;
+		this._stream.position = this._initialPosition;
 
 	}
 
 	get position(): number {
-		return this._stream.position - this._initailPosition;
+		return this._stream.position - this._initialPosition;
 	}
 
 	set position(value: number) {
-		this._stream.position = value + this._initailPosition;
+		this._stream.position = value + this._initialPosition;
 	}
 
 	get eof(): boolean {
@@ -480,7 +480,7 @@ export class ActionsDataParser {
 		}
 		stream.position = nextPosition;
 		return {
-			position: currentPosition - this._initailPosition,
+			position: currentPosition - this._initialPosition,
 			actionCode: actionCode,
 			actionName: ActionNamesMap[actionCode],
 			args: args
