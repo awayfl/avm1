@@ -73,7 +73,7 @@ export class AVM1LoaderHelper {
 		t.isAVMScene = c.isAVMScene;
 		t.timeline = c.timeline;
 		t.assetNamespace = c.assetNamespace;
-		t.reset(true);
+		t.reset(true, false);
 	}
 
 	public loadMovieAt(url: string, method: string, target: AVM1MovieClip): Promise<AVM1MovieClip | null>
