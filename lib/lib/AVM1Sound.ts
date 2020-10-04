@@ -19,7 +19,7 @@ import {AVM1Context} from "../context";
 import {warning} from "@awayfl/swf-loader";
 import {IAVM1SymbolBase, wrapAVM1NativeClass} from "./AVM1Utils";
 import {AVM1MovieClip} from "./AVM1MovieClip";
-import {WaveAudio, AssetLibrary} from "@awayjs/core";
+import {WaveAudio, AssetLibrary, Loader, AssetEvent, LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset} from "@awayjs/core";
 
 class SoundSymbol{
 
@@ -35,11 +35,12 @@ export class AVM1Sound extends AVM1Object {
 	static createAVM1Class(context: AVM1Context): AVM1Object {
 		return wrapAVM1NativeClass(context, true, AVM1Sound,
 			[],
-			['attachSound', 'duration#', 'getBytesLoaded', 'getBytesTotal',
+			['attachSound', 'duration#', 'getBytesLoaded', 'getBytesTotal', 'loadSound',
 				'getPan', 'setPan', 'getTransform', 'setTransform', 'getVolume', 'setVolume',
 				'start', 'stop', 'onSoundComplete'],
 			null, AVM1Sound.prototype.avm1Constructor);
 	}
+
 
 	private _target: IAVM1SymbolBase;
 	private _sound: WaveAudio;
@@ -47,12 +48,15 @@ export class AVM1Sound extends AVM1Object {
 	private _linkageID: string;
 	private _assetNameSpace: string;
 	private _onCompleteCallback:Function;
+	private _playAfterLoading:boolean;
+	private loopsToPlay:number=0;
 
 	public avm1Constructor(target_mc) {
         this._target = this.context.resolveTarget(target_mc);
 		this._sound = null;
 		this._channel = null;
-        this._linkageID = null;
+		this._linkageID = null;
+		this._playAfterLoading=false;
         this._assetNameSpace=AVM1MovieClip.currentMCAssetNameSpace;
 	}
 
@@ -88,7 +92,6 @@ export class AVM1Sound extends AVM1Object {
 		this._sound.onSoundComplete=()=>this.soundCompleteInternal();
 	}
 
-	private loopsToPlay:number=0;
 	private soundCompleteInternal(){
 		this.loopsToPlay--;
 		if(this.loopsToPlay>0){
@@ -117,8 +120,52 @@ export class AVM1Sound extends AVM1Object {
 	}
 
 	public loadSound(url: string, isStreaming: boolean): void {
-		console.warn("AVM1Sound.loadSound");
+		if(isStreaming){
+			this._playAfterLoading=true;
+			console.warn("[AVM1Sound] - loadSound called with isStreaming=true, but streaming not implemented yet", url, isStreaming);
+		}
+		else{
+			this._playAfterLoading=false;
+		}
+		var loader=new Loader();
+		const onAssetCompleteDelegate = (event: AssetEvent) => this.onAssetComplete(event);
+		const onLoadCompleteDelegate = (event: LoaderEvent) => this.onLoadComplete(event);
+		const onLoadErrorDelegate = (event: URLLoaderEvent) => this.onLoadError(event);
+		loader.addEventListener(AssetEvent.ASSET_COMPLETE, onAssetCompleteDelegate);
+		loader.addEventListener(LoaderEvent.LOADER_COMPLETE, onLoadCompleteDelegate);
+		loader.addEventListener(URLLoaderEvent.LOAD_ERROR, onLoadErrorDelegate);
+		loader.load(new URLRequest(url), null, url, new WaveAudioParser());
 	}
+	
+	private onAssetComplete(event: AssetEvent): void {
+		var asset: IAsset = event.asset;
+		if (asset.isAsset(WaveAudio)) {
+			this._sound=<WaveAudio>asset;
+			/*if(this._playedCompleteCallback){
+				this._audio.onSoundComplete=this._playedCompleteCallback;
+			}*/
+			if(this._playAfterLoading){
+				this._sound.play(0);
+			}
+		}
+	}
+
+	private onLoadComplete(event: LoaderEvent): void {
+		if(!this._sound){
+			console.warn("[AVM1Sound] - loadSound: Soundloading is complete, but no WaveAudio was created.");
+		}
+		/*if(this._loadCallback){
+			this._loadCallback();
+		}*/
+	}
+
+	private onLoadError(event: URLLoaderEvent): void {
+		console.warn("[AVM1Sound] - loadSound: onLoadError");
+		/*if(this._errorCallback){
+			this._errorCallback();
+		}*/
+	}
+	
 	public getBytesLoaded(): number { 
 		console.warn("AVM1Sound.getBytesLoaded");
 		return 0;
