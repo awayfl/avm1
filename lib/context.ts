@@ -241,10 +241,10 @@ export class AVM1Context implements IAVM1Context {
 		className = alCoerceString(this, className);
 		if (className === null) {
 			this.utils.warn('Cannot register class for symbol: className is missing');
-			return null;
+			return;
 		}
 		var myAsset: any = AssetLibrary.getAsset(className, AVM1MovieClip.currentMCAssetNameSpace);
-		if (!myAsset.adaptee) {
+		if (!myAsset || !myAsset.adaptee) {
 			console.warn("can not find symbol to register class " + className);
 			return;
 		}
