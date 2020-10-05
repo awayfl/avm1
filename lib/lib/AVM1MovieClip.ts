@@ -1353,7 +1353,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			this.startDragMCPosition.x = this.adaptee.x;
 			this.startDragMCPosition.y = this.adaptee.y;
 			AVM1Stage.avmStage.addEventListener("mouseMove3d", this.dragListenerDelegate);
-			//window.addEventListener("mouseup", this.stopDragDelegate);
+			AVM1Stage.avmStage.addEventListener("mouseUp3d", this.stopDragDelegate);
 			//window.addEventListener("touchend", this.stopDragDelegate);
 			AVM1Stage.avmStage.scene.mousePicker.dragEntity = this.adaptee;
 			MouseManager.getInstance(AVM1Stage.avmStage.scene.renderer.renderGroup.pickGroup).startDragObject(this.adaptee);
@@ -1412,8 +1412,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		AVM1Stage.avmStage.scene.mousePicker.dragEntity = null;
 		MouseManager.getInstance(AVM1Stage.avmStage.scene.renderer.renderGroup.pickGroup).stopDragObject();
 		AVM1Stage.avmStage.removeEventListener("mouseMove3d", this.dragListenerDelegate);
-		window.removeEventListener("mouseup", this.stopDragDelegate);
-		window.removeEventListener("touchend", this.stopDragDelegate);
+		AVM1Stage.avmStage.removeEventListener("mouseUp3d", this.stopDragDelegate);
+		//window.removeEventListener("touchend", this.stopDragDelegate);
 	}
 
 	public swapDepths(target: any): void {
