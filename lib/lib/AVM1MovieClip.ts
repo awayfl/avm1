@@ -1035,8 +1035,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public getSWFVersion(): number {
-		console.warn('[AVM1MovieClip] getSWFVersion');
-		return 0;//loaderInfo.swfVersion;
+		return this.context.swfVersion;
 	}
 
 	public getTextSnapshot() {
