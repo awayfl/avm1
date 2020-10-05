@@ -744,8 +744,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public _callFrame(frame: any): any {
 		var script;
-		if (typeof frame === "string")
+		if (typeof frame === "string"){
+			frame = frame.toLowerCase();
 			script = this.adaptee.timeline.getScriptForLabel(this.adaptee, frame);
+		}
 		else if (typeof frame === "number")
 			script = this.adaptee.timeline.get_script_for_frame(this.adaptee, frame - 1);
 		if (script)
@@ -1076,8 +1078,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 
 		if (typeof frame === "string") {
-			// todo: check correct swfVersion for this 
-			var labelName = this.context.swfVersion > 9 ? frame : frame.toLowerCase();
+			var labelName = frame.toLowerCase();
 			if (this.adaptee.timeline._labels[labelName] == null) {
 				frame = parseInt(frame);
 				if (!isNaN(frame)) {
@@ -1121,8 +1122,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		if (typeof frame === "string") {
 
-			// todo: check correct swfVersion for this 
-			var labelName = this.context.swfVersion > 9 ? frame : frame.toLowerCase();
+			var labelName = frame.toLowerCase();
 			if (this.adaptee.timeline._labels[labelName] == null) {
 				frame = parseInt(frame);
 				if (!isNaN(frame)) {

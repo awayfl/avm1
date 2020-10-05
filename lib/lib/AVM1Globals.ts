@@ -597,7 +597,7 @@
 				}
 			} 
 			if (typeof frame === "string"){
-				var labelName=this.context.swfVersion>9?frame:frame.toLowerCase();
+				var labelName=frame.toLowerCase();
 				if(mc.timeline._labels[labelName]===null){
 					frame=parseInt(frame);
 					if(!isNaN(frame)){
