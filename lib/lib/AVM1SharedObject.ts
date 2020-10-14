@@ -192,7 +192,7 @@ export class AVM1SharedObject extends AVM1Object {
 	}
 
 	public clear(): void {
-		localStorage.removeItem(this._storage_name);
+		getSharedObjectStorage().removeItem(this._storage_name);
 	}
 
 	private getAVM1Value(jsValue:any):any{
