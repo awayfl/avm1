@@ -16,8 +16,8 @@
 
 //module Shumway.AVM1 {
 
-import {ActionCode, ActionsDataParser, ParsedAction} from "./parser";
-import { release } from "@awayfl/swf-loader";
+import { ActionCode, ActionsDataParser, ParsedAction } from './parser';
+import { release } from '@awayfl/swf-loader';
 import { AVM1ActionsData } from './context';
 
 export interface ActionCodeBlock {
@@ -48,24 +48,23 @@ export class ActionsDataAnalyzer {
 
 	constructor() {}
 	analyze(parser: ActionsDataParser): AnalyzerResults {
-		var actions: ActionCodeBlockItem[] = [];
-		var labels: number[] = [0];
-		var processedLabels: boolean[] = [true];
-		var constantPoolFound: boolean = false;
-		var singleConstantPoolAt0: any[] = null;
+		const actions: ActionCodeBlockItem[] = [];
+		const labels: number[] = [0];
+		const processedLabels: boolean[] = [true];
+		let constantPoolFound: boolean = false;
+		let singleConstantPoolAt0: any[] = null;
 
 		// Parsing all actions we can reach. Every action will have next position
 		// and conditional jump location.
-		var queue: number[] = [0];
-		var position;
-		var action: ParsedAction;
-		var nextPosition;
+		const queue: number[] = [0];
+		let position;
+		let action: ParsedAction;
+		let nextPosition;
 		var item: ActionCodeBlockItem;
-		var jumpPosition: number;
-		var branching: boolean;
-		var nonConditionalBranching: boolean;
-		var skipCount: number;
-
+		let jumpPosition: number;
+		let branching: boolean;
+		let nonConditionalBranching: boolean;
+		let skipCount: number;
 
 		while (queue.length > 0) {
 			position = queue.shift();
@@ -153,9 +152,9 @@ export class ActionsDataAnalyzer {
 		}
 
 		// Creating blocks for every unique label
-		var blocks: ActionCodeBlock[] = [];
-		var items: ActionCodeBlockItem[];
-		var lastPosition;
+		const blocks: ActionCodeBlock[] = [];
+		let items: ActionCodeBlockItem[];
+		let lastPosition;
 		var item: ActionCodeBlockItem;
 		labels.forEach((position) => {
 			if (!actions[position]) {
@@ -169,7 +168,7 @@ export class ActionsDataAnalyzer {
 				item = actions[lastPosition];
 				items.push(item);
 				lastPosition = item.next;
-			} while(!processedLabels[lastPosition] && actions[lastPosition]);
+			} while (!processedLabels[lastPosition] && actions[lastPosition]);
 
 			blocks.push({
 				label: position,
@@ -180,7 +179,7 @@ export class ActionsDataAnalyzer {
 
 		// Determines if action blocks (or defined function) is using the single
 		// constants pool defined at the beginning of the action block.
-		var singleConstantPool: any[] = null;
+		let singleConstantPool: any[] = null;
 		if (constantPoolFound) {
 			singleConstantPool = singleConstantPoolAt0;
 		} else if (this.parentResults) {
@@ -196,4 +195,3 @@ export class ActionsDataAnalyzer {
 		};
 	}
 }
-

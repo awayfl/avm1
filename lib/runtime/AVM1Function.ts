@@ -1,15 +1,15 @@
-import { AVM1Object } from "./AVM1Object";
-import { IAVM1Context, IAVM1Callable } from "../runtime";
+import { AVM1Object } from './AVM1Object';
+import { IAVM1Context, IAVM1Callable } from '../runtime';
 
 /**
  * Base class for ActionsScript functions.
  */
 export class AVM1Function extends AVM1Object implements IAVM1Callable {
-	public isOnEnter:boolean;
+	public isOnEnter: boolean;
 	public constructor(context: IAVM1Context) {
 		super(context);
 		this.alPrototype = context.builtins.Function.alGetPrototypeProperty();
-		this.isOnEnter=false;
+		this.isOnEnter = false;
 	}
 
 	public alConstruct(args?: any[]): AVM1Object {
@@ -25,10 +25,10 @@ export class AVM1Function extends AVM1Object implements IAVM1Callable {
 	 * @returns {Function} a JavaScript function.
 	 */
 	public toJSFunction(thisArg: AVM1Object = null): Function {
-		var fn = this;
-		var context = this.context;
+		const fn = this;
+		const context = this.context;
 		return function () {
-			var args = Array.prototype.slice.call(arguments, 0);
+			const args = Array.prototype.slice.call(arguments, 0);
 			return context.executeFunction(fn, thisArg, args);
 		};
 	}

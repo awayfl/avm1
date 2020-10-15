@@ -15,10 +15,10 @@
  */
 
 //module Shumway.AVM1.Lib {
-import {AVM1Context} from "../context";
-import {alCallProperty,} from "../runtime";
-import {wrapAVM1NativeClass} from "./AVM1Utils";
-import {AVM1Object} from "../runtime/AVM1Object";
+import { AVM1Context } from '../context';
+import { alCallProperty, } from '../runtime';
+import { wrapAVM1NativeClass } from './AVM1Utils';
+import { AVM1Object } from '../runtime/AVM1Object';
 import { AVMStage } from '@awayfl/swf-loader';
 
 export class AVM1Key extends AVM1Object {
@@ -38,17 +38,17 @@ export class AVM1Key extends AVM1Object {
 	public static RIGHT: number = 39;
 	public static SHIFT: number = 16;
 	public static SPACE: number = 32;
-    public static TAB: number = 9;
+	public static TAB: number = 9;
 	public static UP: number = 38;
-    
+
 	public static _keyStates: any[];
 	public static _lastKeyCode: number;
 
 	public static createAVM1Class(context: AVM1Context): AVM1Object {
-		var wrapped = wrapAVM1NativeClass(context, false, AVM1Key,
-            ['BACKSPACE', 'CAPSLOCK', 'CONTROL', 'DELETEKEY', 'DOWN', 
-            'END', 'ENTER', 'ESCAPE', 'HOME', 'INSERT', 'LEFT', 
-            'PGDN','PGUP','RIGHT', 'SHIFT', 'SPACE', 'TAB', 'UP','isDown', 'getCode'],
+		const wrapped = wrapAVM1NativeClass(context, false, AVM1Key,
+			['BACKSPACE', 'CAPSLOCK', 'CONTROL', 'DELETEKEY', 'DOWN',
+				'END', 'ENTER', 'ESCAPE', 'HOME', 'INSERT', 'LEFT',
+				'PGDN','PGUP','RIGHT', 'SHIFT', 'SPACE', 'TAB', 'UP','isDown', 'getCode'],
 			[]);
 		return wrapped;
 	}
@@ -58,45 +58,44 @@ export class AVM1Key extends AVM1Object {
 		this._lastKeyCode = 0;
 	}
 
-	public static keyDownDelegate:any=null; 
-	public static keyUpDelegate:any=null; 
+	public static keyDownDelegate: any=null;
+	public static keyUpDelegate: any=null;
 
-	public static bindStage(context: AVM1Context, cls: AVM1Object, stage: AVMStage, htmlElement:HTMLElement): void {
+	public static bindStage(context: AVM1Context, cls: AVM1Object, stage: AVMStage, htmlElement: HTMLElement): void {
 
 		// TODO: should be listening on MouseManager for key-input ?
 
-		if(AVM1Key.keyDownDelegate)
+		if (AVM1Key.keyDownDelegate)
 			htmlElement.removeEventListener('keydown', AVM1Key.keyDownDelegate);
-		
-		if(AVM1Key.keyUpDelegate)
+
+		if (AVM1Key.keyUpDelegate)
 			htmlElement.removeEventListener('keyup', AVM1Key.keyUpDelegate);
-		
-		AVM1Key.keyDownDelegate=(e)=>{
-			var staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
+
+		AVM1Key.keyDownDelegate = (e)=>{
+			const staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
 			staticState._lastKeyCode = e.keyCode;
 			staticState._keyStates[e.keyCode] = 1;
 			alCallProperty(cls, 'broadcastMessage', ['onKeyDown']);
-		}
-		AVM1Key.keyUpDelegate=(e)=>{
-			var staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
+		};
+		AVM1Key.keyUpDelegate = (e)=>{
+			const staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
 			staticState._lastKeyCode = e.keyCode;
 			delete staticState._keyStates[e.keyCode];
 			alCallProperty(cls, 'broadcastMessage', ['onKeyUp']);
-		}
-		
+		};
+
 		htmlElement.addEventListener('keydown', AVM1Key.keyDownDelegate);
 		htmlElement.addEventListener('keyup', AVM1Key.keyUpDelegate);
 
 	}
 
 	public static isDown(context: AVM1Context, code) {
-		var staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
+		const staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
 		return !!staticState._keyStates[code];
 	}
 
 	public static getCode(context: AVM1Context): number {
-		var staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
+		const staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
 		return staticState._lastKeyCode;
 	}
 }
-

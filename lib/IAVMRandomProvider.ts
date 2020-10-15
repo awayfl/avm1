@@ -1,4 +1,4 @@
 export interface IAVMRandomProvider{
-	randomValues:number[];
-	currentRandom:number;
+	randomValues: number[];
+	currentRandom: number;
 }

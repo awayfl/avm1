@@ -1,14 +1,11 @@
-import {BitmapImage2D, Image2D} from "@awayjs/stage";
-import {Timeline, MovieClip, Sprite, DisplayObjectContainer, Billboard, ISceneGraphFactory, TextField, PrefabBase, DefaultSceneGraphFactory} from "@awayjs/scene";
-import {MaterialBase} from "@awayjs/materials";
-import {AVM1MovieClip} from "./lib/AVM1MovieClip";
-import {AVM1Context} from "./context";
-import {getAVM1Object} from "./lib/AVM1Utils";
-import {AVM1TextField} from "./lib/AVM1TextField";
-import {AVM1Button} from "./lib/AVM1Button";
-
-
-
+import { BitmapImage2D, Image2D } from '@awayjs/stage';
+import { Timeline, MovieClip, Sprite, DisplayObjectContainer, Billboard, ISceneGraphFactory, TextField, PrefabBase, DefaultSceneGraphFactory } from '@awayjs/scene';
+import { MaterialBase } from '@awayjs/materials';
+import { AVM1MovieClip } from './lib/AVM1MovieClip';
+import { AVM1Context } from './context';
+import { getAVM1Object } from './lib/AVM1Utils';
+import { AVM1TextField } from './lib/AVM1TextField';
+import { AVM1Button } from './lib/AVM1Button';
 
 export interface FrameScript {
 	(any?): any;
@@ -16,46 +13,42 @@ export interface FrameScript {
 	context?: MovieClip;
 }
 
-export class AVM1SceneGraphFactory extends DefaultSceneGraphFactory implements ISceneGraphFactory
-{
-	public static _instance:AVM1SceneGraphFactory;
-	public static get instance():AVM1SceneGraphFactory{
-		if(!AVM1SceneGraphFactory._instance){
-			console.log("Error. A instance of AVM1SceneGraphFactory must be created manually before accessing the singleton AVM1SceneGraphFactory._instance")
+export class AVM1SceneGraphFactory extends DefaultSceneGraphFactory implements ISceneGraphFactory {
+	public static _instance: AVM1SceneGraphFactory;
+	public static get instance(): AVM1SceneGraphFactory {
+		if (!AVM1SceneGraphFactory._instance) {
+			console.log('Error. A instance of AVM1SceneGraphFactory must be created manually before accessing the singleton AVM1SceneGraphFactory._instance');
 			//AVM1SceneGraphFactory._instance=new AVM1SceneGraphFactory();
 		}
 		return AVM1SceneGraphFactory._instance;
 	}
-	public imageStore:Object = {};
-	public avm1Context:AVM1Context;
 
-	constructor(avm1Context:AVM1Context){
+	public imageStore: Object = {};
+	public avm1Context: AVM1Context;
+
+	constructor(avm1Context: AVM1Context) {
 		super();
-		this.avm1Context=avm1Context;
-		AVM1SceneGraphFactory._instance=this;
+		this.avm1Context = avm1Context;
+		AVM1SceneGraphFactory._instance = this;
 	}
 
-	public createSprite(prefab:PrefabBase = null):Sprite
-	{
+	public createSprite(prefab: PrefabBase = null): Sprite {
 		return new Sprite();
 	}
 
-	public createDisplayObjectContainer():DisplayObjectContainer
-	{
+	public createDisplayObjectContainer(): DisplayObjectContainer {
 		return new DisplayObjectContainer();
 	}
 
-	public createMovieClip(timeline:Timeline = null, symbol:any=null):MovieClip
-	{
+	public createMovieClip(timeline: Timeline = null, symbol: any = null): MovieClip {
 		//var avm1MovieClip:AVM1MovieClip=<AVM1MovieClip>AVM1MovieClip.createAVM1Class(this.avm1Context)._ownProperties["prototype"].value;
-		var awayMovieClip:MovieClip= new MovieClip(timeline || new Timeline());
-		if(symbol.isButton){
-			var avm1Button:AVM1Button=<AVM1Button>getAVM1Object(awayMovieClip, this.avm1Context);
+		const awayMovieClip: MovieClip = new MovieClip(timeline || new Timeline());
+		if (symbol.isButton) {
+			const avm1Button: AVM1Button = <AVM1Button>getAVM1Object(awayMovieClip, this.avm1Context);
+		} else {
+			const avm1MovieClip: AVM1MovieClip = <AVM1MovieClip>getAVM1Object(awayMovieClip, this.avm1Context);
 		}
-		else{
-			var avm1MovieClip:AVM1MovieClip=<AVM1MovieClip>getAVM1Object(awayMovieClip, this.avm1Context);
-		}
-		awayMovieClip._symbol=symbol;
+		awayMovieClip._symbol = symbol;
 		return awayMovieClip;
 		/*
 		for(let key in timeline.avm1InitActions){
@@ -71,7 +64,7 @@ export class AVM1SceneGraphFactory extends DefaultSceneGraphFactory implements I
 			//this._addAvm1InitActionBlocks(frameIndex, initActionBlocks);
 		}
 		*/
-/*
+		/*
 
 			if(frames[i].initActionBlocks){
 				awayTimeline.avm1InitActions[i]=frames[i].initActionBlocks;
@@ -92,26 +85,22 @@ export class AVM1SceneGraphFactory extends DefaultSceneGraphFactory implements I
 			this._addAvm1InitActionBlocks(frameIndex, initActionBlocks);
 		}*/
 
-
 		//return awayMovieClip;
 	}
 
-	public createTextField():TextField
-	{
-		var awayTextfield:TextField= new TextField();
-		awayTextfield.multiline=true;
-		awayTextfield.wordWrap=true;
-		var avm1textField:AVM1TextField=<AVM1TextField>getAVM1Object(awayTextfield, this.avm1Context);
+	public createTextField(): TextField {
+		const awayTextfield: TextField = new TextField();
+		awayTextfield.multiline = true;
+		awayTextfield.wordWrap = true;
+		const avm1textField: AVM1TextField = <AVM1TextField>getAVM1Object(awayTextfield, this.avm1Context);
 		return awayTextfield;
 	}
 
-	public createBillboard(material:MaterialBase):Billboard
-	{
+	public createBillboard(material: MaterialBase): Billboard {
 		return null;//new Billboard();
 	}
 
-	public createImage2D(width:number, height:number, transparent:boolean = true, fillColor:number = null, powerOfTwo:boolean = true):Image2D
-	{
+	public createImage2D(width: number, height: number, transparent: boolean = true, fillColor: number = null, powerOfTwo: boolean = true): Image2D {
 		return new BitmapImage2D(width, height, transparent, fillColor, powerOfTwo);
 	}
 }

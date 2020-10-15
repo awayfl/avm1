@@ -17,14 +17,13 @@
 import {
 	alCoerceString, alDefineObjectProperties,
 	AVM1PropertyFlags
-} from "../runtime";
-import {AVM1Context} from "../context";
-import {wrapAVM1NativeClass} from "./AVM1Utils";
-import {AVM1Object} from "../runtime/AVM1Object";
-import { AVM1PropertyDescriptor } from "../runtime/AVM1PropertyDescriptor";
+} from '../runtime';
+import { AVM1Context } from '../context';
+import { wrapAVM1NativeClass } from './AVM1Utils';
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
 
-
-var capabilitiesProperties = [
+const capabilitiesProperties = [
 	'avHardwareDisable', 'hasAccessibility', 'hasAudio', 'hasAudioEncoder',
 	'hasEmbeddedVideo', 'hasIME', 'hasMP3', 'hasPrinting', 'hasScreenBroadcast',
 	'hasScreenPlayback', 'hasStreamingAudio', 'hasStreamingVideo',
@@ -39,14 +38,14 @@ class AVM1Capabilities extends AVM1Object {
 		super(context);
 		this.alPrototype = context.builtins.Object.alGetPrototypeProperty();
 		//var as3Capabilities = context.sec.flash.system.Capabilities.axClass;
-		var getter=null;
-		var desc=null;
+		let getter = null;
+		let desc = null;
 		capabilitiesProperties.forEach((name) => {
-			getter = { alCall: function () { return null;}};//as3Capabilities.axGetPublicProperty(name); }};
+			getter = { alCall: function () { return null;} };//as3Capabilities.axGetPublicProperty(name); }};
 			desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.ACCESSOR |
 				AVM1PropertyFlags.DONT_DELETE |
 				AVM1PropertyFlags.DONT_ENUM,
-				null, getter);
+			null, getter);
 			this.alSetOwnProperty(name, desc);
 		}, this);
 	}
@@ -106,13 +105,12 @@ export class AVM1System extends AVM1Object {
 	}
 
 	public static getCapabilities(context: AVM1Context) {
-		var staticState: typeof AVM1System = context.getStaticState(AVM1System);
+		const staticState: typeof AVM1System = context.getStaticState(AVM1System);
 		return staticState._capabilities;
 	}
 
 	public static getSecurity(context: AVM1Context) {
-		var staticState: typeof AVM1System = context.getStaticState(AVM1System);
+		const staticState: typeof AVM1System = context.getStaticState(AVM1System);
 		return staticState._security;
 	}
 }
-

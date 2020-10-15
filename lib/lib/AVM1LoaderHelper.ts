@@ -1,18 +1,18 @@
-import { SWFParser, PromiseWrapper, matchRedirect } from "@awayfl/swf-loader";
-import {AVM1Globals} from "./AVM1Globals";
-import { Loader, URLLoaderEvent, LoaderEvent, AssetEvent, IAsset, AssetLibrary, URLRequest } from "@awayjs/core";
-import { AVM1Context } from "../context";
-import { DisplayObject, MovieClip } from "@awayjs/scene";
+import { SWFParser, PromiseWrapper, matchRedirect } from '@awayfl/swf-loader';
+import { AVM1Globals } from './AVM1Globals';
+import { Loader, URLLoaderEvent, LoaderEvent, AssetEvent, IAsset, AssetLibrary, URLRequest } from '@awayjs/core';
+import { AVM1Context } from '../context';
+import { DisplayObject, MovieClip } from '@awayjs/scene';
 import { AVM1MovieClip } from './AVM1MovieClip';
 
 export class AVM1LoaderHelper {
 	private static _loaderCache: StringMap<MovieClip> = {};
 
-	private _loader:Loader;
+	private _loader: Loader;
 	private _context: AVM1Context;
 	private _content: DisplayObject;
 	private result = new PromiseWrapper<DisplayObject>();
-	private _url:string;
+	private _url: string;
 
 	public get loader(): Loader {
 		return this._loader;
@@ -33,15 +33,15 @@ export class AVM1LoaderHelper {
 	private _onAssetCompleteDelegate: (event: AssetEvent) => void;
 
 	private onAssetComplete(event: AssetEvent): void {
-		var asset: IAsset = event.asset;
+		const asset: IAsset = event.asset;
 		if (asset.isAsset(MovieClip)) {
-			if(asset.assetNamespace!=this._url){
+			if (asset.assetNamespace != this._url) {
 				return;
 			}
 			if ((<any>asset).isAVMScene) {
-				this._content=<MovieClip>asset;
-                this.result.resolve(<MovieClip>asset);
-                (<any>asset.adapter).initAdapter();
+				this._content = <MovieClip>asset;
+				this.result.resolve(<MovieClip>asset);
+				(<any>asset.adapter).initAdapter();
 			}
 		}
 	}
@@ -49,7 +49,7 @@ export class AVM1LoaderHelper {
 	private _onLoaderCompleteDelegate: (event: LoaderEvent) => void;
 
 	private onLoaderComplete(event: LoaderEvent): void {
-		if(event.url!=this._url){
+		if (event.url != this._url) {
 			return;
 		}
 		AssetLibrary.removeEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
@@ -63,10 +63,10 @@ export class AVM1LoaderHelper {
 		AssetLibrary.removeEventListener(AssetEvent.ASSET_COMPLETE, this._onAssetCompleteDelegate);
 		AssetLibrary.removeEventListener(LoaderEvent.LOADER_COMPLETE, this._onLoaderCompleteDelegate);
 		AssetLibrary.removeEventListener(URLLoaderEvent.LOAD_ERROR, this._onLoadErrorDelegate);
-		console.log("load error in loadMovie", event);
+		console.log('load error in loadMovie', event);
 	}
 
-	private _loadingCallback(source: MovieClip, target: AVM1MovieClip) {		
+	private _loadingCallback(source: MovieClip, target: AVM1MovieClip) {
 		const t = target.adaptee;
 		const c = source;
 
@@ -76,31 +76,29 @@ export class AVM1LoaderHelper {
 		t.reset(true, false);
 	}
 
-	public loadMovieAt(url: string, method: string, target: AVM1MovieClip): Promise<AVM1MovieClip | null>
-	{
-		if(!target) {
-			throw new Error("Target can't be null");
+	public loadMovieAt(url: string, method: string, target: AVM1MovieClip): Promise<AVM1MovieClip | null> {
+		if (!target) {
+			throw new Error('Target can\'t be null');
 		}
 
 		let source = AVM1LoaderHelper._loaderCache[url];
 
-		
 		if (source) {
 			this._loadingCallback(source, target);
-			return Promise.resolve(target)
+			return Promise.resolve(target);
 		}
 
 		return this.load(url, method).then(()=>{
-			source = <MovieClip>this.content;
+			source = <MovieClip> this.content;
 
-			if(!source) {
+			if (!source) {
 				return null;
 			}
 
 			AVM1LoaderHelper._loaderCache[url] = source;
 			this._loadingCallback(source, target);
 			return target;
-		})
+		});
 	}
 
 	public load(url: string, method: string): Promise<DisplayObject> {
@@ -121,7 +119,7 @@ export class AVM1LoaderHelper {
 
 		/*
 		todo:
-		
+
 		var context = this._context;
 		var loader = this._loader;
 		var loaderContext: LoaderContext = new context.sec.flash.system.LoaderContext();

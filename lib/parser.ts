@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-
-import {ActionsDataStream} from "./stream";
-import {AVM1ActionsData} from "./context";
+import { ActionsDataStream } from './stream';
+import { AVM1ActionsData } from './context';
 
 export const enum ActionCode {
 	None = 0x00,
@@ -158,7 +157,7 @@ export const enum ArgumentAssignmentType {
 
 export class ActionsDataParser {
 	public dataId: string;
-	
+
 	private _stream: ActionsDataStream;
 	private _actionsData: AVM1ActionsData;
 	private _lastPushedValue: any = null;
@@ -200,18 +199,18 @@ export class ActionsDataParser {
 		return this._initialLen;
 	}
 
-	readNext() : ParsedAction {
-		var stream = this._stream;
-		var currentPosition = stream.position;
-		var actionCode = stream.readUI8();
-		var length = actionCode >= 0x80 ? stream.readUI16() : 0;
-		var nextPosition = stream.position + length;
-		var args: any[] = null;
+	readNext(): ParsedAction {
+		const stream = this._stream;
+		const currentPosition = stream.position;
+		const actionCode = stream.readUI8();
+		const length = actionCode >= 0x80 ? stream.readUI16() : 0;
+		let nextPosition = stream.position + length;
+		let args: any[] = null;
 
-		if(
-			actionCode !== ActionCode.ActionDefineFunction && 
+		if (
+			actionCode !== ActionCode.ActionDefineFunction &&
 			actionCode !== ActionCode.ActionDefineFunction2) {
-				this._lastPushedValue = null;
+			this._lastPushedValue = null;
 		}
 
 		switch (actionCode | 0) {
@@ -270,7 +269,7 @@ export class ActionsDataParser {
 							value = null;
 							break;
 						case 3: // undefined
-							value = void(0);
+							value = void (0);
 							break;
 						case 4: // Register number
 							value = new ParsedPushRegisterAction(stream.readUI8());
@@ -314,7 +313,7 @@ export class ActionsDataParser {
 			case ActionCode.ActionGotoFrame2:
 				var flags = stream.readUI8();
 				args = [flags];
-				if (!!(flags & 2)) {
+				if (flags & 2) {
 					args.push(stream.readUI16());
 				}
 				break;
@@ -361,17 +360,16 @@ export class ActionsDataParser {
 			case ActionCode.ActionDefineFunction2:
 
 				let methodName: string = null;
-				if(this._lastPushedValue instanceof ParsedPushConstantAction 
-					&& this._lastDefinedConstantPool ) 
-				{
-					methodName = this._lastDefinedConstantPool[this._lastPushedValue.constantIndex]
+				if (this._lastPushedValue instanceof ParsedPushConstantAction
+					&& this._lastDefinedConstantPool) {
+					methodName = this._lastDefinedConstantPool[this._lastPushedValue.constantIndex];
 				}
 
-				if(typeof this._lastPushedValue === 'string') {
-					methodName = this._lastPushedValue
+				if (typeof this._lastPushedValue === 'string') {
+					methodName = this._lastPushedValue;
 				}
 
-				if(methodName && IS_INVALID_NAME.test(methodName)) {
+				if (methodName && IS_INVALID_NAME.test(methodName)) {
 					methodName = null;
 				}
 
@@ -383,7 +381,7 @@ export class ActionsDataParser {
 				var functionParams = [];
 				for (var i = 0; i < count; i++) {
 					var register = stream.readUI8();
-					var paramName = stream.readString();
+					const paramName = stream.readString();
 					functionParams.push(paramName);
 					if (register) {
 						registerAllocation[register] = {
@@ -430,7 +428,7 @@ export class ActionsDataParser {
 				nextPosition += codeSize;
 				let name = this.dataId + '_f' + stream.position;
 
-				if(methodName) {
+				if (methodName) {
 					name = methodName + '__' + name;
 				}
 
@@ -454,27 +452,26 @@ export class ActionsDataParser {
 				nextPosition += trySize + catchSize + finallySize;
 
 				const thisPath = this._actionsData.debugPath;
-				
+
 				var tryBody = new AVM1ActionsData(stream.readBytes(trySize),
 					this.dataId + '_t' + stream.position, this._actionsData);
-				
-				if(thisPath)
+
+				if (thisPath)
 					tryBody.debugPath = thisPath + '/try_' + this._stream.position;
-					
+
 				var catchBody = new AVM1ActionsData(stream.readBytes(catchSize),
 					this.dataId + '_c' + stream.position, this._actionsData);
-		
-				if(thisPath){
+
+				if (thisPath) {
 					catchBody.debugPath = thisPath + '/catch_' + this._stream.position;
 				}
 
 				var finallyBody = new AVM1ActionsData(stream.readBytes(finallySize),
 					this.dataId + '_z' + stream.position, this._actionsData);
 
-				if(thisPath) {
+				if (thisPath) {
 					finallyBody.debugPath = thisPath + '/finaly_' + this._stream.position;
 				}
-					
 
 				args = [catchIsRegisterFlag, catchTarget, tryBody,
 					catchBlockFlag, catchBody, finallyBlockFlag, finallyBody];
@@ -492,11 +489,12 @@ export class ActionsDataParser {
 			args: args
 		};
 	}
+
 	skip(count) {
-		var stream = this._stream;
+		const stream = this._stream;
 		while (count > 0 && this.position < this._initialLen) {
-			var actionCode = stream.readUI8();
-			var length = actionCode >= 0x80 ? stream.readUI16() : 0;
+			const actionCode = stream.readUI8();
+			const length = actionCode >= 0x80 ? stream.readUI16() : 0;
 			stream.position += length;
 			count--;
 		}
@@ -607,4 +605,3 @@ var ActionNamesMap = {
 	0x9E: 'ActionCall',
 	0x9F: 'ActionGotoFrame2'
 };
-

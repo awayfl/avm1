@@ -16,21 +16,21 @@
 
 //module Shumway.AVM1 {
 //import flash = flash;
-import { AVM1Movie } from "./AVM1Movie";
+import { AVM1Movie } from './AVM1Movie';
 
-import { AnalyzerResults } from "./analyze";
-import { alCoerceString, alToString, IAVM1Builtins, IAVM1Context } from "./runtime";
-import { AVM1Globals } from "./lib/AVM1Globals";
-import { installBuiltins } from "./natives";
-import { MapObject, Debug, release, assert, AVMStage } from "@awayfl/swf-loader";
-import { AVM1Key } from "./lib/AVM1Key";
-import { AVM1Mouse } from "./lib/AVM1Mouse";
-import { AVM1Stage } from "./lib/AVM1Stage";
-import { AVM1MovieClip } from "./lib/AVM1MovieClip";
-import { getAVM1Object } from "./lib/AVM1Utils";
-import { AVM1Object } from "./runtime/AVM1Object";
-import { AVM1Function } from "./runtime/AVM1Function";
-import { AssetLibrary } from "@awayjs/core";
+import { AnalyzerResults } from './analyze';
+import { alCoerceString, alToString, IAVM1Builtins, IAVM1Context } from './runtime';
+import { AVM1Globals } from './lib/AVM1Globals';
+import { installBuiltins } from './natives';
+import { MapObject, Debug, release, assert, AVMStage } from '@awayfl/swf-loader';
+import { AVM1Key } from './lib/AVM1Key';
+import { AVM1Mouse } from './lib/AVM1Mouse';
+import { AVM1Stage } from './lib/AVM1Stage';
+import { AVM1MovieClip } from './lib/AVM1MovieClip';
+import { getAVM1Object } from './lib/AVM1Utils';
+import { AVM1Object } from './runtime/AVM1Object';
+import { AVM1Function } from './runtime/AVM1Function';
+import { AssetLibrary } from '@awayjs/core';
 import { SecurityDomain } from './SecurityDomain';
 import { AVM1Handler } from './AVM1Handler';
 
@@ -50,11 +50,10 @@ export class AVM1ActionsData {
 	public debugPath: string = this.id;
 
 	constructor(
-		public bytes: Uint8Array, 
-		public id: string, 
-		public parent: AVM1ActionsData = null, 
-		public encryptedData?: IEncryptedActionData ) 
-	{
+		public bytes: Uint8Array,
+		public id: string,
+		public parent: AVM1ActionsData = null,
+		public encryptedData?: IEncryptedActionData) {
 		this.ir = null;
 		this.compiled = null;
 	}
@@ -84,13 +83,13 @@ interface IActonBlock {
 export class ActionsDataFactory {
 	private _cache: WeakMap<Uint8Array, AVM1ActionsData> = new WeakMap<Uint8Array, AVM1ActionsData>();
 	public createActionsData(actionData: Uint8Array | IActonBlock, id: string, parent: AVM1ActionsData = null): AVM1ActionsData {
-		
+
 		const isArray = (actionData instanceof Uint8Array);
-		
-		let bytes: Uint8Array = isArray ? <Uint8Array>actionData : (<IActonBlock>actionData).actionsData
-		let encryptedData = isArray ? undefined : (<IActonBlock>actionData).encryptedData
+
+		const bytes: Uint8Array = isArray ? <Uint8Array>actionData : (<IActonBlock>actionData).actionsData;
+		const encryptedData = isArray ? undefined : (<IActonBlock>actionData).encryptedData;
 		let actionsData = this._cache.get(bytes);
-		
+
 		if (!actionsData) {
 			actionsData = new AVM1ActionsData(bytes, id, parent, encryptedData);
 			this._cache.set(bytes, actionsData);
@@ -182,7 +181,7 @@ export class AVM1Context implements IAVM1Context {
 			default:
 				name = alToString(this, name);
 		}
-		var normalizedName = this._nameCache[name];
+		let normalizedName = this._nameCache[name];
 		if (normalizedName) {
 			return normalizedName;
 		}
@@ -195,7 +194,7 @@ export class AVM1Context implements IAVM1Context {
 		if (!this.isPropertyCaseSensitive) {
 			propertyName = propertyName.toLowerCase();
 		}
-		var observers = this.eventObservers[propertyName];
+		let observers = this.eventObservers[propertyName];
 		if (observers) {
 			return observers;
 		}
@@ -206,23 +205,26 @@ export class AVM1Context implements IAVM1Context {
 		}
 		return null;
 	}
+
 	public registerEventPropertyObserver(propertyName: string, observer: IAVM1EventPropertyObserver): void {
-		var observers = this._getEventPropertyObservers(propertyName, true);
+		const observers = this._getEventPropertyObservers(propertyName, true);
 		observers.push(observer);
 	}
+
 	public unregisterEventPropertyObserver(propertyName: string, observer: IAVM1EventPropertyObserver): void {
-		var observers = this._getEventPropertyObservers(propertyName, false);
+		const observers = this._getEventPropertyObservers(propertyName, false);
 		if (!observers) {
 			return;
 		}
-		var j = observers.indexOf(observer);
+		const j = observers.indexOf(observer);
 		if (j < 0) {
 			return;
 		}
 		observers.splice(j, 1);
 	}
+
 	public broadcastEventPropertyChange(propertyName: string): void {
-		var observers = this._getEventPropertyObservers(propertyName, false);
+		const observers = this._getEventPropertyObservers(propertyName, false);
 		if (!observers) {
 			return;
 		}
@@ -237,15 +239,16 @@ export class AVM1Context implements IAVM1Context {
 		//80pro: directly store assets in dictionary
 		this.awayAssets[className.toLowerCase()] = symbolProps;
 	}
+
 	public registerClass(className: string, theClass: AVM1Object): void {
 		className = alCoerceString(this, className);
 		if (className === null) {
 			this.utils.warn('Cannot register class for symbol: className is missing');
 			return;
 		}
-		var myAsset: any = AssetLibrary.getAsset(className, AVM1MovieClip.currentMCAssetNameSpace);
+		const myAsset: any = AssetLibrary.getAsset(className, AVM1MovieClip.currentMCAssetNameSpace);
 		if (!myAsset || !myAsset.adaptee) {
-			console.warn("can not find symbol to register class " + className);
+			console.warn('can not find symbol to register class ' + className);
 			return;
 		}
 		//console.log("register", myAsset.adaptee.name, myAsset.adaptee.id);
@@ -258,22 +261,24 @@ export class AVM1Context implements IAVM1Context {
 		}
 		this.assetsClasses[symbolId] = theClass;*/
 	}
+
 	public getSymbolClass(symbolId: number): AVM1Object {
 		return this.assetsClasses[symbolId] || null;
 	}
+
 	public getAsset(className: string): AVM1ExportedSymbol {
 		className = alCoerceString(this, className);
 		if (className === null) {
 			return undefined;
 		}
 
-		var symbolId = this.assets[className.toLowerCase()];
+		const symbolId = this.assets[className.toLowerCase()];
 		if (symbolId === undefined) {
 			return undefined;
 		}
-		var symbol = this.awayAssets[className.toLowerCase()];
+		const symbol = this.awayAssets[className.toLowerCase()];
 		if (!symbol) {
-			console.log("error in getAsset. not implemented to grab assets from loaderInfo");
+			console.log('error in getAsset. not implemented to grab assets from loaderInfo');
 			/*symbol = this.loaderInfo.getSymbolById(symbolId);
 			if (!symbol) {
 				Debug.warning("Symbol " + symbolId + " is not defined.");
@@ -305,7 +310,7 @@ export class AVM1Context implements IAVM1Context {
 				}
 			}
 		}
-		 
+
 		removescripts();
 		var len=ActionsDataCompiler.allScripts.length;
 		for(var i=0; i<len; i++){
@@ -315,18 +320,19 @@ export class AVM1Context implements IAVM1Context {
 		AVM1Stage.bindStage(this, this.globals.Stage, null, null, null);
 
 	}
-	private htmlElement:any;
-	public setStage(avmStage: AVMStage, avm1Handler:AVM1Handler, htmlElement:any): void {
+
+	private htmlElement: any;
+	public setStage(avmStage: AVMStage, avm1Handler: AVM1Handler, htmlElement: any): void {
 		AVM1Key.bindStage(this, this.globals.Key, avmStage, htmlElement);
 		AVM1Mouse.bindStage(this, this.globals.Mouse, avmStage, htmlElement);
 		AVM1Stage.bindStage(this, this.globals.Stage, avmStage, avm1Handler, htmlElement);
 	}
 
 	public getStaticState(cls): any {
-		var state = this.staticStates.get(cls);
+		let state = this.staticStates.get(cls);
 		if (!state) {
 			state = Object.create(null);
-			var initStatic: Function = (<any>cls).alInitStatic;
+			const initStatic: Function = (<any>cls).alInitStatic;
 			if (initStatic) {
 				initStatic.call(state, this);
 			}
@@ -337,7 +343,7 @@ export class AVM1Context implements IAVM1Context {
 
 	public resolveLevel(level: number): AVM1MovieClip {
 		release || Debug.assert(typeof level === 'number');
-		var as3Root = this.globals._getRootForLevel(level);
+		const as3Root = this.globals._getRootForLevel(level);
 		if (!as3Root) {
 			this.utils.warn('Unable to resolve level ' + level + ' root');
 			return undefined;
@@ -345,4 +351,3 @@ export class AVM1Context implements IAVM1Context {
 		return <AVM1MovieClip>getAVM1Object(as3Root, this);
 	}
 }
-

@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DisplayObject as AwayDisplayObject } from "@awayjs/scene";
-
+import { DisplayObject as AwayDisplayObject } from '@awayjs/scene';
 
 export class AVM1Movie extends AwayDisplayObject {
-	_getLevelForRoot(root: AwayDisplayObject): number{return 0;};
-	_getRootForLevel(level: number): AwayDisplayObject{return null;};
-	_addRoot(level: number, root: AwayDisplayObject): void{};
-	_removeRoot(level: number): void{};
+	_getLevelForRoot(root: AwayDisplayObject): number {return 0;}
+	_getRootForLevel(level: number): AwayDisplayObject {return null;}
+	_addRoot(level: number, root: AwayDisplayObject): void{}
+	_removeRoot(level: number): void{}
 }
-export class ContextMenu{}
-export class ContextMenuItem{}
-export class fscommand{}
-export class Security{}
-export class Capabilities{}
-export class ExternalInterface{}
-export class Mouse{}
-export class SoundChannel{}
-export class SoundTransform{}
-export class SoundMixer{}
+export class ContextMenu {}
+export class ContextMenuItem {}
+export class fscommand {}
+export class Security {}
+export class Capabilities {}
+export class ExternalInterface {}
+export class Mouse {}
+export class SoundChannel {}
+export class SoundTransform {}
+export class SoundMixer {}

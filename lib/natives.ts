@@ -32,12 +32,12 @@ import {
 	alToNumber,
 	alToObject, alToPrimitive, alToString, AVM1DefaultValueHint, AVM1PropertyFlags,
 	IAVM1Context
-} from "./runtime";
-import {Debug, release, isIndex} from "@awayfl/swf-loader";
-import {AVM1Object} from "./runtime/AVM1Object";
-import {AVM1Globals} from "./lib/AVM1Globals";
-import { AVM1Function } from "./runtime/AVM1Function";
-import { AVM1PropertyDescriptor } from "./runtime/AVM1PropertyDescriptor";
+} from './runtime';
+import { Debug, release, isIndex } from '@awayfl/swf-loader';
+import { AVM1Object } from './runtime/AVM1Object';
+import { AVM1Globals } from './lib/AVM1Globals';
+import { AVM1Function } from './runtime/AVM1Function';
+import { AVM1PropertyDescriptor } from './runtime/AVM1PropertyDescriptor';
 
 class AVM1ObjectPrototype extends AVM1Object {
 	public constructor(context: IAVM1Context) {
@@ -47,7 +47,7 @@ class AVM1ObjectPrototype extends AVM1Object {
 	}
 
 	_initializePrototype() {
-		var context = this.context;
+		const context = this.context;
 		alDefineObjectProperties(this, {
 			constructor: {
 				value: context.builtins.Object,
@@ -104,7 +104,7 @@ class AVM1ObjectPrototype extends AVM1Object {
 		if (!alIsFunction(setter) && setter !== null) {
 			return false;
 		}
-		var desc = this.alGetOwnProperty(name);
+		const desc = this.alGetOwnProperty(name);
 		if (desc && !!(desc.flags & AVM1PropertyFlags.DONT_DELETE)) {
 			return false; // protected property
 		}
@@ -118,7 +118,7 @@ class AVM1ObjectPrototype extends AVM1Object {
 	}
 
 	public isPropertyEnumerable(name): boolean {
-		var desc = this.alGetProperty(name);
+		const desc = this.alGetProperty(name);
 		return !(desc.flags & AVM1PropertyFlags.DONT_ENUM);
 	}
 
@@ -144,7 +144,7 @@ export class AVM1ObjectFunction extends AVM1Function {
 	public constructor(context: IAVM1Context) {
 		super(context);
 		this.alPrototype = context.builtins.Function.alGetPrototypeProperty();
-		var proto = context.builtins.Object.alGetPrototypeProperty();
+		const proto = context.builtins.Object.alGetPrototypeProperty();
 		alDefineObjectProperties(this, {
 			prototype: {
 				value: proto
@@ -161,7 +161,7 @@ export class AVM1ObjectFunction extends AVM1Function {
 
 	public alConstruct(args?: any[]): AVM1Object {
 		if (args) {
-			var value = args[0];
+			const value = args[0];
 			if (value instanceof AVM1Object) {
 				return value;
 			}
@@ -192,7 +192,7 @@ class AVM1FunctionPrototype extends AVM1Object {
 	}
 
 	_initializePrototype() {
-		var context = this.context;
+		const context = this.context;
 		this.alPrototype = context.builtins.Object.alGetPrototypeProperty();
 		alDefineObjectProperties(this, {
 			constructor: {
@@ -205,13 +205,13 @@ class AVM1FunctionPrototype extends AVM1Object {
 	}
 
 	public call(thisArg: any, ...args: any[]): any {
-		var fn = alEnsureType<AVM1Function>(this, AVM1Function);
+		const fn = alEnsureType<AVM1Function>(this, AVM1Function);
 		return fn.alCall(thisArg, args);
 	}
 
 	public apply(thisArg: any, args?: AVM1ArrayNative): any {
-		var fn = alEnsureType<AVM1Function>(this, AVM1Function);
-		var nativeArgs = !args ? undefined :
+		const fn = alEnsureType<AVM1Function>(this, AVM1Function);
+		const nativeArgs = !args ? undefined :
 			alEnsureType<AVM1ArrayNative>(args, AVM1ArrayNative).value;
 		return fn.alCall(thisArg, nativeArgs);
 	}
@@ -222,7 +222,7 @@ export class AVM1FunctionFunction extends AVM1Function {
 		super(context);
 
 		this.alPrototype = context.builtins.Function.alGetPrototypeProperty();
-		var proto = context.builtins.Function.alGetPrototypeProperty();
+		const proto = context.builtins.Function.alGetPrototypeProperty();
 		alDefineObjectProperties(this, {
 			prototype: {
 				value: proto
@@ -279,12 +279,12 @@ export class AVM1BooleanPrototype extends AVM1Object {
 	}
 
 	public _valueOf() {
-		var native = alEnsureType<AVM1BooleanNative>(this, AVM1BooleanNative);
+		const native = alEnsureType<AVM1BooleanNative>(this, AVM1BooleanNative);
 		return native.value;
 	}
 
 	public _toString() {
-		var native = alEnsureType<AVM1BooleanNative>(this, AVM1BooleanNative);
+		const native = alEnsureType<AVM1BooleanNative>(this, AVM1BooleanNative);
 		return native.value ? 'true' : 'false';
 	}
 }
@@ -293,7 +293,7 @@ export class AVM1BooleanFunction extends AVM1Function {
 	public constructor(context: IAVM1Context) {
 		super(context);
 		this.alPrototype = context.builtins.Function.alGetPrototypeProperty();
-		var proto = new AVM1BooleanPrototype(context);
+		const proto = new AVM1BooleanPrototype(context);
 		alDefineObjectProperties(this, {
 			prototype: {
 				value: proto
@@ -302,13 +302,13 @@ export class AVM1BooleanFunction extends AVM1Function {
 	}
 
 	public alConstruct(args?: any[]): AVM1Object {
-		var value = args ? alToBoolean(this.context, args[0]) : false;
+		const value = args ? alToBoolean(this.context, args[0]) : false;
 		return new AVM1BooleanNative(this.context, value);
 	}
 
 	public alCall(thisArg: any, args?: any[]): any {
 		// TODO returns boolean value?
-		var value = args ? alToBoolean(this.context, args[0]) : false;
+		const value = args ? alToBoolean(this.context, args[0]) : false;
 		return value;
 	}
 }
@@ -351,12 +351,12 @@ export class AVM1NumberPrototype extends AVM1Object {
 	}
 
 	public _valueOf() {
-		var native = alEnsureType<AVM1NumberNative>(this, AVM1NumberNative);
+		const native = alEnsureType<AVM1NumberNative>(this, AVM1NumberNative);
 		return native.value;
 	}
 
 	public _toString(radix) {
-		var native = alEnsureType<AVM1NumberNative>(this, AVM1NumberNative);
+		const native = alEnsureType<AVM1NumberNative>(this, AVM1NumberNative);
 		return native.value.toString(radix || 10);
 	}
 }
@@ -365,7 +365,7 @@ export class AVM1NumberFunction extends AVM1Function {
 	public constructor(context: IAVM1Context) {
 		super(context);
 		this.alPrototype = context.builtins.Function.alGetPrototypeProperty();
-		var proto = new AVM1NumberPrototype(context);
+		const proto = new AVM1NumberPrototype(context);
 		alDefineObjectProperties(this, {
 			prototype: {
 				value: proto
@@ -380,13 +380,13 @@ export class AVM1NumberFunction extends AVM1Function {
 	}
 
 	public alConstruct(args?: any[]): AVM1Object {
-		var value = args ? alToNumber(this.context, args[0]) : 0;
+		const value = args ? alToNumber(this.context, args[0]) : 0;
 		return new AVM1NumberNative(this.context, value);
 	}
 
 	public alCall(thisArg: any, args?: any[]): any {
 		// TODO returns number value?
-		var value = args ? alToNumber(this.context, args[0]) : 0;
+		const value = args ? alToNumber(this.context, args[0]) : 0;
 		return value;
 	}
 }
@@ -477,47 +477,47 @@ export class AVM1StringPrototype extends AVM1Object {
 	}
 
 	public _valueOf() {
-		var native = alEnsureType<AVM1StringNative>(this, AVM1StringNative);
+		const native = alEnsureType<AVM1StringNative>(this, AVM1StringNative);
 		return native.value;
 	}
 
 	public _toString() {
-		var native = alEnsureType<AVM1StringNative>(this, AVM1StringNative);
+		const native = alEnsureType<AVM1StringNative>(this, AVM1StringNative);
 		return native.value;
 	}
 
 	public getLength(): number {
-		var native = alEnsureType<AVM1StringNative>(this, AVM1StringNative);
+		const native = alEnsureType<AVM1StringNative>(this, AVM1StringNative);
 		return native.value.length;
 	}
 
 	public charAt(index: number): string {
-		var value = alToString(this.context, this);
+		const value = alToString(this.context, this);
 		return value.charAt(alToInteger(this.context, index));
 	}
 
 	public charCodeAt(index: number): number {
-		var value = alToString(this.context, this);
+		const value = alToString(this.context, this);
 		return value.charCodeAt(alToInteger(this.context, index));
 	}
 
 	public concat(...items: AVM1Object[]): string {
-		var stringItems: string[] = [alToString(this.context, this)];
-		for (var i = 0; i < items.length; ++i) {
+		const stringItems: string[] = [alToString(this.context, this)];
+		for (let i = 0; i < items.length; ++i) {
 			stringItems.push(alToString(this.context, items[i]));
 		}
 		return stringItems.join('');
 	}
 
 	public indexOf(searchString: string, position?: number): number {
-		var value = alToString(this.context, this);
+		const value = alToString(this.context, this);
 		searchString = alToString(this.context, searchString);
 		position = alToInteger(this.context, position);
 		return value.indexOf(searchString, position);
 	}
 
 	public lastIndexOf(searchString: string, position?: number): number {
-		var value = alToString(this.context, this);
+		const value = alToString(this.context, this);
 		searchString = alToString(this.context, searchString);
 		position = arguments.length < 2 ? NaN : alToNumber(this.context, position); // SWF6 alToNumber(undefined) === 0
 		if (position < 0) {
@@ -532,17 +532,17 @@ export class AVM1StringPrototype extends AVM1Object {
 			// Different from JS
 			return undefined;
 		}
-		var value = alToString(this.context, this);
+		const value = alToString(this.context, this);
 		start = alToInteger(this.context, start);
 		end = end === undefined ? undefined : alToInteger(this.context, end);
 		return value.slice(start, end);
 	}
 
 	public split(separator: any, limit?: number): AVM1ArrayNative {
-		var value = alToString(this.context, this);
+		const value = alToString(this.context, this);
 		// TODO separator as regular expression?
 		// for undefined seperator, flash does not do any split at all
-		if(typeof separator!=="undefined"){
+		if (typeof separator !== 'undefined') {
 			separator = alToString(this.context, separator);
 			limit = (limit === undefined ? ~0 : alToInt32(this.context, limit)) >>> 0;
 			return new AVM1ArrayNative(this.context, value.split(separator, limit));
@@ -552,8 +552,8 @@ export class AVM1StringPrototype extends AVM1Object {
 
 	public substr(start: number, length?: number): string {
 		// Different from JS
-		var value = alToString(this.context, this);
-		var valueLength = value.length;
+		const value = alToString(this.context, this);
+		const valueLength = value.length;
 		start = alToInteger(this.context, start);
 		length = length === undefined ? valueLength : alToInteger(this.context, length);
 		if (start < 0) {
@@ -569,7 +569,7 @@ export class AVM1StringPrototype extends AVM1Object {
 	}
 
 	public substring(start: number, end?: number): string {
-		var value = alToString(this.context, this);
+		const value = alToString(this.context, this);
 		start = alToInteger(this.context, start);
 		if (start >= value.length) {
 			// Different from JS
@@ -580,12 +580,12 @@ export class AVM1StringPrototype extends AVM1Object {
 	}
 
 	public toLowerCase(): string {
-		var value = alToString(this.context, this);
+		const value = alToString(this.context, this);
 		return value.toLowerCase();
 	}
 
 	public toUpperCase(): string {
-		var value = alToString(this.context, this);
+		const value = alToString(this.context, this);
 		return value.toUpperCase();
 	}
 }
@@ -594,7 +594,7 @@ export class AVM1StringFunction extends AVM1Function {
 	public constructor(context: IAVM1Context) {
 		super(context);
 		this.alPrototype = context.builtins.Function.alGetPrototypeProperty();
-		var proto = new AVM1StringPrototype(context);
+		const proto = new AVM1StringPrototype(context);
 		alDefineObjectProperties(this, {
 			prototype: {
 				value: proto
@@ -606,12 +606,12 @@ export class AVM1StringFunction extends AVM1Function {
 	}
 
 	public alConstruct(args?: any[]): AVM1Object {
-		var value = args ? alToString(this.context, args[0]) : '';
+		const value = args ? alToString(this.context, args[0]) : '';
 		return new AVM1StringNative(this.context, value);
 	}
 
 	public alCall(thisArg: any, args?: any[]): any {
-		var value = args ? alToString(this.context, args[0]) : '';
+		const value = args ? alToString(this.context, args[0]) : '';
 		return value;
 	}
 
@@ -623,7 +623,7 @@ export class AVM1StringFunction extends AVM1Function {
 
 // Array natives
 
-var cachedArrayPropertyDescriptor = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA,
+const cachedArrayPropertyDescriptor = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA,
 	undefined);
 
 export class AVM1ArrayNative extends AVM1Object {
@@ -638,7 +638,7 @@ export class AVM1ArrayNative extends AVM1Object {
 
 	public alGetOwnProperty(p): AVM1PropertyDescriptor  {
 		if (alIsIndex(this.context, p)) {
-			var index = alToInt32(this.context, p);
+			const index = alToInt32(this.context, p);
 			if (Object.getOwnPropertyDescriptor(this.value, <any>index)) {
 				cachedArrayPropertyDescriptor.value = this.value[index];
 				return cachedArrayPropertyDescriptor;
@@ -649,7 +649,7 @@ export class AVM1ArrayNative extends AVM1Object {
 
 	public alSetOwnProperty(p, v: AVM1PropertyDescriptor) {
 		if (alIsIndex(this.context, p)) {
-			var index = alToInt32(this.context, p);
+			const index = alToInt32(this.context, p);
 			if (!(v.flags & AVM1PropertyFlags.DATA) ||
 				!!(v.flags & AVM1PropertyFlags.DONT_ENUM) ||
 				!!(v.flags & AVM1PropertyFlags.DONT_DELETE)) {
@@ -663,7 +663,7 @@ export class AVM1ArrayNative extends AVM1Object {
 
 	public alDeleteOwnProperty(p) {
 		if (alIsIndex(this.context, p)) {
-			var index = alToInt32(this.context, p);
+			const index = alToInt32(this.context, p);
 			delete this.value[index];
 			return;
 		}
@@ -671,9 +671,9 @@ export class AVM1ArrayNative extends AVM1Object {
 	}
 
 	public alGetOwnPropertiesKeys(): string[] {
-		var keys = super.alGetOwnPropertiesKeys();
-		var itemIndices = [];
-		for (var i in this.value) {
+		const keys = super.alGetOwnPropertiesKeys();
+		const itemIndices = [];
+		for (const i in this.value) {
 			itemIndices.push(i);
 		}
 		return itemIndices.concat(keys);
@@ -695,7 +695,7 @@ export class AVM1ArrayNative extends AVM1Object {
 			// TODO generate proper AVM1 exception.
 			throw new Error('Invalid type'); // Interpreter will catch this.
 		}
-		var result = [];
+		const result = [];
 		alIterateArray(arr.context, arr, (item: any, index: number) => {
 			result.push(fn.call(thisArg, item, index));
 		});
@@ -711,68 +711,67 @@ enum AVM1ArraySortOnOptions {
 	NUMERIC = 16
 }
 
-var sortArray=function(arr_in:any, comparefn?: AVM1Function): AVM1Object {
-    var arr = alEnsureType<AVM1ArrayNative>(arr_in, AVM1ArrayNative).value;
-    if (!alIsFunction(comparefn)) {
-        var doNumeric=typeof comparefn==="number" && (comparefn & AVM1ArraySortOnOptions.NUMERIC || comparefn==-1);
-        var doDescending=typeof comparefn==="number" && (comparefn & AVM1ArraySortOnOptions.DESCENDING);
-        if(doNumeric){
-            arr.sort(function(a,b){
-                while(a instanceof AVM1ArrayNative){
-                    a=alEnsureType<AVM1ArrayNative>(a, AVM1ArrayNative).value;
-                    if(a && a.length>0)
-                        a=a[0];
-                }
-                while(b instanceof AVM1ArrayNative){
-                    b=alEnsureType<AVM1ArrayNative>(b, AVM1ArrayNative).value;
-                    if(b && b.length>0)
-                        b=b[0];
-                }
-                return a - b;
-            });
-        }
-        else{
-            // ugly hack for moving undefined values to the beginning of the array
-            var i=arr.length;
-            while(i>0){
-                i--;
-                if(typeof arr[i]==="undefined" || arr[i]===null){
-                    arr[i]="00000000000AwayInternal";
-                }
-            }
-            arr.sort(function(a,b){
-                while(a instanceof AVM1ArrayNative){
-                    a=alEnsureType<AVM1ArrayNative>(a, AVM1ArrayNative).value;
-                    if(a && a.length>0)
-                        a=a[0];
-                }
-                while(b instanceof AVM1ArrayNative){
-                    b=alEnsureType<AVM1ArrayNative>(b, AVM1ArrayNative).value;
-                    if(b && b.length>0)
-                        b=b[0];
-                }
-                return (a<b)?-1:1;
-            });
-            i=arr.length;
-            while(i>0){
-                i--;
-                if(arr[i]=="00000000000AwayInternal"){
-                    arr[i]=undefined;
-                }
-            }
-        }
-        if(doDescending)
-            arr.reverse();
-    } else {
-        var args = [undefined, undefined];
-        arr.sort(function (a, b) {
-            args[0] = a;
-            args[1] = b;
-            return comparefn.alCall(null, args);
-        });
-    }
-    return arr_in;
-}
+const sortArray = function(arr_in: any, comparefn?: AVM1Function): AVM1Object {
+	const arr = alEnsureType<AVM1ArrayNative>(arr_in, AVM1ArrayNative).value;
+	if (!alIsFunction(comparefn)) {
+		const doNumeric = typeof comparefn === 'number' && (comparefn & AVM1ArraySortOnOptions.NUMERIC || comparefn == -1);
+		const doDescending = typeof comparefn === 'number' && (comparefn & AVM1ArraySortOnOptions.DESCENDING);
+		if (doNumeric) {
+			arr.sort(function(a,b) {
+				while (a instanceof AVM1ArrayNative) {
+					a = alEnsureType<AVM1ArrayNative>(a, AVM1ArrayNative).value;
+					if (a && a.length > 0)
+						a = a[0];
+				}
+				while (b instanceof AVM1ArrayNative) {
+					b = alEnsureType<AVM1ArrayNative>(b, AVM1ArrayNative).value;
+					if (b && b.length > 0)
+						b = b[0];
+				}
+				return a - b;
+			});
+		} else {
+			// ugly hack for moving undefined values to the beginning of the array
+			let i = arr.length;
+			while (i > 0) {
+				i--;
+				if (typeof arr[i] === 'undefined' || arr[i] === null) {
+					arr[i] = '00000000000AwayInternal';
+				}
+			}
+			arr.sort(function(a,b) {
+				while (a instanceof AVM1ArrayNative) {
+					a = alEnsureType<AVM1ArrayNative>(a, AVM1ArrayNative).value;
+					if (a && a.length > 0)
+						a = a[0];
+				}
+				while (b instanceof AVM1ArrayNative) {
+					b = alEnsureType<AVM1ArrayNative>(b, AVM1ArrayNative).value;
+					if (b && b.length > 0)
+						b = b[0];
+				}
+				return (a < b) ? -1 : 1;
+			});
+			i = arr.length;
+			while (i > 0) {
+				i--;
+				if (arr[i] == '00000000000AwayInternal') {
+					arr[i] = undefined;
+				}
+			}
+		}
+		if (doDescending)
+			arr.reverse();
+	} else {
+		const args = [undefined, undefined];
+		arr.sort(function (a, b) {
+			args[0] = a;
+			args[1] = b;
+			return comparefn.alCall(null, args);
+		});
+	}
+	return arr_in;
+};
 // TODO implement all the Array class and its prototype natives
 
 export class AVM1ArrayPrototype extends AVM1Object {
@@ -840,45 +839,44 @@ export class AVM1ArrayPrototype extends AVM1Object {
 	}
 
 	public _toString() {
-		var len:number=this.alGet("length");
-        var _i:number=0;
-        var outputStr:string="";
-        var tmpitem;
+		const len: number = this.alGet('length');
+		let _i: number = 0;
+		let outputStr: string = '';
+		let tmpitem;
 		for (_i = 0; _i < len; _i++) {
-            tmpitem = this.alGet(_i);
-            if(typeof tmpitem !== "undefined"){
-                outputStr+=alToString(this.context, tmpitem)+((_i==len-1)?"":",");
-            }
-            else{
-                outputStr+=((_i==len-1)?"":",");
-            }
-            
+			tmpitem = this.alGet(_i);
+			if (typeof tmpitem !== 'undefined') {
+				outputStr += alToString(this.context, tmpitem) + ((_i == len - 1) ? '' : ',');
+			} else {
+				outputStr += ((_i == len - 1) ? '' : ',');
+			}
+
 		}
 		return outputStr;
 	}
 
 	public getLength(): number {
-		var arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
+		const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
 		return arr.length;
 	}
 
 	public setLength(length: number) {
-        if(length===null){
-            length=0;
-        }
+		if (length === null) {
+			length = 0;
+		}
 		if (!isIndex(length)) {
 			return; // no action on invalid length
 		}
 		length = alToInt32(this.context, length) >>> 0;
 
-		var arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
+		const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
 		arr.length = length;
 	}
 
 	public concat(...items: any[]): AVM1Object {
 		if (this instanceof AVM1ArrayNative) {
 			// Faster case for native array implementation
-			var arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
+			const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
 			for (var i = 0; i < items.length; i++) {
 				if (items[i] instanceof AVM1ArrayNative) {
 					items[i] = alEnsureType<AVM1ArrayNative>(items[i], AVM1ArrayNative).value;
@@ -889,9 +887,9 @@ export class AVM1ArrayPrototype extends AVM1Object {
 			//return this;
 		}
 		// Generic behavior
-		var a = [];
-		var e: any = this;
-		var isArrayObject = alIsArrayLike(this.context, this);
+		const a = [];
+		let e: any = this;
+		let isArrayObject = alIsArrayLike(this.context, this);
 		var i = 0;
 		while (true) {
 			if (isArrayObject) {
@@ -912,7 +910,7 @@ export class AVM1ArrayPrototype extends AVM1Object {
 		separator = separator === undefined ? ',' : alCoerceString(this.context, separator);
 		if (this instanceof AVM1ArrayNative) {
 			// Faster case for native array implementation
-			var arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
+			const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
 			if (arr.length === 0) {
 				return '';
 			}
@@ -920,14 +918,14 @@ export class AVM1ArrayPrototype extends AVM1Object {
 				return arr.join(separator);
 			}
 		}
-		var context = this.context;
-		var length = alToInt32(context, this.alGet('length')) >>> 0;
+		const context = this.context;
+		const length = alToInt32(context, this.alGet('length')) >>> 0;
 		if (length === 0) {
 			return '';
 		}
-		var result = [];
-		for (var i = 0; i < length; i++) {
-			var item = this.alGet(i);
+		const result = [];
+		for (let i = 0; i < length; i++) {
+			const item = this.alGet(i);
 			result[i] = item === null || item === undefined ? '' : alCoerceString(context, item);
 		}
 		return result.join(separator);
@@ -936,15 +934,15 @@ export class AVM1ArrayPrototype extends AVM1Object {
 	public pop(): any {
 		if (this instanceof AVM1ArrayNative) {
 			// Faster case for native array implementation
-			var arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
+			const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
 			return arr.pop();
 		}
-		var length = alToInt32(this.context, this.alGet('length')) >>> 0;
+		const length = alToInt32(this.context, this.alGet('length')) >>> 0;
 		if (length === 0) {
 			return undefined;
 		}
-		var i = length - 1;
-		var result = this.alGet(i);
+		const i = length - 1;
+		const result = this.alGet(i);
 		this.alDeleteProperty(i);
 		this.alPut('length', i);
 		return result;
@@ -953,11 +951,11 @@ export class AVM1ArrayPrototype extends AVM1Object {
 	public push(...items: any[]): number {
 		if (this instanceof AVM1ArrayNative) {
 			// Faster case for native array implementation
-			var arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
+			const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
 			return Array.prototype.push.apply(arr, items);
 		}
-		var length = alToInt32(this.context, this.alGet('length')) >>> 0;
-		for (var i = 0; i < items.length; i++) {
+		let length = alToInt32(this.context, this.alGet('length')) >>> 0;
+		for (let i = 0; i < items.length; i++) {
 			this.alPut(length, items[i]);
 			length++; // TODO check overflow
 		}
@@ -966,32 +964,32 @@ export class AVM1ArrayPrototype extends AVM1Object {
 	}
 
 	public reverse() {
-		var items:any[] = [];
-		var len:number=this.alGet("length");
-		var _i:number=0;
+		const items: any[] = [];
+		const len: number = this.alGet('length');
+		let _i: number = 0;
 		for (_i = 0; _i < len; _i++) {
 			items[_i] = this.alGet(_i);
 		}
-		_i=len-1;
-		while(_i>=0){
-			this.alPut((len-1-_i), items[_i]);
+		_i = len - 1;
+		while (_i >= 0) {
+			this.alPut((len - 1 - _i), items[_i]);
 			_i--;
 		}
-		return (<any>this).value;
+		return (<any> this).value;
 	}
-	
+
 	public shift(): any {
 		if (this instanceof AVM1ArrayNative) {
 			// Faster case for native array implementation
-			var arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
+			const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
 			return arr.shift();
 		}
-		var length = alToInt32(this.context, this.alGet('length')) >>> 0;
+		const length = alToInt32(this.context, this.alGet('length')) >>> 0;
 		if (length === 0) {
 			return undefined;
 		}
-		var result = this.alGet(0);
-		for (var i = 1; i < length; i++) {
+		const result = this.alGet(0);
+		for (let i = 1; i < length; i++) {
 			if (this.alHasProperty(i)) {
 				this.alPut(i - 1, this.alGet(i));
 			} else {
@@ -1008,15 +1006,15 @@ export class AVM1ArrayPrototype extends AVM1Object {
 		end = end !== undefined ? alToInteger(this.context, end) : undefined;
 		if (this instanceof AVM1ArrayNative) {
 			// Faster case for native array implementation
-			var arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
+			const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
 			return new AVM1ArrayNative(this.context, arr.slice(start, end));
 		}
-		var a = [];
-		var length = alToInt32(this.context, this.alGet('length')) >>> 0;
+		const a = [];
+		const length = alToInt32(this.context, this.alGet('length')) >>> 0;
 		start = start < 0 ? Math.max(length + start, 0) : Math.min(length, start);
 		end = end === undefined ? length :
 			(end < 0 ? Math.max(length + end, 0) : Math.min(length, end));
-		for (var i = start, j = 0; i < end; i++, j++) {
+		for (let i = start, j = 0; i < end; i++, j++) {
 			if (this.alHasProperty(i)) {
 				a[j] = this.alGet(i);
 			}
@@ -1025,28 +1023,28 @@ export class AVM1ArrayPrototype extends AVM1Object {
 	}
 
 	public splice(start: number, deleteCount: number, ...items: any[]): AVM1Object {
-        start = alToInteger(this.context, start);
-		var length = alToInt32(this.context, this.alGet('length')) >>> 0;
+		start = alToInteger(this.context, start);
+		const length = alToInt32(this.context, this.alGet('length')) >>> 0;
 		start = start < 0 ? Math.max(length + start, 0) : Math.min(length, start);
-        //if(deleteCount || typeof deleteCount==="number")
-        //    deleteCount = alToInteger(this.context, deleteCount);
-        if(deleteCount || typeof deleteCount==="number")
-            deleteCount = alToInteger(this.context, deleteCount);
-        else
+		//if(deleteCount || typeof deleteCount==="number")
+		//    deleteCount = alToInteger(this.context, deleteCount);
+		if (deleteCount || typeof deleteCount === 'number')
+			deleteCount = alToInteger(this.context, deleteCount);
+		else
 		    deleteCount = length - start;
 		if (this instanceof AVM1ArrayNative) {
 			// Faster case for native array implementation
-			var arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
+			const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
 			return new AVM1ArrayNative(this.context,
 				Array.prototype.splice.apply(arr, [start, deleteCount].concat(items)));
 		}
-		var a = [];
+		const a = [];
 		for (var i = 0; i < deleteCount; i++) {
 			if (this.alHasProperty(start + i)) {
 				a[i] = this.alGet(start + i);
 			}
 		}
-		var delta = items.length - deleteCount;
+		const delta = items.length - deleteCount;
 		if (delta < 0) {
 			for (var i = start - delta; i < length; i++) {
 				if (this.alHasProperty(i)) {
@@ -1076,67 +1074,67 @@ export class AVM1ArrayPrototype extends AVM1Object {
 	}
 
 	public sort(comparefn?: AVM1Function): AVM1Object {
-        return sortArray(this, comparefn);
+		return sortArray(this, comparefn);
 	}
 
 	public sortOn(fieldNames: AVM1Object, options: any): AVM1Object {
-		var context = this.context;
+		const context = this.context;
 		// The field names and options we'll end up using.
-		var fieldNamesList: string[] = [];
-		var optionsList: number[] = [];
+		let fieldNamesList: string[] = [];
+		let optionsList: number[] = [];
 		if (alIsString(context, fieldNames)) {
 			fieldNamesList = [alToString(context, fieldNames)];
 			optionsList = [alToInt32(context, options)];
 		} else if (alIsArray(context, fieldNames)) {
 			fieldNamesList = [];
 			optionsList = [];
-			var optionsArray: AVM1Object = alIsArray(context, options) ? options : null;
-			var length = alToInteger(context, fieldNames.alGet('length'));
+			let optionsArray: AVM1Object = alIsArray(context, options) ? options : null;
+			const length = alToInteger(context, fieldNames.alGet('length'));
 			if (optionsArray) {
 				// checking in length of fieldNames == options
-				var optionsLength = alToInteger(context, optionsArray.alGet('length'));
+				const optionsLength = alToInteger(context, optionsArray.alGet('length'));
 				if (length !== optionsLength) {
 					optionsArray = null;
 				}
 			}
-			for (var i = 0; i < length; i++) {
+			for (let i = 0; i < length; i++) {
 				fieldNamesList.push(alToString(context, fieldNames.alGet(i)));
 				optionsList.push(optionsArray ? alToInt32(context, optionsArray.alGet(i)) : 0);
 			}
 		} else {
-            // Field parameters are incorrect.
-            return sortArray(this, options);		 
+			// Field parameters are incorrect.
+			return sortArray(this, options);
 		}
 
 		// TODO revisit this code
-		var optionsVal: number = optionsList[0];
-		release || Debug.assertNotImplemented(!(optionsVal & AVM1ArraySortOnOptions.UNIQUESORT), "UNIQUESORT");
-		release || Debug.assertNotImplemented(!(optionsVal & AVM1ArraySortOnOptions.RETURNINDEXEDARRAY), "RETURNINDEXEDARRAY");
+		const optionsVal: number = optionsList[0];
+		release || Debug.assertNotImplemented(!(optionsVal & AVM1ArraySortOnOptions.UNIQUESORT), 'UNIQUESORT');
+		release || Debug.assertNotImplemented(!(optionsVal & AVM1ArraySortOnOptions.RETURNINDEXEDARRAY), 'RETURNINDEXEDARRAY');
 
-		var comparer = (a, b) => {
-            while(a instanceof AVM1ArrayNative){
-                a=alEnsureType<AVM1ArrayNative>(a, AVM1ArrayNative).value;
-                if(a && a.length>0)
-                    a=a[0];
-            }
-            while(b instanceof AVM1ArrayNative){
-                b=alEnsureType<AVM1ArrayNative>(b, AVM1ArrayNative).value;
-                if(b && b.length>0)
-                    b=b[0];
-            }
-			var aObj = alToObject(context, a);
-			var bObj = alToObject(context, b);
-			for (var i = 0; i < fieldNamesList.length; i++) {
-				var aField = aObj.alGet(fieldNamesList[i]);
-				var bField = bObj.alGet(fieldNamesList[i]);
+		const comparer = (a, b) => {
+			while (a instanceof AVM1ArrayNative) {
+				a = alEnsureType<AVM1ArrayNative>(a, AVM1ArrayNative).value;
+				if (a && a.length > 0)
+					a = a[0];
+			}
+			while (b instanceof AVM1ArrayNative) {
+				b = alEnsureType<AVM1ArrayNative>(b, AVM1ArrayNative).value;
+				if (b && b.length > 0)
+					b = b[0];
+			}
+			const aObj = alToObject(context, a);
+			const bObj = alToObject(context, b);
+			for (let i = 0; i < fieldNamesList.length; i++) {
+				const aField = aObj.alGet(fieldNamesList[i]);
+				const bField = bObj.alGet(fieldNamesList[i]);
 				var result;
 				if (optionsList[i] & AVM1ArraySortOnOptions.NUMERIC) {
-					var aNum = alToNumber(context, aField);
-					var bNum = alToNumber(context, bField);
+					const aNum = alToNumber(context, aField);
+					const bNum = alToNumber(context, bField);
 					result = aNum < bNum ? -1 : aNum > bNum ? +1 : 0;
 				} else {
-					var aStr = alToString(context, aField);
-					var bStr = alToString(context, bField);
+					let aStr = alToString(context, aField);
+					let bStr = alToString(context, bField);
 					if (optionsList[i] & AVM1ArraySortOnOptions.CASEINSENSITIVE) {
 						aStr = aStr.toLowerCase();
 						bStr = bStr.toLowerCase();
@@ -1150,7 +1148,7 @@ export class AVM1ArrayPrototype extends AVM1Object {
 			return 0;
 		};
 
-		var arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
+		const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
 		arr.sort(comparer);
 
 		// Strange, the documentation said to do not return anything.
@@ -1160,11 +1158,11 @@ export class AVM1ArrayPrototype extends AVM1Object {
 	public unshift(...items: any[]): number {
 		if (this instanceof AVM1ArrayNative) {
 			// Faster case for native array implementation
-			var arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
+			const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
 			return Array.prototype.unshift.apply(arr, items);
 		}
-		var length = alToInt32(this.context, this.alGet('length')) >>> 0;
-		var insertCount = items.length;
+		let length = alToInt32(this.context, this.alGet('length')) >>> 0;
+		const insertCount = items.length;
 		// TODO check overflow
 		for (var i = length - 1; i >= 0; i--) {
 			if (this.alHasProperty(i)) {
@@ -1187,7 +1185,7 @@ export class AVM1ArrayFunction extends AVM1Function {
 	public constructor(context: IAVM1Context) {
 		super(context);
 		this.alPrototype = context.builtins.Function.alGetPrototypeProperty();
-		var proto = new AVM1ArrayPrototype(context);
+		const proto = new AVM1ArrayPrototype(context);
 		alDefineObjectProperties(this, {
 			prototype: {
 				value: proto
@@ -1210,7 +1208,7 @@ export class AVM1ArrayFunction extends AVM1Function {
 			return new AVM1ArrayNative(this.context, []);
 		}
 		if (args.length === 1 && typeof args[0] === 'number') {
-			var len = args[0];
+			const len = args[0];
 			if (len >>> 0 !== len) {
 				throw new Error('Range error'); // TODO avm1 native
 			}
@@ -1315,7 +1313,7 @@ class AVM1MathObject extends AVM1Object {
 	}
 
 	public random(): number {
-		if(AVM1Globals.randomProvider){
+		if (AVM1Globals.randomProvider) {
 			return AVM1Globals.randomProvider.random();
 		}
 		return Math.random();
@@ -1542,17 +1540,17 @@ class AVM1DatePrototype extends AVM1Object {
 	}
 
 	public _valueOf() {
-		var native = alEnsureType<AVM1DateNative>(this, AVM1DateNative);
+		const native = alEnsureType<AVM1DateNative>(this, AVM1DateNative);
 		return native.value.valueOf();
 	}
 
 	public _toString() {
-		var native = alEnsureType<AVM1DateNative>(this, AVM1DateNative);
+		const native = alEnsureType<AVM1DateNative>(this, AVM1DateNative);
 		return native.value.toString();
 	}
 
 	public _toLocaleString(): string {
-		var native = alEnsureType<AVM1DateNative>(this, AVM1DateNative);
+		const native = alEnsureType<AVM1DateNative>(this, AVM1DateNative);
 		return native.value.toLocaleString();
 	}
 
@@ -1818,7 +1816,7 @@ class AVM1DateFunction extends AVM1Function {
 	public constructor(context: IAVM1Context) {
 		super(context);
 		this.alPrototype = context.builtins.Function.alGetPrototypeProperty();
-		var proto = new AVM1DatePrototype(context);
+		const proto = new AVM1DatePrototype(context);
 		alDefineObjectProperties(this, {
 			prototype: {
 				value: proto
@@ -1831,8 +1829,8 @@ class AVM1DateFunction extends AVM1Function {
 	}
 
 	public alConstruct(args?: any[]): AVM1Object {
-		var context = this.context;
-		var value: Date;
+		const context = this.context;
+		let value: Date;
 		switch (args.length) {
 			case 0:
 				value = new Date();
@@ -1842,7 +1840,7 @@ class AVM1DateFunction extends AVM1Function {
 				break;
 			default: // case 2-7
 				var numbers = [];
-				for (var i = 0; i < args.length; i++) {
+				for (let i = 0; i < args.length; i++) {
 					numbers.push(alToNumber(context, args[i]));
 				}
 				value = new Date(
@@ -1863,7 +1861,7 @@ class AVM1DateFunction extends AVM1Function {
 	}
 
 	public _UTC(year: number, month: number, date?: number, hours?: number, seconds?: number, ms?: number): number {
-		var context = this.context;
+		const context = this.context;
 		return Date.UTC(
 			alToNumber(context, arguments[0]),
 			alToNumber(context, arguments[1]),
@@ -1921,7 +1919,7 @@ export class AVM1ErrorFunction extends AVM1Function {
 	public constructor(context: IAVM1Context) {
 		super(context);
 		this.alPrototype = context.builtins.Function.alGetPrototypeProperty();
-		var proto = new AVM1ErrorPrototype(context);
+		const proto = new AVM1ErrorPrototype(context);
 		alDefineObjectProperties(this, {
 			prototype: {
 				value: proto
@@ -1930,12 +1928,12 @@ export class AVM1ErrorFunction extends AVM1Function {
 	}
 
 	public alConstruct(args?: any[]): AVM1Object {
-		var value: string = args && args[0] !== undefined ? alCoerceString(this.context, args[0]) : undefined;
+		const value: string = args && args[0] !== undefined ? alCoerceString(this.context, args[0]) : undefined;
 		return new AVM1ErrorNative(this.context, value);
 	}
 
 	public alCall(thisArg: any, args?: any[]): any {
-		var value: string = args && args[0] !== undefined ? alCoerceString(this.context, args[0]) : undefined;
+		const value: string = args && args[0] !== undefined ? alCoerceString(this.context, args[0]) : undefined;
 		return new AVM1ErrorNative(this.context, value);
 	}
 }
@@ -1953,15 +1951,15 @@ function alEnsureType<T extends AVM1Object>(obj: AVM1Object, cls: any /* typeof 
  * @param {IAVM1Context} context
  */
 export function installBuiltins(context: IAVM1Context): void {
-	var builtins = context.builtins;
+	const builtins = context.builtins;
 
 	// Resolving cyclic dependency between Object/Function functions and their prototypes.
-	var objectProto = new AVM1ObjectPrototype(context);
-	var dummyObject = new AVM1Object(context);
+	const objectProto = new AVM1ObjectPrototype(context);
+	const dummyObject = new AVM1Object(context);
 	dummyObject.alSetOwnPrototypeProperty(objectProto);
 	builtins.Object = dummyObject;
-	var functionProto = new AVM1FunctionPrototype(context);
-	var dummyFunction = new AVM1Object(context);
+	const functionProto = new AVM1FunctionPrototype(context);
+	const dummyFunction = new AVM1Object(context);
 	dummyFunction.alSetOwnPrototypeProperty(functionProto);
 	builtins.Function = dummyFunction;
 	objectProto._initializePrototype();
@@ -1977,4 +1975,3 @@ export function installBuiltins(context: IAVM1Context): void {
 	builtins.Math = new AVM1MathObject(context);
 	builtins.Error = new AVM1ErrorFunction(context);
 }
-

@@ -14,30 +14,30 @@
  * limitations under the License.
  */
 
-import {AVM1ArrayNative} from "../natives";
+import { AVM1ArrayNative } from '../natives';
 
 import {
 	alCoerceString, alNewObject, alToBoolean, alToNumber, alToString,
 	AVM1PropertyFlags
-} from "../runtime";
-import {AVM1Context} from "../context";
-import {IHasAS3ObjectReference, wrapAVM1NativeClass} from "./AVM1Utils";
-import {TextField, TextFormat} from "@awayjs/scene";
-import {AVM1Object} from "../runtime/AVM1Object";
-import {notImplemented} from "@awayfl/swf-loader";
+} from '../runtime';
+import { AVM1Context } from '../context';
+import { IHasAS3ObjectReference, wrapAVM1NativeClass } from './AVM1Utils';
+import { TextField, TextFormat } from '@awayjs/scene';
+import { AVM1Object } from '../runtime/AVM1Object';
+import { notImplemented } from '@awayfl/swf-loader';
 
 export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference {
 	static createAVM1Class(context: AVM1Context): AVM1Object {
-		var members = ['align#', 'blockIndent#', 'bold#', 'bullet#', 'color#', 'font#',
+		const members = ['align#', 'blockIndent#', 'bold#', 'bullet#', 'color#', 'font#',
 			'getTextExtent', 'indent#', 'italic#', 'kerning#', 'leading#',
 			'leftMargin#', 'letterSpacing#', 'rightMargin#', 'size#', 'tabStops#',
 			'target#', 'adaptee#','underline#', 'url#'];
-		var wrapped = wrapAVM1NativeClass(context, true, AVM1TextFormat,
+		const wrapped = wrapAVM1NativeClass(context, true, AVM1TextFormat,
 			[],
 			members,
 			null, AVM1TextFormat.prototype.avm1Constructor);
-		var proto = wrapped.alGetPrototypeProperty();
-		var p =null;
+		const proto = wrapped.alGetPrototypeProperty();
+		let p = null;
 		members.forEach((x) => {
 			if (x[x.length - 1] === '#') {
 				x = x.slice(0, -1);
@@ -50,20 +50,19 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	static createFromNative(context: AVM1Context, awayObject: TextFormat): AVM1Object {
-		var TextFormat = context.globals.TextFormat;
-		var obj:AVM1TextFormat = new AVM1TextFormat(context);
+		const TextFormat = context.globals.TextFormat;
+		const obj: AVM1TextFormat = new AVM1TextFormat(context);
 		obj.alPrototype = TextFormat.alGetPrototypeProperty();
 		obj.adaptee = awayObject;
 		return obj;
 	}
 
-	public alPut(p, v){
-		if(p=="font"){
+	public alPut(p, v) {
+		if (p == 'font') {
 			this.setFont(v);
 		}
 		super.alPut(p, v);
 	}
-
 
 	adaptee: TextFormat
 
@@ -71,7 +70,7 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 						   italic?: boolean, underline?: boolean, url?: string, target?: string,
 						   align?: string, leftMargin?: number, rightMargin?: number,
 						   indent?: number, leading?: number) {
-		var context = this.context;
+		const context = this.context;
 		font = (font == null) ? null : alToString(context, font);
 		size = (size == null) ? null : alToNumber(context, size);
 		color = (color == null) ? null : alToNumber(context, color);
@@ -85,7 +84,7 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 		rightMargin = (rightMargin == null) ? null : alToNumber(context, rightMargin);
 		indent = (indent == null) ? null : alToNumber(context, indent);
 		leading = (leading == null) ? null : alToNumber(context, leading);
-		var awayObject = new TextFormat(
+		const awayObject = new TextFormat(
 			font, size, color, bold, italic, underline, url, target,
 			align, leftMargin, rightMargin, indent, leading);
 		this.adaptee = awayObject;
@@ -95,7 +94,7 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 
 	static alInitStatic(context: AVM1Context): void {
 		// See _measureTextField usage in the getTextExtent() below.
-		var measureTextField = new TextField();
+		const measureTextField = new TextField();
 		measureTextField.multiline = true;
 		this._measureTextField = measureTextField;
 	}
@@ -103,6 +102,7 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 	public getAdaptee(): any {
 		return this.adaptee.id;
 	}
+
 	public setAdaptee(value: any): void {}
 
 	public getAlign(): string {
@@ -110,9 +110,9 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	public setAlign(value: string): void {
-		var alignAsString:string=alToString(this.context, value);
-		if(alignAsString==""){
-			alignAsString="center"
+		let alignAsString: string = alToString(this.context, value);
+		if (alignAsString == '') {
+			alignAsString = 'center';
 		}
 		this.adaptee.align = alignAsString;
 	}
@@ -239,7 +239,7 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 	public getTarget(): string {
 		notImplemented('AVM1TextFormat.getTarget');
 		// return this.adaptee.target;
-		return "";
+		return '';
 	}
 
 	public setTarget(value: string): void {
@@ -252,8 +252,8 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 		text = alCoerceString(this.context, text);
 		width = +width;
 
-		var staticState: typeof AVM1TextFormat = this.context.getStaticState(AVM1TextFormat);
-		var measureTextField = staticState._measureTextField;
+		const staticState: typeof AVM1TextFormat = this.context.getStaticState(AVM1TextFormat);
+		const measureTextField = staticState._measureTextField;
 		if (!isNaN(width) && width > 0) {
 			measureTextField.width = width + 4;
 			measureTextField.wordWrap = true;
@@ -262,14 +262,14 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 		}
 		measureTextField.defaultTextFormat = this.adaptee;
 		measureTextField.text = text;
-		var result: AVM1Object = alNewObject(this.context);
-		var textWidth = measureTextField.textWidth;
-		var textHeight = measureTextField.textHeight;
+		const result: AVM1Object = alNewObject(this.context);
+		const textWidth = measureTextField.textWidth;
+		const textHeight = measureTextField.textHeight;
 		result.alPut('width', textWidth);
 		result.alPut('height', textHeight);
 		result.alPut('textFieldWidth', textWidth + 4);
 		result.alPut('textFieldHeight', textHeight + 4);
-		var metrics = measureTextField.getLineMetrics(0);
+		const metrics = measureTextField.getLineMetrics(0);
 		// todo: this causes compile errors:
 		//result.alPut('ascent', metrics.axGetPublicProperty('ascent'));
 		//result.alPut('descent',	metrics.axGetPublicProperty('descent'));
@@ -296,4 +296,3 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 		this.adaptee.url = alToString(this.context, value);
 	}
 }
-

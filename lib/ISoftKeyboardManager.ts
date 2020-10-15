@@ -1,4 +1,4 @@
-import {TextField} from "@awayjs/scene"
+import { TextField } from '@awayjs/scene';
 export interface ISoftKeyboardManager{
-	openKeyboard(activeText:TextField, fromMouseDown:boolean);
+	openKeyboard(activeText: TextField, fromMouseDown: boolean);
 }

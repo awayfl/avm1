@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import {AVM1Object} from "../runtime/AVM1Object";
-import {AVM1Context} from "../context";
-import {getAwayJSAdaptee, IAVM1SymbolBase, wrapAVM1NativeClass} from "./AVM1Utils";
-import {AVM1Matrix, toAS3Matrix} from "./AVM1Matrix";
-import {AVM1ColorTransform, toAwayColorTransform} from "./AVM1ColorTransform";
-import {AVM1Rectangle} from "./AVM1Rectangle";
-import {DisplayObject} from "@awayjs/scene";
-import {Matrix, Transform} from "@awayjs/core";
-
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1Context } from '../context';
+import { getAwayJSAdaptee, IAVM1SymbolBase, wrapAVM1NativeClass } from './AVM1Utils';
+import { AVM1Matrix, toAS3Matrix } from './AVM1Matrix';
+import { AVM1ColorTransform, toAwayColorTransform } from './AVM1ColorTransform';
+import { AVM1Rectangle } from './AVM1Rectangle';
+import { DisplayObject } from '@awayjs/scene';
+import { Matrix, Transform } from '@awayjs/core';
 
 export class AVM1Transform extends AVM1Object {
 	static createAVM1Class(context: AVM1Context): AVM1Object {
@@ -45,33 +44,32 @@ export class AVM1Transform extends AVM1Object {
 	}
 
 	public getMatrix(): AVM1Object {
-		var transform = this._targetAwayObject.transform;
+		const transform = this._targetAwayObject.transform;
 		return AVM1Matrix.fromAS3Matrix(this.context, transform.matrix);
 	}
 
 	public setMatrix(value: AVM1Matrix) {
-		var transform = this._targetAwayObject.transform;
+		const transform = this._targetAwayObject.transform;
 		transform.matrix = toAS3Matrix(value);
 	}
 
 	public getConcatenatedMatrix(): AVM1Matrix {
-		var transform = this._targetAwayObject.transform;
+		const transform = this._targetAwayObject.transform;
 		return AVM1Matrix.fromAS3Matrix(this.context, <Matrix>transform.concatenatedMatrix);
 	}
 
 	public getColorTransform(): AVM1ColorTransform {
-		var transform = this._targetAwayObject.transform;
+		const transform = this._targetAwayObject.transform;
 		return AVM1ColorTransform.fromAwayColorTransform(this.context, transform.colorTransform);
 	}
 
 	public setColorTransform(value: AVM1ColorTransform) {
-		var transform = this._targetAwayObject.transform;
+		const transform = this._targetAwayObject.transform;
 		transform.colorTransform = toAwayColorTransform(value);
 	}
 
 	public getPixelBounds(): AVM1Rectangle {
-		var transform = this._targetAwayObject.transform;
+		const transform = this._targetAwayObject.transform;
 		return AVM1Rectangle.fromAS3Rectangle(this.context, transform.pixelBounds);
 	}
 }
-

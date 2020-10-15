@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import {AVM1Object} from "../runtime/AVM1Object";
-import {AVM1Context} from "../context";
-import {wrapAVM1NativeClass} from "./AVM1Utils";
-import {AVM1MovieClip} from "./AVM1MovieClip";
-import {AVM1Broadcaster} from "./AVM1Broadcaster";
-import {notImplemented} from "@awayfl/swf-loader";
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1Context } from '../context';
+import { wrapAVM1NativeClass } from './AVM1Utils';
+import { AVM1MovieClip } from './AVM1MovieClip';
+import { AVM1Broadcaster } from './AVM1Broadcaster';
+import { notImplemented } from '@awayfl/swf-loader';
 import { AVM1LoaderHelper } from './AVM1LoaderHelper';
 import { DisplayObject, MovieClip } from '@awayjs/scene';
 import { alCallProperty } from '../runtime';
-
 
 export class AVM1MovieClipLoader extends AVM1Object {
 	static createAVM1Class(context: AVM1Context): AVM1Object {
@@ -40,10 +39,10 @@ export class AVM1MovieClipLoader extends AVM1Object {
 		AVM1Broadcaster.initialize(this.context, this);
 	}
 
-	public loadClip(url: string, target):Boolean {
-		var loadLevel: boolean = typeof target === 'number';
-		var level: number;
-		var target_mc: AVM1MovieClip;
+	public loadClip(url: string, target): Boolean {
+		const loadLevel: boolean = typeof target === 'number';
+		let level: number;
+		let target_mc: AVM1MovieClip;
 		if (loadLevel) {
 			level = <number>target;
 			if (level === 0) {
@@ -61,26 +60,26 @@ export class AVM1MovieClipLoader extends AVM1Object {
 		this._loaderHelper = loaderHelper;
 		this._target = null;
 
-		if(!url) {
+		if (!url) {
 			return false;
 		}
 
 		const t = target as AVM1MovieClip;
 
-		if(url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0){
+		if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {
 			url = this.context.globals.SWF_BASE_URL + url;
 		}
 
 		loaderHelper.loadMovieAt(url, 'get', t).then((mc: AVM1MovieClip) => {
 			if (!mc) {
-				console.warn("load - content is null");
+				console.warn('load - content is null');
 				return;
 			}
 
 			alCallProperty(this, 'broadcastMessage', ['onLoadComplete', target]);
 			setTimeout(()=>{
-				alCallProperty(this, 'broadcastMessage', ['onLoadInit', target]);				
-			})
+				alCallProperty(this, 'broadcastMessage', ['onLoadInit', target]);
+			});
 		});
 
 		//80pro todo
@@ -112,7 +111,7 @@ export class AVM1MovieClipLoader extends AVM1Object {
 		return true;
 	}
 
-	public unloadClip(target):Boolean {
+	public unloadClip(target): Boolean {
 		notImplemented('MovieClipLoader.unloadClip');
 		/*
 		if (!this._loaderHelper) {
@@ -149,6 +148,7 @@ export class AVM1MovieClipLoader extends AVM1Object {
 		*/
 		return true;
 	}
+
 	public getProgress(target): number {
 		notImplemented('AVM1MovieClipLoader.getProgress');
 		return 0;
@@ -186,4 +186,3 @@ export class AVM1MovieClipLoader extends AVM1Object {
 			targetAwayObject.addEventListener(Event.EXIT_FRAME, exitFrameCallback)
 		}*/
 }
-

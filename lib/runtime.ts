@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-
-
-import {AVM1Context} from "./context";
-import {AVM1ArrayNative, AVM1BooleanNative, AVM1NumberNative, AVM1StringNative} from "./natives";
-import {IDisplayObjectAdapter, DisplayObject} from "@awayjs/scene";
-import {IAsset} from "@awayjs/core";
-import { AVM1Object } from "./runtime/AVM1Object";
-import { AVM1Function } from "./runtime/AVM1Function";
-import { AVM1Globals } from "./lib/AVM1Globals";
-import { AVM1PropertyDescriptor } from "./runtime/AVM1PropertyDescriptor";
-import Big from "big.js";
+import { AVM1Context } from './context';
+import { AVM1ArrayNative, AVM1BooleanNative, AVM1NumberNative, AVM1StringNative } from './natives';
+import { IDisplayObjectAdapter, DisplayObject } from '@awayjs/scene';
+import { IAsset } from '@awayjs/core';
+import { AVM1Object } from './runtime/AVM1Object';
+import { AVM1Function } from './runtime/AVM1Function';
+import { AVM1Globals } from './lib/AVM1Globals';
+import { AVM1PropertyDescriptor } from './runtime/AVM1PropertyDescriptor';
+import Big from 'big.js';
 import { Debug, release, isNullOrUndefined, isIndex } from '@awayfl/swf-loader';
 
 // Just assigning class prototype to null will not work, using next best thing.
@@ -120,22 +118,23 @@ export class AVM1NativeFunction extends AVM1Function {
 export class AVM1EvalFunction extends AVM1Function {
 	public constructor(context: IAVM1Context) {
 		super(context);
-		var proto = new AVM1Object(context);
+		const proto = new AVM1Object(context);
 		proto.alPrototype = context.builtins.Object.alGetPrototypeProperty();
 		proto.alSetOwnProperty('constructor', new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA |
 			AVM1PropertyFlags.DONT_ENUM |
 			AVM1PropertyFlags.DONT_DELETE));
 		this.alSetOwnPrototypeProperty(proto);
 	}
+
 	public alConstruct(args?: any[]): AVM1Object  {
-		var obj = new AVM1Object(this.context);
-		var objPrototype = this.alGetPrototypeProperty();
+		const obj = new AVM1Object(this.context);
+		let objPrototype = this.alGetPrototypeProperty();
 		if (!(objPrototype instanceof AVM1Object)) {
 			objPrototype = this.context.builtins.Object.alGetPrototypeProperty();
 		}
 		obj.alPrototype = objPrototype;
 		obj.alSetOwnConstructorProperty(this);
-		var result = this.alCall(obj, args);
+		const result = this.alCall(obj, args);
 		return result instanceof AVM1Object ? result : obj;
 	}
 }
@@ -150,15 +149,15 @@ export function alToPrimitive(context: IAVM1Context, v, preferredType?: AVM1Defa
 	if (!(v instanceof AVM1Object)) {
 		return v;
 	}
-	var obj: AVM1Object = v;
+	const obj: AVM1Object = v;
 	return preferredType !== undefined ? obj.alDefaultValue(preferredType) : obj.alDefaultValue();
 }
 
 export function bToRuntimeBool (context: IAVM1Context, v: boolean | number): boolean | number  {
 	const is5 = context.swfVersion >= 5;
 	const is7 = context.swfVersion >= 7;
-	
-	if(is5) {
+
+	if (is5) {
 		return !!v;
 	}
 
@@ -167,7 +166,7 @@ export function bToRuntimeBool (context: IAVM1Context, v: boolean | number): boo
 
 export function alToBoolean(context: IAVM1Context, v): boolean {
 	const is7 = context.swfVersion >= 7;
-	
+
 	switch (typeof v) {
 		case 'undefined':
 			return false;
@@ -175,14 +174,14 @@ export function alToBoolean(context: IAVM1Context, v): boolean {
 			return v !== null;
 		case 'boolean':
 			return v;
-		case 'string':{
-			if(is7) {
+		case 'string': {
+			if (is7) {
 				// In files published for Flash Player 7 and later, the result is true if the string has a length
 				// greater than 0; the value is false for an empty string.
 				return !!v;
 			}
 			// In files published for Flash Player 6 and earlier, the string is first converted to a number.
-			// The value is true if the number is not 0, otherwise the return value is false. 
+			// The value is true if the number is not 0, otherwise the return value is false.
 			return !isNaN(+v) && (+v) !== 0;
 		}
 		case 'number':
@@ -204,7 +203,7 @@ export function alToNumber(context: IAVM1Context, v): number {
 				return context.swfVersion >= 7 ? NaN : 0;
 			}
 			// for xml nodes we want to get the nodeValue here
-			if(typeof v.nodeValue !== "undefined")
+			if (typeof v.nodeValue !== 'undefined')
 				return parseFloat(v.nodeValue);
 			return context.swfVersion >= 5 ? NaN : 0;
 		case 'boolean':
@@ -215,7 +214,7 @@ export function alToNumber(context: IAVM1Context, v): number {
 			if (v === '' && context.swfVersion < 5) {
 				return 0;
 			}
-			if(v===""){
+			if (v === '') {
 				return NaN;
 			}
 			return +v;
@@ -225,7 +224,7 @@ export function alToNumber(context: IAVM1Context, v): number {
 }
 
 export function alToInteger(context: IAVM1Context, v): number {
-	var n = alToNumber(context, v);
+	const n = alToNumber(context, v);
 	if (isNaN(n)) {
 		return 0;
 	}
@@ -236,11 +235,9 @@ export function alToInteger(context: IAVM1Context, v): number {
 }
 
 export function alToInt32(context: IAVM1Context, v): number  {
-	var n = alToNumber(context, v);
+	const n = alToNumber(context, v);
 	return n | 0;
 }
-
-
 
 export function alToString(context: IAVM1Context, v): string {
 	if (typeof v === 'object' && v !== null) {
@@ -253,22 +250,22 @@ export function alToString(context: IAVM1Context, v): string {
 			if (v === null) {
 				return 'null';
 			}
-            if (v && v instanceof Array) {
-                var outputStr:string="";
-                for(var i:number=0; i< v.length; i++){
-                    outputStr+=alToString(context, v[i]);
-                    outputStr+=i==v.length-1?"":",";
-                }
-                return outputStr;
-            }
+			if (v && v instanceof Array) {
+				let outputStr: string = '';
+				for (let i: number = 0; i < v.length; i++) {
+					outputStr += alToString(context, v[i]);
+					outputStr += i == v.length - 1 ? '' : ',';
+				}
+				return outputStr;
+			}
 			return '[type ' + alGetObjectClass(v) + ']';
 		case 'boolean':
 			return v ? 'true' : 'false';
 		case 'number':
 			if (isFinite(v)) {
-				var bigv=Big(v);
-				if(Math.abs(bigv.e)<14)
-					bigv=bigv.round(14-bigv.e, 1);
+				let bigv = Big(v);
+				if (Math.abs(bigv.e) < 14)
+					bigv = bigv.round(14 - bigv.e, 1);
 				return bigv.toString();
 			}
 			return v.toString();
@@ -310,7 +307,7 @@ export function alToObject(context: IAVM1Context, v): AVM1Object {
 }
 
 export function alNewObject(context: IAVM1Context): AVM1Object {
-	var obj = new AVM1Object(context);
+	const obj = new AVM1Object(context);
 	obj.alPrototype = context.builtins.Object.alGetPrototypeProperty();
 	obj.alSetOwnConstructorProperty(context.builtins.Object);
 	return obj;
@@ -334,7 +331,7 @@ export function alCoerceString(context: IAVM1Context, x): string {
 	if (x instanceof AVM1Object)
 		return alToString(context, x);
 
-	if (typeof x === "string")
+	if (typeof x === 'string')
 		return x;
 
 	if (x == undefined)
@@ -366,7 +363,7 @@ export function alIsFunction(obj: any): boolean  {
 }
 
 export function alCallProperty(obj: AVM1Object, p, args?: any[]): any {
-	var callable: IAVM1Callable = obj.alGet(p);
+	const callable: IAVM1Callable = obj.alGet(p);
 	callable.alCall(obj, args);
 }
 
@@ -377,8 +374,8 @@ export function alInstanceOf(context: IAVM1Context, obj, cls): boolean  {
 	if (!(cls instanceof AVM1Object)) {
 		return false;
 	}
-	var proto = cls.alGetPrototypeProperty();
-	for (var i = obj; i; i = i.alPrototype) {
+	const proto = cls.alGetPrototypeProperty();
+	for (let i = obj; i; i = i.alPrototype) {
 		if (i === proto) {
 			return true;
 		}
@@ -394,7 +391,7 @@ export function alIsArrayLike(context: IAVM1Context, v): boolean {
 	if (!(v instanceof AVM1Object)) {
 		return false;
 	}
-	var length = alToInteger(context, v.alGet('length'));
+	const length = alToInteger(context, v.alGet('length'));
 	if (isNaN(length) || length < 0 || length >= 4294967296) {
 		return false;
 	}
@@ -403,11 +400,11 @@ export function alIsArrayLike(context: IAVM1Context, v): boolean {
 
 export function alIterateArray(context: IAVM1Context, arr: AVM1Object,
 							   fn: (obj: any, index?: number) => void, thisArg: any = null): void {
-	var length = alToInteger(context, arr.alGet('length'));
+	const length = alToInteger(context, arr.alGet('length'));
 	if (isNaN(length) || length >= 4294967296) {
 		return;
 	}
-	for (var i = 0; i < length; i++) {
+	for (let i = 0; i < length; i++) {
 		fn.call(thisArg, arr.alGet(i), i);
 	}
 }
@@ -417,11 +414,11 @@ export function alIsString(context: IAVM1Context, v): boolean {
 }
 
 export function alDefineObjectProperties(obj: AVM1Object, descriptors: any): void {
-	var context = obj.context;
+	const context = obj.context;
 	Object.getOwnPropertyNames(descriptors).forEach(function (name) {
-		var desc = descriptors[name];
-		var value, getter, setter;
-		var flags: AVM1PropertyFlags = 0;
+		const desc = descriptors[name];
+		let value, getter, setter;
+		let flags: AVM1PropertyFlags = 0;
 		if (typeof desc === 'object') {
 			if (desc.get || desc.set) {
 				getter = desc.get ? new AVM1NativeFunction(context, desc.get) : undefined;
@@ -454,4 +451,3 @@ export function alDefineObjectProperties(obj: AVM1Object, descriptors: any): voi
 		obj.alSetOwnProperty(name, new AVM1PropertyDescriptor(flags, value, getter, setter));
 	});
 }
-

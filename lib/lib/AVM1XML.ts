@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 //module Shumway.AVM1.Lib {
-import {AVM1Context} from "../context";
+import { AVM1Context } from '../context';
 
 import {
 	alCoerceNumber, alCoerceString, alDefineObjectProperties, alForEachProperty, alInstanceOf, alIsIndex, alToBoolean,
 	alToInteger, alToString,
 	AVM1PropertyFlags
-} from "../runtime";
-import {Debug, release, isNullOrUndefined} from "@awayfl/swf-loader";
-import {IAVM1DataObject, loadAVM1DataObject} from "./AVM1LoadVars";
-import {avm1BroadcastEvent} from "./AVM1Utils";
-import {XMLNode} from "../customAway/xml/XMLNode";
-import {XMLDocumentAway} from "../customAway/xml/XMLDocumentAway";
-import {URLLoader} from "@awayjs/core";
-import {AVM1Object} from "../runtime/AVM1Object";
-import { AVM1Function } from "../runtime/AVM1Function";
-import { AVM1PropertyDescriptor } from "../runtime/AVM1PropertyDescriptor";
+} from '../runtime';
+import { Debug, release, isNullOrUndefined } from '@awayfl/swf-loader';
+import { IAVM1DataObject, loadAVM1DataObject } from './AVM1LoadVars';
+import { avm1BroadcastEvent } from './AVM1Utils';
+import { XMLNode } from '../customAway/xml/XMLNode';
+import { XMLDocumentAway } from '../customAway/xml/XMLDocumentAway';
+import { URLLoader } from '@awayjs/core';
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1Function } from '../runtime/AVM1Function';
+import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
 
 enum AVM1XMLNodeType {
 	ELEMENT_NODE = 1,
@@ -40,7 +40,7 @@ function toAS3XMLNode(as2Node: AVM1Object): XMLNode  {
 	if (!(as2Node instanceof AVM1Object)) {
 		return null;
 	}
-	var context = as2Node.context;
+	const context = as2Node.context;
 	if (!alInstanceOf(context, as2Node, context.globals.XMLNode)) {
 		return null;
 	}
@@ -48,11 +48,11 @@ function toAS3XMLNode(as2Node: AVM1Object): XMLNode  {
 	return (<AVM1XMLNodePrototype>as2Node).as3XMLNode;
 }
 
-function fromAS3XMLNode(context: AVM1Context, as3Node:XMLNode): AVM1Object {
+function fromAS3XMLNode(context: AVM1Context, as3Node: XMLNode): AVM1Object {
 	if (isNullOrUndefined(as3Node)) {
 		return undefined;
 	}
-	var as2Node: AVM1Object = (<any>as3Node)._as2Node;
+	let as2Node: AVM1Object = (<any>as3Node)._as2Node;
 	if (!as2Node) {
 		as2Node = new AVM1Object(context);
 		as2Node.alPrototype = context.globals.XMLNode.alGetPrototypeProperty();
@@ -75,13 +75,13 @@ export class AVM1XMLNodeFunction extends AVM1Function {
 			Debug.notImplemented('Unsupported amount of parameters for AVM1XMLNode constructor');
 			return undefined;
 		}
-		var type = alCoerceNumber(this.context, args[0]);
-		var value = alCoerceString(this.context, args[1]);
+		const type = alCoerceNumber(this.context, args[0]);
+		const value = alCoerceString(this.context, args[1]);
 		if (type !== AVM1XMLNodeType.ELEMENT_NODE && type !== AVM1XMLNodeType.TEXT_NODE) {
 			Debug.notImplemented('Unsupported AVM1XMLNode type: ' + type);
 			return undefined;
 		}
-		var obj = new AVM1Object(this.context);
+		const obj = new AVM1Object(this.context);
 		obj.alPrototype = this.alGetPrototypeProperty();
 		AVM1XMLNodePrototype.prototype.initializeNode.call(obj, type, value);
 		return obj;
@@ -102,7 +102,7 @@ class AVM1XMLNodeChildNodes extends AVM1Object  {
 		this._cachedNodePropertyDescriptor = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA |
 			AVM1PropertyFlags.DONT_DELETE |
 			AVM1PropertyFlags.READ_ONLY,
-			undefined);
+		undefined);
 		alDefineObjectProperties(this, {
 			length: {
 				get: this.getLength
@@ -120,7 +120,7 @@ class AVM1XMLNodeChildNodes extends AVM1Object  {
 
 	alGetOwnProperty(p): AVM1PropertyDescriptor {
 		if (alIsIndex(this.context, p)) {
-			var index = alToInteger(this.context, p);
+			const index = alToInteger(this.context, p);
 			if (index >= 0 && index < this.as3ChildNodes.length) {
 				this._cachedNodePropertyDescriptor.value = fromAS3XMLNode(this.context, this.as3ChildNodes[index]);
 				return this._cachedNodePropertyDescriptor;
@@ -142,7 +142,7 @@ class AVM1XMLNodeAttributes extends AVM1Object {
 	}
 
 	public alGetOwnProperty(p): AVM1PropertyDescriptor {
-		var name = alCoerceString(this.context, p);
+		const name = alCoerceString(this.context, p);
 		if (this._as3Attributes.hasOwnProperty(name)) {
 			this._cachedNodePropertyDescriptor.value =
 				this._as3Attributes[name];
@@ -152,25 +152,25 @@ class AVM1XMLNodeAttributes extends AVM1Object {
 	}
 
 	public alSetOwnProperty(p, desc: AVM1PropertyDescriptor): void {
-		var name = alCoerceString(this.context, p);
+		const name = alCoerceString(this.context, p);
 		if ((desc.flags & AVM1PropertyFlags.DATA)) {
-			var value = alCoerceString(this.context, desc.value);
+			const value = alCoerceString(this.context, desc.value);
 			this._as3Attributes[name] = value;
 		}
 	}
 
 	public alHasOwnProperty(p): boolean  {
-		var name = alCoerceString(this.context, p);
+		const name = alCoerceString(this.context, p);
 		return this._as3Attributes.hasOwnProperty(name);
 	}
 
 	public alDeleteOwnProperty(p) {
-		var name = alCoerceString(this.context, p);
+		const name = alCoerceString(this.context, p);
 		delete this._as3Attributes[name];
 	}
 
 	public alGetOwnPropertiesKeys(): string[] {
-		var as3Keys = Object.keys(this._as3Attributes);
+		const as3Keys = Object.keys(this._as3Attributes);
 
 		return as3Keys.map((key) => alCoerceString(this.context, this._as3Attributes[key].name));
 	}
@@ -276,7 +276,7 @@ class AVM1XMLNodePrototype extends AVM1Object {
 	_toString(): string {
 		//	to match FP output we use replace
 		//	to converting "/>" to " />"
-		return new XMLSerializer().serializeToString(<any>this.as3XMLNode).replace(/\/>/g, " />");
+		return new XMLSerializer().serializeToString(<any> this.as3XMLNode).replace(/\/>/g, ' />');
 	}
 
 	appendChild(newChild: AVM1Object): void {
@@ -284,7 +284,7 @@ class AVM1XMLNodePrototype extends AVM1Object {
 	}
 
 	getAttributes(): AVM1Object {
-		var as3Attributes = this.as3XMLNode.attributes;
+		const as3Attributes = this.as3XMLNode.attributes;
 		if (isNullOrUndefined(as3Attributes)) {
 			return undefined;
 		}
@@ -304,11 +304,11 @@ class AVM1XMLNodePrototype extends AVM1Object {
 			this._attributes = value;
 			return;
 		}
-		var context = this.context;
-		var as3Attributes = {};
+		const context = this.context;
+		const as3Attributes = {};
 		alForEachProperty(value, (prop) => {
-			var name = alCoerceString(context, prop);
-			var value = alCoerceString(context, this.alGet(prop));
+			const name = alCoerceString(context, prop);
+			const value = alCoerceString(context, this.alGet(prop));
 			as3Attributes[name] = value;
 		}, this);
 		this._attributes = new AVM1XMLNodeAttributes(context, as3Attributes);
@@ -323,7 +323,7 @@ class AVM1XMLNodePrototype extends AVM1Object {
 
 	cloneNode(deepClone: boolean): AVM1Object {
 		deepClone = alToBoolean(this.context, deepClone);
-		var clone = this.as3XMLNode.axCallPublicProperty('cloneNode', [deepClone]);
+		const clone = this.as3XMLNode.axCallPublicProperty('cloneNode', [deepClone]);
 		return fromAS3XMLNode(this.context, clone);
 	}
 
@@ -370,7 +370,7 @@ class AVM1XMLNodePrototype extends AVM1Object {
 
 	setNodeName(value: string) {
 		value = alCoerceString(this.context, value);
-		this.as3XMLNode.nodeName=value;
+		this.as3XMLNode.nodeName = value;
 	}
 
 	getNodeType(): number {
@@ -383,7 +383,7 @@ class AVM1XMLNodePrototype extends AVM1Object {
 
 	setNodeValue(value: string) {
 		value = alCoerceString(this.context, value);
-		this.as3XMLNode.nodeValue=value;
+		this.as3XMLNode.nodeValue = value;
 	}
 
 	getParentNode(): AVM1Object {
@@ -402,7 +402,7 @@ class AVM1XMLNodePrototype extends AVM1Object {
 		this.as3XMLNode.removeNode();
 	}
 
-	static addMap(as3Node:XMLNode, as2Node: AVM1Object): void {
+	static addMap(as3Node: XMLNode, as2Node: AVM1Object): void {
 		release || Debug.assert(!(<any>as3Node)._as2Node);
 		(<any>as3Node)._as2Node = as2Node;
 	}
@@ -415,11 +415,11 @@ export class AVM1XMLFunction extends AVM1Function {
 	}
 
 	alConstruct(args?: any[]): AVM1Object  {
-		var text = args && alCoerceString(this.context, args[0]);
-		var obj = new AVM1Object(this.context);
+		let text = args && alCoerceString(this.context, args[0]);
+		const obj = new AVM1Object(this.context);
 		obj.alPrototype = this.alGetPrototypeProperty();
 		(<IAVM1DataObject><any>obj).isAVM1DataObject = true;
-		if(!text) text="";
+		if (!text) text = '';
 		AVM1XMLPrototype.prototype.initializeDocument.call(obj, text);
 
 		return obj;
@@ -474,7 +474,7 @@ class AVM1XMLPrototype extends AVM1Object implements IAVM1DataObject {
 				value: this.defaultOnData,
 				writable: true
 			}
-		})
+		});
 	}
 
 	as3XMLDocument: XMLDocumentAway;
@@ -483,11 +483,11 @@ class AVM1XMLPrototype extends AVM1Object implements IAVM1DataObject {
 
 	initializeDocument(text: string) {
 		text = alCoerceString(this.context, text) || null;
-		
+
 		// XMLDocument not callable, you must execute DOMParser for it
-		
-		var oParser = new DOMParser();
-		var as3Doc = oParser.parseFromString(text, "application/xml");
+
+		const oParser = new DOMParser();
+		const as3Doc = oParser.parseFromString(text, 'application/xml');
 
 		AVM1XMLNodePrototype.prototype.initializeFromAS3Node.call(this, as3Doc);
 		this.as3XMLDocument = <any>as3Doc;
@@ -499,13 +499,13 @@ class AVM1XMLPrototype extends AVM1Object implements IAVM1DataObject {
 
 	createElement(name: string): AVM1Object {
 		name = alCoerceString(this.context, name);
-		var as3Node = this.as3XMLDocument.axCallPublicProperty('createElement', [name]);
+		const as3Node = this.as3XMLDocument.axCallPublicProperty('createElement', [name]);
 		return fromAS3XMLNode(this.context, as3Node);
 	}
 
-	createTextNode(value: string) : AVM1Object {
+	createTextNode(value: string): AVM1Object {
 		value = alCoerceString(this.context, value);
-		var as3Node = this.as3XMLDocument.axCallPublicProperty('createTextNode', [value]);
+		const as3Node = this.as3XMLDocument.axCallPublicProperty('createTextNode', [value]);
 		return fromAS3XMLNode(this.context, as3Node);
 	}
 
@@ -528,7 +528,7 @@ class AVM1XMLPrototype extends AVM1Object implements IAVM1DataObject {
 		if (!url) {
 			return false;
 		}
-		loadAVM1DataObject(this.context, url, null, null, null, <IAVM1DataObject><any>this);
+		loadAVM1DataObject(this.context, url, null, null, null, <IAVM1DataObject><any> this);
 		return true;
 	}
 
@@ -544,9 +544,9 @@ class AVM1XMLPrototype extends AVM1Object implements IAVM1DataObject {
 
 	parseXML(value: string): void {
 		value = alCoerceString(this.context, value);
-		var oParser = new DOMParser();
-		let as3Doc = <any>oParser.parseFromString(value, "application/xml");
-		
+		const oParser = new DOMParser();
+		const as3Doc = <any>oParser.parseFromString(value, 'application/xml');
+
 		AVM1XMLNodePrototype.prototype.initializeFromAS3Node.call(this, as3Doc);
 		this.as3XMLDocument = <any>as3Doc;
 		/*this.as3XMLDocument.axSetPublicProperty('ignoreWhite',
@@ -572,10 +572,9 @@ class AVM1XMLPrototype extends AVM1Object implements IAVM1DataObject {
 		}
 		Debug.somewhatImplemented('AVM1XMLPrototype.send');
 		// TODO check content types and test
-		var contentType = this.alGet('contentType');
+		let contentType = this.alGet('contentType');
 		contentType = isNullOrUndefined(contentType) ? undefined : alCoerceString(this.context, contentType);
-		var data = alToString(this.context, this);
+		const data = alToString(this.context, this);
 		loadAVM1DataObject(this.context, url, 'POST', contentType, data, <IAVM1DataObject><any>resultXML);
 	}
 }
-

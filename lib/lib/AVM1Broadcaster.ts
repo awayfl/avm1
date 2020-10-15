@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {avm1BroadcastEvent, hasAwayJSAdaptee, IAVM1SymbolBase, wrapAVM1NativeClass} from "./AVM1Utils";
-import {AVM1Context} from "../context";
-import {AVM1NativeFunction, AVM1PropertyFlags} from "../runtime";
-import {AVM1ArrayNative} from "../natives";
-import {AVM1Object} from "../runtime/AVM1Object";
-import { AVM1PropertyDescriptor } from "../runtime/AVM1PropertyDescriptor";
+import { avm1BroadcastEvent, hasAwayJSAdaptee, IAVM1SymbolBase, wrapAVM1NativeClass } from './AVM1Utils';
+import { AVM1Context } from '../context';
+import { AVM1NativeFunction, AVM1PropertyFlags } from '../runtime';
+import { AVM1ArrayNative } from '../natives';
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
 
 function _updateAllSymbolEvents(symbolInstance: IAVM1SymbolBase) {
 	if (!hasAwayJSAdaptee(symbolInstance)) {
@@ -33,12 +33,12 @@ export class AVM1Broadcaster extends AVM1Object {
 	}
 
 	public static initialize(context: AVM1Context, obj: AVM1Object): void {
-		var desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA | AVM1PropertyFlags.DONT_ENUM,
+		let desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA | AVM1PropertyFlags.DONT_ENUM,
 			new AVM1ArrayNative(context, []));
 		obj.alSetOwnProperty('_listeners', desc);
 		desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA | AVM1PropertyFlags.DONT_ENUM,
 			new AVM1NativeFunction(context, function broadcastMessage(eventName: string, ...args): void {
-				var listenersField = this.alGet('_listeners');
+				const listenersField = this.alGet('_listeners');
 				if (!(listenersField instanceof AVM1ArrayNative)) {
 					return;
 				}
@@ -47,29 +47,29 @@ export class AVM1Broadcaster extends AVM1Object {
 		obj.alSetOwnProperty('broadcastMessage', desc);
 		desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA | AVM1PropertyFlags.DONT_ENUM,
 			new AVM1NativeFunction(context, function addListener(listener: any): boolean {
-				var listenersField = this.alGet('_listeners');
+				const listenersField = this.alGet('_listeners');
 				if (!(listenersField instanceof AVM1ArrayNative)) {
 					return false;
 				}
-				var listeners: any[] = (<AVM1ArrayNative>listenersField).value;
+				const listeners: any[] = (<AVM1ArrayNative>listenersField).value;
 				listeners.push(listener);
-				_updateAllSymbolEvents(<any>this);
+				_updateAllSymbolEvents(<any> this);
 				return true;
 			}));
 		obj.alSetOwnProperty('addListener', desc);
 		desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA | AVM1PropertyFlags.DONT_ENUM,
 			new AVM1NativeFunction(context, function removeListener(listener: any): boolean {
-				var listenersField = this.alGet('_listeners');
+				const listenersField = this.alGet('_listeners');
 				if (!(listenersField instanceof AVM1ArrayNative)) {
 					return false;
 				}
-				var listeners: any[] = (<AVM1ArrayNative>listenersField).value;
-				var i = listeners.indexOf(listener);
+				const listeners: any[] = (<AVM1ArrayNative>listenersField).value;
+				const i = listeners.indexOf(listener);
 				if (i < 0) {
 					return false;
 				}
 				listeners.splice(i, 1);
-				_updateAllSymbolEvents(<any>this);
+				_updateAllSymbolEvents(<any> this);
 				return true;
 			}));
 		obj.alSetOwnProperty('removeListener', desc);

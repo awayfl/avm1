@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-
 import {
 	alDefineObjectProperties, alNewObject, alToBoolean, alToNumber, alToString
-} from "../runtime";
-import {AVM1Context} from "../context";
-import {AVM1Object} from "../runtime/AVM1Object";
-import { AVM1Function } from "../runtime/AVM1Function";
-
+} from '../runtime';
+import { AVM1Context } from '../context';
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1Function } from '../runtime/AVM1Function';
 
 // Base class/function for all AVM1 filters.
 class AVM1BitmapFilterFunction extends AVM1Function {
@@ -31,7 +29,7 @@ class AVM1BitmapFilterFunction extends AVM1Function {
 	}
 
 	alConstruct(args?: any[]): AVM1Object {
-		var obj = new AVM1Object(this.context);
+		const obj = new AVM1Object(this.context);
 		obj.alPrototype = this.alGetPrototypeProperty();
 		return obj;
 	}
@@ -55,7 +53,7 @@ class AVM1BitmapFilterPrototype extends AVM1Object {
 	}
 
 	clone(): AVM1Object {
-		var obj = new AVM1Object(this.context);
+		const obj = new AVM1Object(this.context);
 		obj.alPrototype = this.alGetPrototypeProperty();
 		return obj;
 	}
@@ -72,10 +70,10 @@ function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: A
 						   name: string, fields: string[]): void {
 	// Simple constructor for the class function.
 	function construct(args?: any[]): AVM1Object {
-		var as2Object = new AVM1Object(context);
+		const as2Object = new AVM1Object(context);
 		as2Object.alPrototype = wrappedProto;
 		if (args) {
-			for (var i = 0; i < args.length; i++) {
+			for (let i = 0; i < args.length; i++) {
 				as2Object.alPut(fields[i << 1], args[i]);
 			}
 		}
@@ -83,9 +81,9 @@ function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: A
 	}
 
 	function clone(): AVM1Object {
-		var as2Object = new AVM1Object(context);
+		const as2Object = new AVM1Object(context);
 		as2Object.alPrototype = wrappedProto;
-		for (var i = 0; i < fields.length; i += 2) {
+		for (let i = 0; i < fields.length; i += 2) {
 			as2Object.alPut(fields[i], this.alGet(fields[i]));
 		}
 		return as2Object;
@@ -121,12 +119,12 @@ function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: A
 	// }
 
 	// Creates new prototype object and function for the class.
-	var proto = base.alGetPrototypeProperty();
+	const proto = base.alGetPrototypeProperty();
 	var wrappedProto: AVM1BitmapFilterPrototype = Object.create(AVM1BitmapFilterPrototype.prototype);
 	AVM1Object.call(wrappedProto, context);
 	wrappedProto.alPrototype = proto;
 
-	var wrapped: AVM1BitmapFilterFunction = Object.create(AVM1BitmapFilterFunction.prototype);
+	const wrapped: AVM1BitmapFilterFunction = Object.create(AVM1BitmapFilterFunction.prototype);
 	AVM1Function.call(wrapped, context);
 	wrapped.alSetOwnPrototypeProperty(wrappedProto);
 	wrapped.alConstruct = construct;
@@ -153,8 +151,8 @@ function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: A
 }
 
 export function createFiltersClasses(context: AVM1Context): AVM1Object {
-	var filters = alNewObject(context);
-	var base = new AVM1BitmapFilterFunction(context);
+	const filters = alNewObject(context);
+	const base = new AVM1BitmapFilterFunction(context);
 	filters.alPut('BitmapFilter', base);
 	// TODO make field types non-string
 	createFilterClass(context, filters, base, 'BevelFilter',
@@ -241,7 +239,7 @@ export function createFiltersClasses(context: AVM1Context): AVM1Object {
 // 	}
 // }
 
-var knownFilters: string[] = ['BevelFilter', 'BlurFilter', 'ColorMatrixFilter',
+const knownFilters: string[] = ['BevelFilter', 'BlurFilter', 'ColorMatrixFilter',
 	'ConvolutionFilter', 'DisplacementMapFilter', 'DropShadowFilter', 'GlowFilter',
 	'GradientBevelFilter', 'GradientGlowFilter'];
 
@@ -288,4 +286,3 @@ var knownFilters: string[] = ['BevelFilter', 'BlurFilter', 'ColorMatrixFilter',
 // 	}
 // 	return new AVM1ArrayNative(context, arr);
 // }
-

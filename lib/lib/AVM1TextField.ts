@@ -16,19 +16,19 @@
 
 import {
 	alCoerceNumber, alCoerceString, alToBoolean, alToInt32, alToInteger, alToNumber, alToString
-} from "../runtime";
-import {AVM1Context} from "../context";
-import {getAVM1Object, wrapAVM1NativeClass, toTwipFloor, toTwipRound} from "./AVM1Utils";
-import {AVM1TextFormat} from "./AVM1TextFormat";
-import {notImplemented} from "@awayfl/swf-loader";
-import {EventBase as Event} from "@awayjs/core";
-import {TextField, KeyboardEvent, TextFormat, TextfieldEvent, DisplayObject, DisplayObjectContainer, MouseManager} from "@awayjs/scene";
-import {AVM1Key} from "./AVM1Key";
-import {AVM1SymbolBase} from "./AVM1SymbolBase";
-import {AVM1Object} from "../runtime/AVM1Object";
-import { EventsListForMC } from "./AVM1EventHandler";
+} from '../runtime';
+import { AVM1Context } from '../context';
+import { getAVM1Object, wrapAVM1NativeClass, toTwipFloor, toTwipRound } from './AVM1Utils';
+import { AVM1TextFormat } from './AVM1TextFormat';
+import { notImplemented } from '@awayfl/swf-loader';
+import { EventBase as Event } from '@awayjs/core';
+import { TextField, KeyboardEvent, TextFormat, TextfieldEvent, DisplayObject, DisplayObjectContainer, MouseManager } from '@awayjs/scene';
+import { AVM1Key } from './AVM1Key';
+import { AVM1SymbolBase } from './AVM1SymbolBase';
+import { AVM1Object } from '../runtime/AVM1Object';
+import { EventsListForMC } from './AVM1EventHandler';
 import { AVM1Globals } from './AVM1Globals';
-import {alCallProperty,} from "../runtime";
+import { alCallProperty, } from '../runtime';
 import { AVM1Stage } from './AVM1Stage';
 
 interface mapNumberToString{
@@ -42,7 +42,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	static createAVM1Class(context: AVM1Context): AVM1Object  {
 		return wrapAVM1NativeClass(context, true, AVM1TextField,
 			[],
-			[ '_alpha#', 'addListener', 'antiAliasType#', 'autoSize#', 'background#', 'backgroundColor#',
+			['_alpha#', 'addListener', 'antiAliasType#', 'autoSize#', 'background#', 'backgroundColor#',
 				'border#',  'borderColor#', 'bottomScroll#', 'condenseWhite#', 'embedFonts#',
 				'filters#', 'getAwayJSID', 'getNewTextFormat', 'getTextFormat', 'gridFitType#', 'getDepth',
 				'_height#', '_highquality#', 'hscroll#', 'html#', 'htmlText#', 'length#',
@@ -60,68 +60,69 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 
 	private _exitFrameHandler: (event: Event) => void;
 
-	public dispatchKeyEvent(keyCode, isShift, isCTRL, isAlt){
+	public dispatchKeyEvent(keyCode, isShift, isCTRL, isAlt) {
 		// this is called from the adaptee whenever a text-input occurs
-		if(!(<AVM1Stage>this.context.globals.Stage) 
-		|| !(<AVM1Stage>this.context.globals.Stage).avmStage
-		|| !(<AVM1Stage>this.context.globals.Stage).avmStage.scene){
+		if (!(<AVM1Stage> this.context.globals.Stage)
+		|| !(<AVM1Stage> this.context.globals.Stage).avmStage
+		|| !(<AVM1Stage> this.context.globals.Stage).avmStage.scene) {
 			return;
 		}
-        //console.log("dispatch keyEvent", (<AVM1Stage>this.context.globals.Stage)._awayAVMStage.scene.mouseManager.useSoftkeyboard)
-		if((<AVM1Stage>this.context.globals.Stage).avmStage.scene.mouseManager.useSoftkeyboard){
-            //console.log("dispatch keyEvent")
-            var staticState: typeof AVM1Key = this.context.getStaticState(AVM1Key);
+		//console.log("dispatch keyEvent", (<AVM1Stage>this.context.globals.Stage)._awayAVMStage.scene.mouseManager.useSoftkeyboard)
+		if ((<AVM1Stage> this.context.globals.Stage).avmStage.scene.mouseManager.useSoftkeyboard) {
+			//console.log("dispatch keyEvent")
+			const staticState: typeof AVM1Key = this.context.getStaticState(AVM1Key);
 			staticState._lastKeyCode = keyCode;
 			staticState._keyStates[keyCode] = 1;
 			alCallProperty(AVM1Globals.instance.Key, 'broadcastMessage', ['onKeyDown']);
-			
-            var newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYDOWN, "", keyCode);
-            newEvent.isShift = isShift;
-            newEvent.isCTRL = isCTRL;
-            newEvent.isAlt = isAlt;
-            (<AVM1Stage>this.context.globals.Stage).avmStage.dispatchEvent(newEvent);
+
+			var newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYDOWN, '', keyCode);
+			newEvent.isShift = isShift;
+			newEvent.isCTRL = isCTRL;
+			newEvent.isAlt = isAlt;
+			(<AVM1Stage> this.context.globals.Stage).avmStage.dispatchEvent(newEvent);
 			delete staticState._keyStates[keyCode];
-            alCallProperty(AVM1Globals.instance.Key, 'broadcastMessage', ['onKeyUp']);
-            
-            var newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYUP, "", keyCode);
-            newEvent.isShift = isShift;
-            newEvent.isCTRL = isCTRL;
-            newEvent.isAlt = isAlt;
-            (<AVM1Stage>this.context.globals.Stage).avmStage.dispatchEvent(newEvent);
+			alCallProperty(AVM1Globals.instance.Key, 'broadcastMessage', ['onKeyUp']);
+
+			var newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYUP, '', keyCode);
+			newEvent.isShift = isShift;
+			newEvent.isCTRL = isCTRL;
+			newEvent.isAlt = isAlt;
+			(<AVM1Stage> this.context.globals.Stage).avmStage.dispatchEvent(newEvent);
 		}
 	}
 
-	public static allTextfields:any={};
-	public static syncAllTextfields(){
-		for (var key in AVM1TextField.allTextfields){
-			if(AVM1TextField.allTextfields[key]){
+	public static allTextfields: any={};
+	public static syncAllTextfields() {
+		for (const key in AVM1TextField.allTextfields) {
+			if (AVM1TextField.allTextfields[key]) {
 				AVM1TextField.allTextfields[key].syncTextFieldValue();
 
-			}
-			else{
+			} else {
 				delete AVM1TextField.allTextfields[key];
 			}
 		}
 	}
-	public static textFieldVars:AVM1TextField[]=[];
-	public static syncQueedTextfields(){
-		if(AVM1TextField.textFieldVars.length>0){
-			var len=AVM1TextField.textFieldVars.length;
-			for(var i:number=0; i<len; i++){
-				AVM1TextField.textFieldVars[i].syncTextFieldValue()
+
+	public static textFieldVars: AVM1TextField[]=[];
+	public static syncQueedTextfields() {
+		if (AVM1TextField.textFieldVars.length > 0) {
+			const len = AVM1TextField.textFieldVars.length;
+			for (let i: number = 0; i < len; i++) {
+				AVM1TextField.textFieldVars[i].syncTextFieldValue();
 			}
-			AVM1TextField.textFieldVars.length=0;
+			AVM1TextField.textFieldVars.length = 0;
 		}
 	}
 
 	public getAwayJSID(): number {
 		return this.adaptee.id;
-    }
-	public selectTextField(fromMouseDown:boolean=false){
+	}
+
+	public selectTextField(fromMouseDown: boolean = false) {
 		// this is called from the adaptee whenever it is selected in MouseManager
-		if(AVM1Globals.softKeyboardManager){
-			if(this.adaptee.name=="dummy_txt" || this.adaptee.name.indexOf("temp")==0)
-				fromMouseDown=true;
+		if (AVM1Globals.softKeyboardManager) {
+			if (this.adaptee.name == 'dummy_txt' || this.adaptee.name.indexOf('temp') == 0)
+				fromMouseDown = true;
 			AVM1Globals.softKeyboardManager.openKeyboard(this.adaptee, fromMouseDown);
 		}
 	}
@@ -129,17 +130,16 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	public removeTextField() {
 		this.removeMovieClip();
 	}
+
 	public alPut(p, v) {
 		super.alPut(p,v);
 	}
 
-
-	public initAdapter():void
-	{
+	public initAdapter(): void {
 		if (this.adaptee._symbol) {
 			//console.log("do init", this.adaptee._symbol.variableName, this);
 			this.setVariable(this.adaptee._symbol.variableName || '');
-        }
+		}
 		this.adaptee.addEventListener(TextfieldEvent.CHANGED,()=>{
 			// make sure text-var is synced before onChanged is called:
 			this.updateVarFromText();
@@ -153,33 +153,30 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 		super.initAVM1SymbolInstance(context, awayObject);
 
 		//this.dynamicallyCreated=false;
-		this.adaptee=awayObject;
+		this.adaptee = awayObject;
 		this._initEventsHandlers();
 		this._variable = '';
 		this._exitFrameHandler = null;
-		this.adaptee=awayObject;
+		this.adaptee = awayObject;
 
 	}
 
-
-	public clone(){
-		return <AVM1TextField>getAVM1Object(this.adaptee.clone(), <AVM1Context>this._avm1Context);
+	public clone() {
+		return <AVM1TextField>getAVM1Object(this.adaptee.clone(), <AVM1Context> this._avm1Context);
 	}
 
 	public getAntiAliasType(): string {
-		notImplemented("AVM1Textfield.getAntiAliasType");
-		return ""; // this.adaptee.antiAliasType;
+		notImplemented('AVM1Textfield.getAntiAliasType');
+		return ''; // this.adaptee.antiAliasType;
 	}
 
 	public setAntiAliasType(value: string) {
-		notImplemented("AVM1Textfield.getAntiAliasType");
+		notImplemented('AVM1Textfield.getAntiAliasType');
 		//value = alCoerceString(this.context, value);
 		//this.adaptee.antiAliasType = value;
 	}
-	
-	
-	public get_width(): number
-	{
+
+	public get_width(): number {
 		this.syncTextFieldValue();
 		//this.replicateWeirdFlashBehavior();
 		//var box:Box = PickGroup.getInstance((<AVM1Stage>this.context.globals.Stage)._awayAVMStage.view.renderer.view).getBoundsPicker(this.adaptee.partition).getBoxBounds(this.adaptee)
@@ -187,8 +184,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 		//return this._prevWidth;
 	}
 
-	public get_height(): number
-	{
+	public get_height(): number {
 		this.syncTextFieldValue();
 		//this.replicateWeirdFlashBehavior();
 		//var box:Box = PickGroup.getInstance((<AVM1Stage>this.context.globals.Stage)._awayAVMStage.view.renderer.view).getBoundsPicker(this.adaptee.partition).getBoxBounds(this.adaptee)
@@ -196,28 +192,27 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 		//return this._prevWidth;
 	}
 
-	public set_width(value: number)
-	{
+	public set_width(value: number) {
 		value =  toTwipRound(alToNumber(this.context, value));
 
 		this._blockedByScript = true;
 
 		if (isNaN(value))
 			return;
-		
+
 		this.adaptee.width = value;
 		//var box:Box = this.adaptee.getBoxBounds(this.adaptee);
 		//this._prevWidth=(box == null)? 0 : toTwipRound(box.width);
 	}
-	public set_height(value: number)
-	{
+
+	public set_height(value: number) {
 		value =  toTwipRound(alToNumber(this.context, value));
 
 		this._blockedByScript = true;
 
 		if (isNaN(value))
 			return;
-		
+
 		this.adaptee.height = value;
 		//var box:Box = this.adaptee.getBoxBounds(this.adaptee);
 		//this._prevWidth=(box == null)? 0 : toTwipRound(box.width);
@@ -226,19 +221,22 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	public get_x(): number {
 		this.syncTextFieldValue();
 		//this.replicateWeirdFlashBehavior();
-		return toTwipFloor(this.adaptee.x+(this.adaptee.scaleX * this.adaptee.textOffsetX));
+		return toTwipFloor(this.adaptee.x + (this.adaptee.scaleX * this.adaptee.textOffsetX));
 	}
+
 	public get_y(): number {
 		this.syncTextFieldValue();
-		return toTwipFloor(this.adaptee.y+(this.adaptee.scaleY * this.adaptee.textOffsetY));
+		return toTwipFloor(this.adaptee.y + (this.adaptee.scaleY * this.adaptee.textOffsetY));
 	}
+
 	public set_x(value: number) {
 		this.syncTextFieldValue();
-		this.adaptee.x=toTwipFloor(value-(this.adaptee.scaleX * this.adaptee.textOffsetX));
+		this.adaptee.x = toTwipFloor(value - (this.adaptee.scaleX * this.adaptee.textOffsetX));
 	}
+
 	public set_y(value: number) {
 		this.syncTextFieldValue();
-		this.adaptee.y=toTwipFloor(value-(this.adaptee.scaleY * this.adaptee.textOffsetY));
+		this.adaptee.y = toTwipFloor(value - (this.adaptee.scaleY * this.adaptee.textOffsetY));
 	}
 
 	public getAutoSize() {
@@ -248,9 +246,9 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	public setAutoSize(value: any) {
 		// AVM1 treats |true| as "LEFT" and |false| as "NONE".
 		if (value === true) {
-			value = "left";
+			value = 'left';
 		} else if (value === false) {
-			value = "none";
+			value = 'none';
 		}
 		value = alCoerceString(this.context, value);
 		this.adaptee.autoSize = value;
@@ -293,27 +291,27 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	public getBottomScroll(): number {
-		return this.adaptee.bottomScrollV+1;
+		return this.adaptee.bottomScrollV + 1;
 	}
 
 	public getCondenseWhite(): boolean {
-		notImplemented("AVM1Textfield.getCondenseWhite");
+		notImplemented('AVM1Textfield.getCondenseWhite');
 		return this.adaptee.condenseWhite;
 	}
 
 	public setCondenseWhite(value: boolean) {
-		notImplemented("AVM1Textfield.setCondenseWhite");
+		notImplemented('AVM1Textfield.setCondenseWhite');
 		value = alToBoolean(this.context, value);
 		this.adaptee.condenseWhite = value;
 	}
 
 	public getEmbedFonts(): boolean {
-		notImplemented("AVM1Textfield.getEmbedFonts");
+		notImplemented('AVM1Textfield.getEmbedFonts');
 		return this.adaptee.embedFonts;
 	}
 
 	public setEmbedFonts(value) {
-		notImplemented("AVM1Textfield.setEmbedFonts");
+		notImplemented('AVM1Textfield.setEmbedFonts');
 		value = alToBoolean(this.context, value);
 		this.adaptee.embedFonts = value;
 	}
@@ -325,30 +323,29 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	public getTextFormat(beginIndex: number = -1, endIndex: number = -1) {
 		beginIndex = alToInteger(this.context, beginIndex);
 		endIndex = alToInteger(this.context, endIndex);
-		var as3TextFormat = this.adaptee.getTextFormat(beginIndex, endIndex);
+		const as3TextFormat = this.adaptee.getTextFormat(beginIndex, endIndex);
 		return AVM1TextFormat.createFromNative(this.context, as3TextFormat);
 	}
 
-
 	public getGridFitType(): string {
-		notImplemented("AVM1Textfield.getGridFitType");
-		return ""; // this.adaptee.gridFitType;
+		notImplemented('AVM1Textfield.getGridFitType');
+		return ''; // this.adaptee.gridFitType;
 	}
 
 	public setGridFitType(value: string) {
-		notImplemented("AVM1Textfield.setGridFitType");
+		notImplemented('AVM1Textfield.setGridFitType');
 		//value = alCoerceString(this.context, value);
 		//this.adaptee.gridFitType = value;
 	}
 
 	public getHscroll(): number {
-		return this.adaptee.scrollH+1;
+		return this.adaptee.scrollH + 1;
 	}
 
 	public setHscroll(value: number) {
-        value = alCoerceNumber(this.context, value);
-        if(value<=0) value=1;
-		this.adaptee.scrollH = value-1;
+		value = alCoerceNumber(this.context, value);
+		if (value <= 0) value = 1;
+		this.adaptee.scrollH = value - 1;
 	}
 
 	public getHtml() {
@@ -383,7 +380,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	public getMaxChars(): number  {
-		return this.adaptee.maxChars==0?null:this.adaptee.maxChars;
+		return this.adaptee.maxChars == 0 ? null : this.adaptee.maxChars;
 	}
 
 	public setMaxChars(value) {
@@ -401,11 +398,11 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	public getMaxhscroll(): number {
-		return this.adaptee.maxScrollH+1;
+		return this.adaptee.maxScrollH + 1;
 	}
 
 	public getMaxscroll(): number {
-		return this.adaptee.maxScrollV+1;
+		return this.adaptee.maxScrollV + 1;
 	}
 
 	public getMultiline(): boolean {
@@ -418,24 +415,24 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	public getPassword(): boolean {
-		notImplemented("AVM1Textfield.getPassword");
+		notImplemented('AVM1Textfield.getPassword');
 		return this.adaptee.displayAsPassword;
 	}
 
 	public setPassword(value: boolean) {
-		notImplemented("AVM1Textfield.setPassword");
+		notImplemented('AVM1Textfield.setPassword');
 		value = alToBoolean(this.context, value);
 		this.adaptee.displayAsPassword = value;
 	}
 
 	public getScroll(): number {
-		return this.adaptee.scrollV+1;
+		return this.adaptee.scrollV + 1;
 	}
 
 	public setScroll(value: number) {
 		value = alCoerceNumber(this.context, value);
-        if(value<=0) value=1;
-		this.adaptee.scrollV = value-1;
+		if (value <= 0) value = 1;
+		this.adaptee.scrollV = value - 1;
 	}
 
 	public getSelectable(): boolean {
@@ -443,49 +440,49 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	public setSelectable(value: any) {
-        if(value=="false"){
-            value=false;
-        }
+		if (value == 'false') {
+			value = false;
+		}
 		value = alToBoolean(this.context, value);
-		if(!value && (<AVM1Stage>this.context.globals.Stage).avmStage.scene.mouseManager.getFocus()==this.adaptee){
-			(<AVM1Stage>this.context.globals.Stage).avmStage.scene.mouseManager.setFocus(null);
+		if (!value && (<AVM1Stage> this.context.globals.Stage).avmStage.scene.mouseManager.getFocus() == this.adaptee) {
+			(<AVM1Stage> this.context.globals.Stage).avmStage.scene.mouseManager.setFocus(null);
 		}
 		this.adaptee.selectable = value;
 	}
+
 	public replaceSel(value: string) {
 		value = alToString(this.context, value);
 		this.adaptee.replaceSelectedText(value);
 	}
-	
-    /**
+
+	/**
      * for html text this will get ignored
      */
 	public setNewTextFormat(value) {
-		var away3TextFormat:TextFormat;
+		let away3TextFormat: TextFormat;
 		if (value instanceof AVM1TextFormat) {
 			away3TextFormat = (<AVM1TextFormat>value).adaptee;
-		}
-		else{
-			console.log("AVM1Textfield.setNewtextFormat - trying to set something other than a TextFormat", value);
+		} else {
+			console.log('AVM1Textfield.setNewtextFormat - trying to set something other than a TextFormat', value);
 			return;
 		}
-		if(!this.adaptee.textFormat){
-			this.adaptee.textFormat=new TextFormat();
+		if (!this.adaptee.textFormat) {
+			this.adaptee.textFormat = new TextFormat();
 		}
-		
-        //away3TextFormat.font_table=this.adaptee.textFormat.font_table;
-        this.adaptee.newTextFormat=away3TextFormat;
+
+		//away3TextFormat.font_table=this.adaptee.textFormat.font_table;
+		this.adaptee.newTextFormat = away3TextFormat;
 	}
 
-    /**
+	/**
      * This should only have effect on text that is currently existent on the Textfield.
      * for new text we must use setNewTextFormat
      */
 	public setTextFormat() {
-		if(this._variable){
+		if (this._variable) {
 			this.syncTextFieldValue();
 		}
-		var beginIndex: number = -1, endIndex: number = -1, tf;
+		let beginIndex: number = -1, endIndex: number = -1, tf;
 		switch (arguments.length) {
 			case 0:
 				return; // invalid amount of arguments
@@ -503,10 +500,10 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 				break;
 		}
 		//console.log(arguments);
-		if(beginIndex>=0 && endIndex==-1){
-			endIndex=beginIndex;
+		if (beginIndex >= 0 && endIndex == -1) {
+			endIndex = beginIndex;
 		}
-		var as3TextFormat;
+		let as3TextFormat;
 		if (tf instanceof AVM1TextFormat) {
 			as3TextFormat = (<AVM1TextFormat>tf).adaptee;
 			this.adaptee.setTextFormat(as3TextFormat, beginIndex, endIndex);
@@ -514,24 +511,24 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	public getText(): string {
-		if(this._variable){
+		if (this._variable) {
 			this.syncTextFieldValue();
 		}
 		return this.adaptee.text;
 	}
 
 	public setText(value: string) {
-		
+
 		// alToString turns `undefined` into an empty string, but we really do want "undefined" here.
 		value = value === undefined ? '' : alToString(this.context, value);
-		var avm1ContextUtils = this.context.utils;
-		if(this.adaptee.parent){
-			var clip = getAVM1Object(this.adaptee.parent, this.context);
+		const avm1ContextUtils = this.context.utils;
+		if (this.adaptee.parent) {
+			const clip = getAVM1Object(this.adaptee.parent, this.context);
 			avm1ContextUtils.setProperty(clip, this._variable, value);
 
 		}
 		this.adaptee.text = value;
-		if(this._variable){
+		if (this._variable) {
 			this.updateVarFromText();
 			this.syncTextFieldValue();
 		}
@@ -547,7 +544,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	public getTextHeight(): number {
-		if(this._variable){
+		if (this._variable) {
 			this.syncTextFieldValue();
 		}
 		return this.adaptee.textHeight;
@@ -558,7 +555,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	public getTextWidth(): number {
-		if(this._variable){
+		if (this._variable) {
 			this.syncTextFieldValue();
 		}
 		return this.adaptee.textWidth;
@@ -569,12 +566,12 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	public getType(): string {
-		return <string>this.adaptee.type;
+		return <string> this.adaptee.type;
 	}
 
 	public setType(value: string) {
 		value = alCoerceString(this.context, value);
-		if(value) value=value.toLowerCase();
+		if (value) value = value.toLowerCase();
 		this.adaptee.type = value;
 	}
 
@@ -582,19 +579,18 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 		return this._variable;
 	}
 
-	private _prevTextVarContent:string="";
-	private _textVarHolder:AVM1Object=null;
-	private _textVarPropName:string="";
+	private _prevTextVarContent: string='';
+	private _textVarHolder: AVM1Object=null;
+	private _textVarPropName: string='';
 	public setVariable(name: string) {
 		name = alCoerceString(this.context, name);
 		if (name === this._variable) {
 			return;
 		}
-		
 
-		var instance = this.adaptee;
-		AVM1TextField.allTextfields[instance.id]=this;
-		this._prevTextVarContent=this.adaptee.text;
+		const instance = this.adaptee;
+		AVM1TextField.allTextfields[instance.id] = this;
+		this._prevTextVarContent = this.adaptee.text;
 		this._syncTextFieldValue(instance, name);
 		if (this._exitFrameHandler && !name) {
 			instance.removeEventListener('exitFrame', this._exitFrameHandler);//80pro: should be exitFrame
@@ -608,43 +604,44 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	private _onAS3ObjectExitFrame() {
-		if(this._variable)
+		if (this._variable)
 			this._syncTextFieldValue(this.adaptee, this._variable);
 	}
 
 	public syncTextFieldValue() {
 		this._syncTextFieldValue(this.adaptee, this._variable);
 	}
+
 	public updateVarFromText(): void {
 		//warning("AVM1Textfield.updateVarFromText - '"+this._textVarHolder.toString()+this._textVarPropName+"' / '"+this.adaptee.text+"'");
-			
-		if(this._textVarHolder){// && !this.adaptee.html){
-			this.context.utils.setProperty(this._textVarHolder, this._textVarPropName, this.adaptee.html?this.adaptee.htmlText:this.adaptee.text);
-			this._prevTextVarContent=this.adaptee.text;
+
+		if (this._textVarHolder) {// && !this.adaptee.html){
+			this.context.utils.setProperty(this._textVarHolder, this._textVarPropName, this.adaptee.html ? this.adaptee.htmlText : this.adaptee.text);
+			this._prevTextVarContent = this.adaptee.text;
 		}
 	}
+
 	private _syncTextFieldValue(instance, name) {
-		if(!name || name==""){
+		if (!name || name == '') {
 			return;
 		}
-		var avm1ContextUtils = this.context.utils;
-		if(this._textVarHolder==null){
+		const avm1ContextUtils = this.context.utils;
+		if (this._textVarHolder == null) {
 
 			// todo: this could be probably done by using this.context.resolveTarget
-			var hasPath = name.indexOf('.') >= 0 || name.indexOf(':') >= 0;
+			const hasPath = name.indexOf('.') >= 0 || name.indexOf(':') >= 0;
 			if (hasPath) {
-				var targetPath = name.split(/[.:\/]/g);
+				const targetPath = name.split(/[.:\/]/g);
 				this._textVarPropName = targetPath.pop();
-				if (targetPath[0] == '_root' || targetPath[0] == '_level0' || targetPath[0] == '_level' ||targetPath[0] === '') {
-					var parent=instance.parent;
-					this._textVarHolder=null;
-					while(parent){
-						if(parent.isAVMScene){
-							this._textVarHolder=parent.adapter;
-							parent=null;
-						}
-						else{
-							parent=parent.parent;
+				if (targetPath[0] == '_root' || targetPath[0] == '_level0' || targetPath[0] == '_level' || targetPath[0] === '') {
+					let parent = instance.parent;
+					this._textVarHolder = null;
+					while (parent) {
+						if (parent.isAVMScene) {
+							this._textVarHolder = parent.adapter;
+							parent = null;
+						} else {
+							parent = parent.parent;
 						}
 					}
 					if (this._textVarHolder === null) {
@@ -654,19 +651,16 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 					if (targetPath[0] === '') {
 						targetPath.shift();
 					}
-				} 
-				
-				else if (targetPath[0] == '_global') {
+				} else if (targetPath[0] == '_global') {
 					targetPath.shift();
-					this._textVarHolder=this.context.globals;
-				}
-				else {
-					if(!instance.parent){
+					this._textVarHolder = this.context.globals;
+				} else {
+					if (!instance.parent) {
 						return;
 					}
 					this._textVarHolder = getAVM1Object(instance.parent, this.context);
 				}
-				var childName:string=null;
+				let childName: string = null;
 				while (targetPath.length > 0) {
 					childName = targetPath.shift();
 					this._textVarHolder = avm1ContextUtils.getProperty(this._textVarHolder, childName);
@@ -676,103 +670,102 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 				}
 			} else {
 
-				this._textVarPropName=name;
-				if(instance.parent && instance.parent.parent){
+				this._textVarPropName = name;
+				if (instance.parent && instance.parent.parent) {
 					this._textVarHolder = getAVM1Object(instance.parent, this.context);
 					// in cases where another object exists at the same path, and also has a textvar set,
-					// we want to set the already existing path as "textVarHolder", 
+					// we want to set the already existing path as "textVarHolder",
 					// so that the text-var-property descripten is shared, and both textields update in sync
-					var child:DisplayObject;
-					var parentParent:DisplayObjectContainer=instance.parent.parent;
-					var len:number=parentParent.numChildren;
-					for(var i:number=0; i<len; i++){
-						child=parentParent.getChildAt(i);
-						if(child!=instance.parent && child.name==instance.parent.name){
+					let child: DisplayObject;
+					const parentParent: DisplayObjectContainer = instance.parent.parent;
+					const len: number = parentParent.numChildren;
+					for (let i: number = 0; i < len; i++) {
+						child = parentParent.getChildAt(i);
+						if (child != instance.parent && child.name == instance.parent.name) {
 							if (avm1ContextUtils.hasProperty(child.adapter, this._textVarPropName)) {
-								this._textVarHolder=<AVM1Object>child.adapter;
-							}	
+								this._textVarHolder = <AVM1Object>child.adapter;
+							}
 						}
 					}
 
 				}
 			}
 		}
-		
+
 		if (!this._textVarHolder) {
 			// the object that holds the variable could not be found yet
 			// we add it to a queue that will be worked off before any script executes
 			AVM1TextField.textFieldVars.push(this);
-			if(instance.html){
-				return this._prevTextVarContent=instance.htmlText;
+			if (instance.html) {
+				return this._prevTextVarContent = instance.htmlText;
 			}
-			this._prevTextVarContent=instance.text;
+			this._prevTextVarContent = instance.text;
 			return;
 		}
 
-        // if the variable does not exist, fill it from textfield-content
+		// if the variable does not exist, fill it from textfield-content
 		if (!avm1ContextUtils.hasProperty(this._textVarHolder, this._textVarPropName)) {
 			// the textvar does not exists yet. we create it and fill it with text-content
-			if(instance.html){	
-                var v={
-                    isTextVar:true,
-                    value:undefined
-                }
-                if(instance.htmlText!=""){
-                    v.value=instance.htmlText;
-                }
-                avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName, v);                
-				avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName+"_internal_TF", this);
-				this._prevTextVarContent=instance.htmlText;
+			if (instance.html) {
+				var v = {
+					isTextVar:true,
+					value:undefined
+				};
+				if (instance.htmlText != '') {
+					v.value = instance.htmlText;
+				}
+				avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName, v);
+				avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName + '_internal_TF', this);
+				this._prevTextVarContent = instance.htmlText;
 				return;
-            }            
-            var v={
-                isTextVar:true,
-                value:undefined
-            }
-            if(instance.text!=""){
-                v.value=instance.text
-            }
-            avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName, v);      
-			avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName+"_internal_TF", this);
-			this._prevTextVarContent=instance.text;
+			}
+			var v = {
+				isTextVar:true,
+				value:undefined
+			};
+			if (instance.text != '') {
+				v.value = instance.text;
+			}
+			avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName, v);
+			avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName + '_internal_TF', this);
+			this._prevTextVarContent = instance.text;
 			return;
 		}
-		
-        //  if no "_internal_TF" property exists next to the variable, we create it, and set its value to "this"
-        //  this is used to find textfields to focus, when setFocus is called on a textfield-variable
-		if (!avm1ContextUtils.hasProperty(this._textVarHolder, this._textVarPropName+"_internal_TF")) {
-			avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName+"_internal_TF", this);
-        }
-        // get the value of the text-variable
-		var newTextVarContent:string=avm1ContextUtils.getProperty(this._textVarHolder, this._textVarPropName);
-		if(typeof newTextVarContent !== "string"){
-			newTextVarContent=alToString(this.context, newTextVarContent);		
-        }
-        
-		if(instance.html){	
-            // the value of the text-variable has changed
-			if(newTextVarContent!==this._prevTextVarContent){
+
+		//  if no "_internal_TF" property exists next to the variable, we create it, and set its value to "this"
+		//  this is used to find textfields to focus, when setFocus is called on a textfield-variable
+		if (!avm1ContextUtils.hasProperty(this._textVarHolder, this._textVarPropName + '_internal_TF')) {
+			avm1ContextUtils.setProperty(this._textVarHolder, this._textVarPropName + '_internal_TF', this);
+		}
+		// get the value of the text-variable
+		let newTextVarContent: string = avm1ContextUtils.getProperty(this._textVarHolder, this._textVarPropName);
+		if (typeof newTextVarContent !== 'string') {
+			newTextVarContent = alToString(this.context, newTextVarContent);
+		}
+
+		if (instance.html) {
+			// the value of the text-variable has changed
+			if (newTextVarContent !== this._prevTextVarContent) {
 				// textvar has changed. update text from var
-				instance.htmlText = (typeof newTextVarContent === "undefined") ? "" : newTextVarContent;
-				this._prevTextVarContent=newTextVarContent;
+				instance.htmlText = (typeof newTextVarContent === 'undefined') ? '' : newTextVarContent;
+				this._prevTextVarContent = newTextVarContent;
 				return;
 			}
-			if(instance.htmlText!==newTextVarContent && (!(typeof newTextVarContent==="undefined" && instance.htmlText===""))){
+			if (instance.htmlText !== newTextVarContent && (!(typeof newTextVarContent === 'undefined' && instance.htmlText === ''))) {
 				// makes sure text is set correctly in case the timeline has interferred.
-				instance.htmlText = (typeof newTextVarContent === "undefined") ? "" : newTextVarContent;
+				instance.htmlText = (typeof newTextVarContent === 'undefined') ? '' : newTextVarContent;
 
 			}
-		}
-		else{
-			if(newTextVarContent!==this._prevTextVarContent){
+		} else {
+			if (newTextVarContent !== this._prevTextVarContent) {
 				// textvar has changed. update text from var
-				instance.text = (typeof newTextVarContent === "undefined") ? "" : newTextVarContent;
-				this._prevTextVarContent=newTextVarContent;
+				instance.text = (typeof newTextVarContent === 'undefined') ? '' : newTextVarContent;
+				this._prevTextVarContent = newTextVarContent;
 				return;
 			}
-			if(instance.text!==newTextVarContent && (!(typeof newTextVarContent==="undefined" && instance.text===""))){
+			if (instance.text !== newTextVarContent && (!(typeof newTextVarContent === 'undefined' && instance.text === ''))) {
 				// makes sure text is set correctly in case the timeline has interferred.
-				instance.text = (typeof newTextVarContent === "undefined") ? "" : newTextVarContent;
+				instance.text = (typeof newTextVarContent === 'undefined') ? '' : newTextVarContent;
 
 			}
 
@@ -792,4 +785,3 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 		this.bindEvents(EventsListForMC);
 	}
 }
-

@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-
-import {alCoerceNumber, alDefineObjectProperties, alToNumber} from "../runtime";
-import {AVM1Context} from "../context";
-import {Point} from "@awayjs/core";
-import {AVM1Object} from "../runtime/AVM1Object";
-import { AVM1Function } from "../runtime/AVM1Function";
+import { alCoerceNumber, alDefineObjectProperties, alToNumber } from '../runtime';
+import { AVM1Context } from '../context';
+import { Point } from '@awayjs/core';
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1Function } from '../runtime/AVM1Function';
 
 export function toAS3Point(v: AVM1Object): Point {
-	if(!v) {
+	if (!v) {
 		return new Point(0,0);
 	}
 
-	var context = v.context;
-	var x, y;
+	const context = v.context;
+	let x, y;
 	if (v instanceof AVM1Object) {
 		x = alCoerceNumber(context, v.alGet('x'));
 		y = alCoerceNumber(context, v.alGet('y'));
@@ -89,7 +88,7 @@ export class AVM1PointFunction extends AVM1Function {
 
 	public interpolate(pt1: AVM1Point, pt2: AVM1Point, f: number): AVM1Point {
 		f = alToNumber(this.context, f);
-		var p = Point.interpolate(toAS3Point(pt1), toAS3Point(pt2), f);
+		const p = Point.interpolate(toAS3Point(pt1), toAS3Point(pt2), f);
 		return AVM1Point.fromAS3Point(this.context, p);
 	}
 
@@ -141,7 +140,7 @@ export class AVM1PointPrototype extends AVM1Object {
 				value: this._toString,
 				writable: true
 			}
-		})
+		});
 	}
 
 	public getLength(): number {
@@ -153,7 +152,7 @@ export class AVM1PointPrototype extends AVM1Object {
 	}
 
 	public clone(): AVM1Point {
-		var result = new AVM1Point(this.context);
+		const result = new AVM1Point(this.context);
 		if (this instanceof AVM1Object) {
 			result.alPut('x', this.alGet('x'));
 			result.alPut('y', this.alGet('y'));
@@ -167,7 +166,7 @@ export class AVM1PointPrototype extends AVM1Object {
 
 	public normalize(length: number): void {
 		length = alToNumber(this.context, length);
-		var p = toAS3Point(this);
+		const p = toAS3Point(this);
 		p.normalize(length);
 		copyAS3PointTo(p, this);
 	}
@@ -175,7 +174,7 @@ export class AVM1PointPrototype extends AVM1Object {
 	public offset(dx: number, dy: number): void {
 		dx = alToNumber(this.context, dx);
 		dy = alToNumber(this.context, dy);
-		var p = toAS3Point(this);
+		const p = toAS3Point(this);
 		p.offset(dx, dy);
 		copyAS3PointTo(p, this);
 	}

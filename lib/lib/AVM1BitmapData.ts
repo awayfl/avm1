@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-import {alCoerceNumber, alCoerceString, alToBoolean, alToInt32, alToNumber, alToString} from "../runtime";
-import {AVM1Context} from "../context";
-import {AVM1Rectangle, toAS3Rectangle} from "./AVM1Rectangle";
-import {toAS3Point} from "./AVM1Point";
-import {Debug, isNullOrUndefined} from "@awayfl/swf-loader";
-import {AVM1ArrayNative} from "../natives";
-import {BlendModesMap, IHasAS3ObjectReference, wrapAVM1NativeClass} from "./AVM1Utils";
+import { alCoerceNumber, alCoerceString, alToBoolean, alToInt32, alToNumber, alToString } from '../runtime';
+import { AVM1Context } from '../context';
+import { AVM1Rectangle, toAS3Rectangle } from './AVM1Rectangle';
+import { toAS3Point } from './AVM1Point';
+import { Debug, isNullOrUndefined } from '@awayfl/swf-loader';
+import { AVM1ArrayNative } from '../natives';
+import { BlendModesMap, IHasAS3ObjectReference, wrapAVM1NativeClass } from './AVM1Utils';
 // import {convertToAS3Filter} from "./AVM1Filters";
-import {toAwayColorTransform, AVM1ColorTransform} from "./AVM1ColorTransform";
-import {toAS3Matrix} from "./AVM1Matrix";
+import { toAwayColorTransform, AVM1ColorTransform } from './AVM1ColorTransform';
+import { toAS3Matrix } from './AVM1Matrix';
 //import {BitmapImage2D as BitmapData} from "@awayjs/stage";
-import {SceneImage2D as BitmapData} from "@awayjs/scene";
-import {AssetLibrary, IAsset} from "@awayjs/core";
-import {AVM1Object} from "../runtime/AVM1Object";
-import {AVM1Stage} from "./AVM1Stage";
+import { SceneImage2D as BitmapData } from '@awayjs/scene';
+import { AssetLibrary, IAsset } from '@awayjs/core';
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1Stage } from './AVM1Stage';
 import { BitmapImage2D } from '@awayjs/stage';
 import { AVM1MovieClip } from './AVM1MovieClip';
 
@@ -56,7 +56,7 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	//adaptee: BitmapData;
 
 	get as3BitmapData(): BitmapData {
-		return <BitmapData>this.adaptee;
+		return <BitmapData> this.adaptee;
 	}
 
 	public avm1Constructor(width: number, height: number, transparent?: boolean, fillColor?: number) {
@@ -64,12 +64,12 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		height = alToNumber(this.context, height);
 		transparent = arguments.length < 3 ? true : alToBoolean(this.context, transparent);
 		fillColor = arguments.length < 4 ? 0xFFFFFFFF : alToInt32(this.context, fillColor);
-		var awayObject = new BitmapData(width, height, transparent, fillColor, false, AVM1Stage.avmStage.scene.renderer.stage);
+		const awayObject = new BitmapData(width, height, transparent, fillColor, false, AVM1Stage.avmStage.scene.renderer.stage);
 		this.adaptee = awayObject;
 	}
 
 	static fromAS3BitmapData(context: AVM1Context, awayObject: BitmapData): AVM1Object {
-		var as2Object = new AVM1BitmapData(context);
+		const as2Object = new AVM1BitmapData(context);
 		as2Object.alPrototype = context.globals.BitmapData.alGetPrototypeProperty();
 		as2Object.adaptee = <IAsset>awayObject;
 		return as2Object;
@@ -78,10 +78,10 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	static loadBitmap(context: AVM1Context, symbolId: string): AVM1BitmapData {
 		symbolId = alToString(context, symbolId);
 		//var symbol = context.getAsset(symbolId);
-		var symbol = AssetLibrary.getAsset(symbolId);
+		const symbol = AssetLibrary.getAsset(symbolId);
 		// REDUX verify
-		if(symbol && (<IAsset><any>symbol).isAsset(BitmapImage2D)){
-			var bitmapData = new AVM1BitmapData(context);
+		if (symbol && (<IAsset><any>symbol).isAsset(BitmapImage2D)) {
+			const bitmapData = new AVM1BitmapData(context);
 			bitmapData.adaptee = <IAsset><any>symbol;
 			return bitmapData;
 		}
@@ -99,27 +99,27 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	public getHeight(): number {
-		return (<BitmapData>this.adaptee).height;
+		return (<BitmapData> this.adaptee).height;
 	}
 
 	public getRectangle(): AVM1Object {
-		var rect = this.as3BitmapData;
+		const rect = this.as3BitmapData;
 		return new AVM1Rectangle(this.context, 0, 0, rect.width, rect.height);
 	}
 
 	public getTransparent(): boolean {
-		return (<BitmapData>this.adaptee).transparent;
+		return (<BitmapData> this.adaptee).transparent;
 	}
 
 	public getWidth(): number {
-		return (<BitmapData>this.adaptee).width;
+		return (<BitmapData> this.adaptee).width;
 	}
 
 	public applyFilter(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object, filter: AVM1Object): number {
 		// TODO handle incorrect arguments
-		var as3BitmapData = sourceBitmap.as3BitmapData;
-		var as3SourceRect = toAS3Rectangle(sourceRect);
-		var as3DestPoint = toAS3Point(destPoint);
+		const as3BitmapData = sourceBitmap.as3BitmapData;
+		const as3SourceRect = toAS3Rectangle(sourceRect);
+		const as3DestPoint = toAS3Point(destPoint);
 		// var as3Filter = convertToAS3Filter(this.context, filter);
 
 		// todo 80pro
@@ -128,16 +128,16 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	public clone(): AVM1BitmapData {
-		var bitmap = new AVM1BitmapData(this.context);
+		const bitmap = new AVM1BitmapData(this.context);
 		bitmap.alPrototype = this.context.globals.BitmapData.alGetPrototypeProperty();
-		bitmap.adaptee = (<BitmapData>this.adaptee).clone();
+		bitmap.adaptee = (<BitmapData> this.adaptee).clone();
 		return bitmap;
 	}
 
 	public colorTransform(rect: AVM1Object, colorTransform: AVM1Object): void {
-		var as3Rect = toAS3Rectangle(rect);
-		var as3ColorTransform = toAwayColorTransform(<AVM1ColorTransform>colorTransform);
-		(<BitmapData>this.adaptee).colorTransform(as3Rect, as3ColorTransform);
+		const as3Rect = toAS3Rectangle(rect);
+		const as3ColorTransform = toAwayColorTransform(<AVM1ColorTransform>colorTransform);
+		(<BitmapData> this.adaptee).colorTransform(as3Rect, as3ColorTransform);
 	}
 
 	public compare(other: AVM1BitmapData): boolean {
@@ -149,9 +149,9 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 
 	public copyChannel(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
 					   sourceChannel: number, destChannel: number): void {
-		var as3BitmapData = sourceBitmap.as3BitmapData;
-		var as3SourceRect = toAS3Rectangle(sourceRect);
-		var as3DestPoint = toAS3Point(destPoint);
+		const as3BitmapData = sourceBitmap.as3BitmapData;
+		const as3SourceRect = toAS3Rectangle(sourceRect);
+		const as3DestPoint = toAS3Point(destPoint);
 		sourceChannel = alCoerceNumber(this.context, sourceChannel);
 		destChannel = alCoerceNumber(this.context, destChannel);
 		this.as3BitmapData.copyChannel(as3BitmapData, as3SourceRect, as3DestPoint, sourceChannel, destChannel);
@@ -161,15 +161,15 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 					  alphaBitmap?: AVM1BitmapData, alphaPoint?: AVM1Object,
 					  mergeAlpha?: boolean): void {
 
-		if(!sourceBitmap) {
-			console.warn("[AVM1BitmapData::copyPixels] Empty source!")
+		if (!sourceBitmap) {
+			console.warn('[AVM1BitmapData::copyPixels] Empty source!');
 			return;
 		}
-		var as3BitmapData = sourceBitmap.as3BitmapData;
-		var as3SourceRect = toAS3Rectangle(sourceRect);
-		var as3DestPoint = toAS3Point(destPoint);
-		var as3AlphaData = alphaBitmap ? alphaBitmap.as3BitmapData : null;
-		var as3AlphaPoint = alphaPoint ? toAS3Point(alphaPoint) : null;
+		const as3BitmapData = sourceBitmap.as3BitmapData;
+		const as3SourceRect = toAS3Rectangle(sourceRect);
+		const as3DestPoint = toAS3Point(destPoint);
+		const as3AlphaData = alphaBitmap ? alphaBitmap.as3BitmapData : null;
+		const as3AlphaPoint = alphaPoint ? toAS3Point(alphaPoint) : null;
 		mergeAlpha = alToBoolean(this.context, mergeAlpha);
 
 		// todo: 80pro
@@ -183,17 +183,17 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	draw(source: AVM1Object | string, matrix?: AVM1Object, colorTransform?: AVM1ColorTransform, blendMode?: any,
 		 clipRect?: AVM1Object, smooth?: boolean): void {
 
-		if(!source) {
-			console.warn("[AVM1BitmapData::draw] Empty source!")
+		if (!source) {
+			console.warn('[AVM1BitmapData::draw] Empty source!');
 			return;
 		}
 
 		let avm1Object: AVM1MovieClip = source as AVM1MovieClip;
 
-		if(typeof source === 'string') {
+		if (typeof source === 'string') {
 			avm1Object = this.context.resolveTarget(source);
-				
-			if(!avm1Object) {
+
+			if (!avm1Object) {
 				console.warn(`[AVM1BitmapData::draw] Source ${source}  not resolved!`);
 				return;
 			}
@@ -203,7 +203,7 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		const as3Matrix = matrix ? toAS3Matrix(matrix) : null;
 		const as3ColorTransform = colorTransform ? toAwayColorTransform(colorTransform) : null;
 		const as3ClipRect = clipRect ? toAS3Rectangle(clipRect) : null;
-		
+
 		blendMode = typeof blendMode === 'number' ? BlendModesMap[blendMode] : alCoerceString(this.context, blendMode);
 		blendMode  = blendMode || null;
 		smooth = alToBoolean(this.context, smooth);
@@ -213,12 +213,12 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		avm1Object._locked = true;
 
 		this.as3BitmapData.draw(as3BitmapData, as3Matrix, as3ColorTransform, blendMode, as3ClipRect, smooth);
-		
+
 		avm1Object._locked = false;
 	}
 
 	fillRect(rect: AVM1Object, color: number): void {
-		var as3Rect = toAS3Rectangle(rect);
+		const as3Rect = toAS3Rectangle(rect);
 		color = alToInt32(this.context, color);
 
 		this.as3BitmapData.fillRect(as3Rect, color);
@@ -252,17 +252,17 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	getPixel(x: number, y: number): number {
-		return (<BitmapData>this.adaptee).getPixel(x, y);
+		return (<BitmapData> this.adaptee).getPixel(x, y);
 	}
 
 	getPixel32(x: number, y: number): number {
-		return (<BitmapData>this.adaptee).getPixel32(x, y);
+		return (<BitmapData> this.adaptee).getPixel32(x, y);
 	}
 
 	hitTest(firstPoint: AVM1Object, firstAlphaThreshold: number, secondObject: AVM1Object,
-			secondBitmapPoint?: AVM1Object, secondAlphaThreshold?: number): boolean {
+		secondBitmapPoint?: AVM1Object, secondAlphaThreshold?: number): boolean {
 		Debug.somewhatImplemented('AVM1BitmapData.hitTest');
-		var as3FirstPoint = toAS3Point(firstPoint);
+		const as3FirstPoint = toAS3Point(firstPoint);
 		firstAlphaThreshold = alToInt32(this.context, firstAlphaThreshold);
 		// todo 80pro
 		Debug.notImplemented('AVM1BitmapData.hitTest');
@@ -285,9 +285,9 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 
 	merge(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
 		  redMult: number, greenMult: number, blueMult: number, alphaMult: number): void {
-		var as3BitmapData = sourceBitmap.as3BitmapData;
-		var as3SourceRect = toAS3Rectangle(sourceRect);
-		var as3DestPoint = toAS3Point(destPoint);
+		const as3BitmapData = sourceBitmap.as3BitmapData;
+		const as3SourceRect = toAS3Rectangle(sourceRect);
+		const as3DestPoint = toAS3Point(destPoint);
 		redMult = alToInt32(this.context, redMult);
 		greenMult = alToInt32(this.context, greenMult);
 		blueMult = alToInt32(this.context, blueMult);
@@ -323,7 +323,7 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		fractalNoise = alToBoolean(this.context, fractalNoise);
 		channelOptions = channelOptions === undefined ? 7 : alCoerceNumber(this.context, channelOptions);
 		grayScale = alToBoolean(this.context, grayScale);
-		var as3Offsets = isNullOrUndefined(offsets) ? null : AVM1ArrayNative.mapToJSArray(offsets, (item) => alCoerceNumber(this.context, item), this);
+		const as3Offsets = isNullOrUndefined(offsets) ? null : AVM1ArrayNative.mapToJSArray(offsets, (item) => alCoerceNumber(this.context, item), this);
 
 		// todo 80pro
 		Debug.notImplemented('AVM1BitmapData.perlinNoise');
@@ -332,9 +332,9 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 
 	pixelDissolve(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
 				  randomSeed?: number, numberOfPixels?: number, fillColor?: number): number {
-		var as3BitmapData = sourceBitmap.as3BitmapData;
-		var as3SourceRect = toAS3Rectangle(sourceRect);
-		var as3DestPoint = toAS3Point(destPoint);
+		const as3BitmapData = sourceBitmap.as3BitmapData;
+		const as3SourceRect = toAS3Rectangle(sourceRect);
+		const as3DestPoint = toAS3Point(destPoint);
 		randomSeed = arguments.length < 4 ? 0 : alToInt32(this.context, randomSeed);
 		numberOfPixels = arguments.length < 5 ?
 			as3SourceRect.width * as3SourceRect.height / 30 :
@@ -359,22 +359,22 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		x = alCoerceNumber(this.context, x);
 		y = alCoerceNumber(this.context, y);
 		color = alToInt32(this.context, color);
-		(<BitmapData>this.adaptee).setPixel(x, y, color);
+		(<BitmapData> this.adaptee).setPixel(x, y, color);
 	}
 
 	setPixel32(x: number, y: number, color: number): void {
 		x = alCoerceNumber(this.context, x);
 		y = alCoerceNumber(this.context, y);
 		color = alToInt32(this.context, color);
-		(<BitmapData>this.adaptee).setPixel32(x, y, color);
+		(<BitmapData> this.adaptee).setPixel32(x, y, color);
 	}
 
 	threshold(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
 			  operation: string, threshold: number, color?: number, mask?: number,
 			  copySource?: boolean): number {
-		var as3BitmapData = sourceBitmap.as3BitmapData;
-		var as3SourceRect = toAS3Rectangle(sourceRect);
-		var as3DestPoint = toAS3Point(destPoint);
+		const as3BitmapData = sourceBitmap.as3BitmapData;
+		const as3SourceRect = toAS3Rectangle(sourceRect);
+		const as3DestPoint = toAS3Point(destPoint);
 		operation = alCoerceString(this.context, operation);
 		threshold = alToInt32(this.context, threshold);
 		color = arguments.length < 6 ? 0 : alToInt32(this.context, color);
@@ -386,4 +386,3 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		//return this.adaptee.threshold(as3BitmapData, as3SourceRect, as3DestPoint, operation,	threshold, color, mask, copySource);
 	}
 }
-

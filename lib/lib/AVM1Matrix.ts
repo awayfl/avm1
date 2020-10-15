@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import {AVM1Point, toAS3Point} from "./AVM1Point";
-import {alCoerceNumber, alDefineObjectProperties} from "../runtime";
-import {AVM1Context} from "../context";
-import {Matrix} from "@awayjs/core";
-import {AVM1Object} from "../runtime/AVM1Object";
-import { AVM1Function } from "../runtime/AVM1Function";
+import { AVM1Point, toAS3Point } from './AVM1Point';
+import { alCoerceNumber, alDefineObjectProperties } from '../runtime';
+import { AVM1Context } from '../context';
+import { Matrix } from '@awayjs/core';
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1Function } from '../runtime/AVM1Function';
 
 export function toAS3Matrix(v: AVM1Object): Matrix {
-	var context = v.context;
-	var a, b, c, d, tx, ty;
+	const context = v.context;
+	let a, b, c, d, tx, ty;
 	if (v instanceof AVM1Object) {
 		a = alCoerceNumber(context, v.alGet('a'));
 		b = alCoerceNumber(context, v.alGet('b'));
@@ -137,11 +137,11 @@ export class AVM1MatrixPrototype extends AVM1Object {
 				value: this.translate,
 				writable: true
 			}
-		})
+		});
 	}
 
 	public clone(): AVM1Matrix {
-		var result = new AVM1Matrix(this.context);
+		const result = new AVM1Matrix(this.context);
 		if (this instanceof AVM1Object) {
 			result.alPut('a', this.alGet('a'));
 			result.alPut('b', this.alGet('b'));
@@ -154,7 +154,7 @@ export class AVM1MatrixPrototype extends AVM1Object {
 	}
 
 	public concat(other: AVM1Matrix): void {
-		var m = toAS3Matrix(this), m2 = toAS3Matrix(other);
+		const m = toAS3Matrix(this), m2 = toAS3Matrix(other);
 		m.concat(m2);
 		copyAS3MatrixTo(m, this);
 	}
@@ -165,7 +165,7 @@ export class AVM1MatrixPrototype extends AVM1Object {
 		rotation = alCoerceNumber(this.context, rotation);
 		tx = alCoerceNumber(this.context, tx);
 		ty = alCoerceNumber(this.context, ty);
-		var m = toAS3Matrix(this);
+		const m = toAS3Matrix(this);
 		m.createBox(scaleX, scaleY, rotation, tx, ty);
 		copyAS3MatrixTo(m, this);
 	}
@@ -176,14 +176,14 @@ export class AVM1MatrixPrototype extends AVM1Object {
 		rotation = alCoerceNumber(this.context, rotation);
 		tx = alCoerceNumber(this.context, tx);
 		ty = alCoerceNumber(this.context, ty);
-		var m = toAS3Matrix(this);
+		const m = toAS3Matrix(this);
 		m.createGradientBox(width, height, rotation, tx, ty);
 		copyAS3MatrixTo(m, this);
 	}
 
 	public deltaTransformPoint(pt: AVM1Point): AVM1Point {
-		var p = toAS3Point(pt);
-		var m = toAS3Matrix(this);
+		const p = toAS3Point(pt);
+		const m = toAS3Matrix(this);
 		return AVM1Point.fromAS3Point(this.context, m.deltaTransformPoint(p));
 	}
 
@@ -197,14 +197,14 @@ export class AVM1MatrixPrototype extends AVM1Object {
 	}
 
 	public invert(): void {
-		var m = toAS3Matrix(this);
+		const m = toAS3Matrix(this);
 		m.invert();
 		copyAS3MatrixTo(m, this);
 	}
 
 	public rotate(angle: number): void {
 		angle = alCoerceNumber(this.context, angle);
-		var m = toAS3Matrix(this);
+		const m = toAS3Matrix(this);
 		m.rotate(angle);
 		copyAS3MatrixTo(m, this);
 	}
@@ -212,7 +212,7 @@ export class AVM1MatrixPrototype extends AVM1Object {
 	public scale(sx: number, sy: number): void {
 		sx = alCoerceNumber(this.context, sx);
 		sy = alCoerceNumber(this.context, sy);
-		var m = toAS3Matrix(this);
+		const m = toAS3Matrix(this);
 		m.scale(sx, sy);
 		copyAS3MatrixTo(m, this);
 	}
@@ -222,17 +222,16 @@ export class AVM1MatrixPrototype extends AVM1Object {
 	}
 
 	public transformPoint(pt: AVM1Point): AVM1Point {
-		var p = toAS3Point(pt);
-		var m = toAS3Matrix(this);
+		const p = toAS3Point(pt);
+		const m = toAS3Matrix(this);
 		return AVM1Point.fromAS3Point(this.context, m.transformPoint(p));
 	}
 
 	public translate(tx: number, ty: number): void {
 		tx = alCoerceNumber(this.context, tx);
 		ty = alCoerceNumber(this.context, ty);
-		var m = toAS3Matrix(this);
+		const m = toAS3Matrix(this);
 		m.translate(tx, ty);
 		copyAS3MatrixTo(m, this);
 	}
 }
-

@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-import {AVM1Object} from "../runtime/AVM1Object";
-import {AVM1Context} from "../context";
-import {warning} from "@awayfl/swf-loader";
-import {IAVM1SymbolBase, wrapAVM1NativeClass} from "./AVM1Utils";
-import {AVM1MovieClip} from "./AVM1MovieClip";
-import {WaveAudio, AssetLibrary, Loader, AssetEvent, LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset} from "@awayjs/core";
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1Context } from '../context';
+import { warning } from '@awayfl/swf-loader';
+import { IAVM1SymbolBase, wrapAVM1NativeClass } from './AVM1Utils';
+import { AVM1MovieClip } from './AVM1MovieClip';
+import { WaveAudio, AssetLibrary, Loader, AssetEvent, LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset } from '@awayjs/core';
 
-class SoundSymbol{
+class SoundSymbol {
 
 }
 
-class SoundChannel{
-	soundTransform:any;
+class SoundChannel {
+	soundTransform: any;
 }
-class SoundTransform{
+class SoundTransform {
 
 }
 export class AVM1Sound extends AVM1Object {
@@ -41,93 +41,92 @@ export class AVM1Sound extends AVM1Object {
 			null, AVM1Sound.prototype.avm1Constructor);
 	}
 
-
 	private _target: IAVM1SymbolBase;
 	private _sound: WaveAudio;
 	private _channel: SoundChannel;
 	private _linkageID: string;
 	private _assetNameSpace: string;
-	private _onCompleteCallback:Function;
-	private _playAfterLoading:boolean;
-	private loopsToPlay:number=0;
+	private _onCompleteCallback: Function;
+	private _playAfterLoading: boolean;
+	private loopsToPlay: number=0;
 
 	public avm1Constructor(target_mc) {
-        this._target = this.context.resolveTarget(target_mc);
+		this._target = this.context.resolveTarget(target_mc);
 		this._sound = null;
 		this._channel = null;
 		this._linkageID = null;
-		this._playAfterLoading=false;
-        this._assetNameSpace=AVM1MovieClip.currentMCAssetNameSpace;
+		this._playAfterLoading = false;
+		this._assetNameSpace = AVM1MovieClip.currentMCAssetNameSpace;
 	}
 
 	public alPut(p, v) {
 		super.alPut(p,v);
-		if(p && p.toLowerCase()=="onsoundcomplete"){
+		if (p && p.toLowerCase() == 'onsoundcomplete') {
 			this.onSoundComplete(v);
 		}
 	}
 
 	public alDeleteProperty(p) {
 		super.alDeleteProperty(p);
-		if(p && p.toLowerCase()=="onsoundcomplete"){
+		if (p && p.toLowerCase() == 'onsoundcomplete') {
 			this.onSoundComplete();
 		}
 		return true;
 	}
+
 	public attachSound(id: string): void {
 
-        if(typeof id!=="string" && typeof id!=="number")
-            return;
-		var symbol = AssetLibrary.getAsset(id, this._assetNameSpace);
+		if (typeof id !== 'string' && typeof id !== 'number')
+			return;
+		const symbol = AssetLibrary.getAsset(id, this._assetNameSpace);
 		if (!symbol) {
-			warning("AVM1Sound.attachSound no symbol found "+id);
+			warning('AVM1Sound.attachSound no symbol found ' + id);
 			return;
 		}
-		this._linkageID=id;
+		this._linkageID = id;
 		this._sound = (<WaveAudio>symbol).clone();
-		if(!this._sound){
-			warning("AVM1Sound.attachSound no WaveAudio found "+ id);
+		if (!this._sound) {
+			warning('AVM1Sound.attachSound no WaveAudio found ' + id);
 			return;
 		}
-		this._sound.onSoundComplete=()=>this.soundCompleteInternal();
+		this._sound.onSoundComplete = ()=>this.soundCompleteInternal();
 	}
 
-	private soundCompleteInternal(){
+	private soundCompleteInternal() {
 		this.loopsToPlay--;
-		if(this.loopsToPlay>0){
+		if (this.loopsToPlay > 0) {
 			this.stop();
 			this._sound.play(0, false);
-		}
-		else{
-			if(this._onCompleteCallback){
+		} else {
+			if (this._onCompleteCallback) {
 				this._onCompleteCallback();
 			}
 		}
 	}
-	public onSoundComplete(callback:any=null): void {
 
-		var myThis=this;
-		this._onCompleteCallback=null;
-		if(callback){
-			this._onCompleteCallback=function(){
+	public onSoundComplete(callback: any = null): void {
+
+		const myThis = this;
+		this._onCompleteCallback = null;
+		if (callback) {
+			this._onCompleteCallback = function() {
 				callback.alCall(myThis);
 			};
 		}
 		if (!this._sound) {
-			warning("AVM1Sound.onSoundComplete called, but no WaveAudio set");
+			warning('AVM1Sound.onSoundComplete called, but no WaveAudio set');
 			return;
 		}
 	}
 
 	public loadSound(url: string, isStreaming: boolean): void {
-		if(isStreaming){
-			this._playAfterLoading=true;
-			console.warn("[AVM1Sound] - loadSound called with isStreaming=true, but streaming not implemented yet", url, isStreaming);
+		if (isStreaming) {
+			this._playAfterLoading = true;
+			console.warn('[AVM1Sound] - loadSound called with isStreaming=true, but streaming not implemented yet', url, isStreaming);
+		} else {
+			this._playAfterLoading = false;
 		}
-		else{
-			this._playAfterLoading=false;
-		}
-		var loader=new Loader();
+		const loader = new Loader();
 		const onAssetCompleteDelegate = (event: AssetEvent) => this.onAssetComplete(event);
 		const onLoadCompleteDelegate = (event: LoaderEvent) => this.onLoadComplete(event);
 		const onLoadErrorDelegate = (event: URLLoaderEvent) => this.onLoadError(event);
@@ -136,23 +135,23 @@ export class AVM1Sound extends AVM1Object {
 		loader.addEventListener(URLLoaderEvent.LOAD_ERROR, onLoadErrorDelegate);
 		loader.load(new URLRequest(url), null, url, new WaveAudioParser());
 	}
-	
+
 	private onAssetComplete(event: AssetEvent): void {
-		var asset: IAsset = event.asset;
+		const asset: IAsset = event.asset;
 		if (asset.isAsset(WaveAudio)) {
-			this._sound=<WaveAudio>asset;
+			this._sound = <WaveAudio>asset;
 			/*if(this._playedCompleteCallback){
 				this._audio.onSoundComplete=this._playedCompleteCallback;
 			}*/
-			if(this._playAfterLoading){
+			if (this._playAfterLoading) {
 				this._sound.play(0);
 			}
 		}
 	}
 
 	private onLoadComplete(event: LoaderEvent): void {
-		if(!this._sound){
-			console.warn("[AVM1Sound] - loadSound: Soundloading is complete, but no WaveAudio was created.");
+		if (!this._sound) {
+			console.warn('[AVM1Sound] - loadSound: Soundloading is complete, but no WaveAudio was created.');
 		}
 		/*if(this._loadCallback){
 			this._loadCallback();
@@ -160,30 +159,33 @@ export class AVM1Sound extends AVM1Object {
 	}
 
 	private onLoadError(event: URLLoaderEvent): void {
-		console.warn("[AVM1Sound] - loadSound: onLoadError");
+		console.warn('[AVM1Sound] - loadSound: onLoadError');
 		/*if(this._errorCallback){
 			this._errorCallback();
 		}*/
 	}
-	
-	public getBytesLoaded(): number { 
-		console.warn("AVM1Sound.getBytesLoaded");
+
+	public getBytesLoaded(): number {
+		console.warn('AVM1Sound.getBytesLoaded');
 		return 0;
 	}
-	public getBytesTotal(): number { 
-		console.warn("AVM1Sound.getBytesTotal");
+
+	public getBytesTotal(): number {
+		console.warn('AVM1Sound.getBytesTotal');
 		return 1;
 	}
-	public getDuration(): number { 
-		console.warn("AVM1Sound.getDuration");
+
+	public getDuration(): number {
+		console.warn('AVM1Sound.getDuration');
 		return 0;
 	}
 
 	public getPan(): number {
-		console.warn("AVM1Sound.getPan");
+		console.warn('AVM1Sound.getPan');
 		// todo 80pro var transform: ASObject =(<ASObject> this._channel && this._channel.soundTransform);
 		return 0; //transform ? transform.axGetPublicProperty('pan') * 100 : 0;
 	}
+
 	public setPan(value: number): void {
 		// console.warn("AVM1Sound.setPan");
 		// todo 80pro
@@ -196,55 +198,57 @@ export class AVM1Sound extends AVM1Object {
 		*/
 	}
 
-	public getTransform(): any { 
-		console.warn("AVM1Sound.getTransform");
-		return null; 
+	public getTransform(): any {
+		console.warn('AVM1Sound.getTransform');
+		return null;
 	}
+
 	public setTransform(transformObject: any): void {
-		console.warn("AVM1Sound.setTransform");
+		console.warn('AVM1Sound.setTransform');
 	}
 
 	public getVolume(): number {
 		if (!this._sound) {
-			console.warn("AVM1Sound.getVolume called, but no WaveAudio set");
+			console.warn('AVM1Sound.getVolume called, but no WaveAudio set');
 			return 100;
 		}
-		return this._sound.volume*100;
+		return this._sound.volume * 100;
 	}
+
 	public setVolume(value: number): void {
 		if (!this._sound) {
-			console.warn("AVM1Sound.setVolume called, but no WaveAudio set");
+			console.warn('AVM1Sound.setVolume called, but no WaveAudio set');
 			return;
 		}
-        if(this._target && this._target.adaptee){
-            this._target.adaptee.soundVolume=value/100;
-        }
-		this._sound.volume=value/100;
+		if (this._target && this._target.adaptee) {
+			this._target.adaptee.soundVolume = value / 100;
+		}
+		this._sound.volume = value / 100;
 	}
 
 	public start(secondOffset?: number, loops?: number): void {
 		if (!this._sound) {
-			warning("AVM1Sound.start called, but no WaveAudio set");
+			warning('AVM1Sound.start called, but no WaveAudio set');
 			return;
 		}
 
 		secondOffset = isNaN(secondOffset) || secondOffset < 0 ? 0 : +secondOffset;
 		loops = isNaN(loops) || loops < 1 ? 1 : Math.floor(loops);
-		this.loopsToPlay=loops;
-        if(this._target && this._target.adaptee){
-            this._target.adaptee.startSound(this._linkageID, this._sound, this.loopsToPlay);
-        }
+		this.loopsToPlay = loops;
+		if (this._target && this._target.adaptee) {
+			this._target.adaptee.startSound(this._linkageID, this._sound, this.loopsToPlay);
+		}
 		//this._sound.play(secondOffset, false);
 	}
+
 	public stop(linkageID?: string): void {
 		if (!this._sound) {
-			warning("AVM1Sound.stop called, but no WaveAudio set");
+			warning('AVM1Sound.stop called, but no WaveAudio set');
 			return;
 		}
-        if(this._target && this._target.adaptee){
-            this._target.adaptee.stopSounds(this._linkageID);
-        }
+		if (this._target && this._target.adaptee) {
+			this._target.adaptee.stopSounds(this._linkageID);
+		}
 	}
 
 }
-

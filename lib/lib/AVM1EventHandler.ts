@@ -1,18 +1,18 @@
 
-import {AVM1ClipEvents} from "@awayfl/swf-loader";
-import {MouseEvent, KeyboardEvent, FocusEvent, TextfieldEvent} from "@awayjs/scene";
+import { AVM1ClipEvents } from '@awayfl/swf-loader';
+import { MouseEvent, KeyboardEvent, FocusEvent, TextfieldEvent } from '@awayjs/scene';
 
 export class AVM1EventHandler {
 	constructor(public propertyName: string,
-				public eventName: string,
-                public stageEvent:boolean, 
-                public allowDisable:boolean,
-                public isMouse:boolean,
-                public isButton:boolean ) { }
+		public eventName: string,
+		public stageEvent: boolean,
+		public allowDisable: boolean,
+		public isMouse: boolean,
+		public isButton: boolean) { }
 }
 
 export class AVM1EventProps {
-    public keyCode:number
+	public keyCode: number
 	constructor() { }
 }
 /**
@@ -47,49 +47,48 @@ ClipEventMappings[AVM1ClipEvents.RollOut] = new AVM1EventHandler('onRollOut', Mo
 ClipEventMappings[AVM1ClipEvents.DragOver] = new AVM1EventHandler('onDragOver', MouseEvent.DRAG_OVER, false, true, true, true);
 ClipEventMappings[AVM1ClipEvents.DragOut] = new AVM1EventHandler('onDragOut', MouseEvent.DRAG_OUT, false, true, true, true);
 
-var setFocusEventMapping:AVM1EventHandler=new AVM1EventHandler('onSetFocus', FocusEvent.FOCUS_IN, false, true, false, false);
-var unFocusEventMapping:AVM1EventHandler=new AVM1EventHandler('onKillFocus', FocusEvent.FOCUS_OUT, false, true, false, false);
-var onChangedEventMapping:AVM1EventHandler=new AVM1EventHandler('onChanged', TextfieldEvent.CHANGED, false, true, false, false);
+const setFocusEventMapping: AVM1EventHandler = new AVM1EventHandler('onSetFocus', FocusEvent.FOCUS_IN, false, true, false, false);
+const unFocusEventMapping: AVM1EventHandler = new AVM1EventHandler('onKillFocus', FocusEvent.FOCUS_OUT, false, true, false, false);
+const onChangedEventMapping: AVM1EventHandler = new AVM1EventHandler('onChanged', TextfieldEvent.CHANGED, false, true, false, false);
 
-export var EventsListForMC:AVM1EventHandler[]=[
-    ClipEventMappings[AVM1ClipEvents.Load],
-    ClipEventMappings[AVM1ClipEvents.Unload],
-    ClipEventMappings[AVM1ClipEvents.Data],
-    ClipEventMappings[AVM1ClipEvents.EnterFrame],
-    ClipEventMappings[AVM1ClipEvents.KeyDown],
-    ClipEventMappings[AVM1ClipEvents.KeyUp],
-    ClipEventMappings[AVM1ClipEvents.MouseMove],
-    ClipEventMappings[AVM1ClipEvents.MouseDown],
-    ClipEventMappings[AVM1ClipEvents.MouseUp],
-    ClipEventMappings[AVM1ClipEvents.Press],
-    ClipEventMappings[AVM1ClipEvents.Release],
-    ClipEventMappings[AVM1ClipEvents.ReleaseOutside],
-    ClipEventMappings[AVM1ClipEvents.RollOver],
-    ClipEventMappings[AVM1ClipEvents.RollOut],
-    ClipEventMappings[AVM1ClipEvents.DragOver],
-    ClipEventMappings[AVM1ClipEvents.DragOut],
-    ClipEventMappings[AVM1ClipEvents.KeyPress],
-    setFocusEventMapping,
-    unFocusEventMapping,
-    onChangedEventMapping
+export var EventsListForMC: AVM1EventHandler[] = [
+	ClipEventMappings[AVM1ClipEvents.Load],
+	ClipEventMappings[AVM1ClipEvents.Unload],
+	ClipEventMappings[AVM1ClipEvents.Data],
+	ClipEventMappings[AVM1ClipEvents.EnterFrame],
+	ClipEventMappings[AVM1ClipEvents.KeyDown],
+	ClipEventMappings[AVM1ClipEvents.KeyUp],
+	ClipEventMappings[AVM1ClipEvents.MouseMove],
+	ClipEventMappings[AVM1ClipEvents.MouseDown],
+	ClipEventMappings[AVM1ClipEvents.MouseUp],
+	ClipEventMappings[AVM1ClipEvents.Press],
+	ClipEventMappings[AVM1ClipEvents.Release],
+	ClipEventMappings[AVM1ClipEvents.ReleaseOutside],
+	ClipEventMappings[AVM1ClipEvents.RollOver],
+	ClipEventMappings[AVM1ClipEvents.RollOut],
+	ClipEventMappings[AVM1ClipEvents.DragOver],
+	ClipEventMappings[AVM1ClipEvents.DragOut],
+	ClipEventMappings[AVM1ClipEvents.KeyPress],
+	setFocusEventMapping,
+	unFocusEventMapping,
+	onChangedEventMapping
 ];
-export var EventsListForButton:AVM1EventHandler[]=[
-    ClipEventMappings[AVM1ClipEvents.Load],
-    ClipEventMappings[AVM1ClipEvents.Unload],
-    ClipEventMappings[AVM1ClipEvents.Data],
-    ClipEventMappings[AVM1ClipEvents.EnterFrame],
-    ClipEventMappings[AVM1ClipEvents.KeyDown],
-    ClipEventMappings[AVM1ClipEvents.KeyUp],
-    ClipEventMappings[AVM1ClipEvents.Press],
-    ClipEventMappings[AVM1ClipEvents.Release],
-    ClipEventMappings[AVM1ClipEvents.ReleaseOutside],
-    ClipEventMappings[AVM1ClipEvents.RollOver],
-    ClipEventMappings[AVM1ClipEvents.RollOut],
-    ClipEventMappings[AVM1ClipEvents.DragOver],
-    ClipEventMappings[AVM1ClipEvents.DragOut],
-    ClipEventMappings[AVM1ClipEvents.KeyPress],
-    setFocusEventMapping,
-    unFocusEventMapping,
-    onChangedEventMapping
+export var EventsListForButton: AVM1EventHandler[] = [
+	ClipEventMappings[AVM1ClipEvents.Load],
+	ClipEventMappings[AVM1ClipEvents.Unload],
+	ClipEventMappings[AVM1ClipEvents.Data],
+	ClipEventMappings[AVM1ClipEvents.EnterFrame],
+	ClipEventMappings[AVM1ClipEvents.KeyDown],
+	ClipEventMappings[AVM1ClipEvents.KeyUp],
+	ClipEventMappings[AVM1ClipEvents.Press],
+	ClipEventMappings[AVM1ClipEvents.Release],
+	ClipEventMappings[AVM1ClipEvents.ReleaseOutside],
+	ClipEventMappings[AVM1ClipEvents.RollOver],
+	ClipEventMappings[AVM1ClipEvents.RollOut],
+	ClipEventMappings[AVM1ClipEvents.DragOver],
+	ClipEventMappings[AVM1ClipEvents.DragOut],
+	ClipEventMappings[AVM1ClipEvents.KeyPress],
+	setFocusEventMapping,
+	unFocusEventMapping,
+	onChangedEventMapping
 ];
-

@@ -15,13 +15,13 @@
  */
 //module Shumway.AVM1 {
 
-import {CHECK_AVM1_HANG_EVERY, generateActionCalls} from "./interpreter";
-import {ActionCodeBlock, ActionCodeBlockItem, AnalyzerResults} from "./analyze";
-import {ActionCode, ParsedPushConstantAction, ParsedPushRegisterAction} from "./parser";
-import {AVM1ActionsData, AVM1Context} from "./context";
-import {avm1DebuggerEnabled} from "./settings";
-import {ActionsDataStream} from "./stream";
-import {notImplemented} from "@awayfl/swf-loader";
+import { CHECK_AVM1_HANG_EVERY, generateActionCalls } from './interpreter';
+import { ActionCodeBlock, ActionCodeBlockItem, AnalyzerResults } from './analyze';
+import { ActionCode, ParsedPushConstantAction, ParsedPushRegisterAction } from './parser';
+import { AVM1ActionsData, AVM1Context } from './context';
+import { avm1DebuggerEnabled } from './settings';
+import { ActionsDataStream } from './stream';
+import { notImplemented } from '@awayfl/swf-loader';
 
 const IS_INVALID_NAME = /[^A-Za-z0-9_/]+/g;
 
@@ -32,7 +32,7 @@ interface IExecutionContext {
 	isEndOfActions: boolean;
 }
 
-var cachedActionsCalls = null;
+let cachedActionsCalls = null;
 function getActionsCalls() {
 	if (!cachedActionsCalls) {
 		cachedActionsCalls = generateActionCalls();
@@ -45,15 +45,15 @@ function getActionsCalls() {
  */
 export class ActionsDataCompiler {
 	private convertArgs(args: any[], id: number, res, ir: AnalyzerResults): string {
-		var parts: string[] = [];
-		var arg;
-		var argsLen:number=args.length;
-		var constant;
-		var hint:string;
-		var currentConstantPool;
-		var registerNumber:number;
-		var resName:string;
-		for (var i: number = 0; i < argsLen; i++) {
+		const parts: string[] = [];
+		let arg;
+		const argsLen: number = args.length;
+		let constant;
+		let hint: string;
+		let currentConstantPool;
+		let registerNumber: number;
+		let resName: string;
+		for (let i: number = 0; i < argsLen; i++) {
 			arg = args[i];
 			if (typeof arg === 'object' && arg !== null && !Array.isArray(arg)) {
 				if (arg instanceof ParsedPushConstantAction) {
@@ -93,8 +93,9 @@ export class ActionsDataCompiler {
 		}
 		return parts.join(',');
 	}
-	private convertAction(item: ActionCodeBlockItem, id: number, res, indexInBlock: number, ir: AnalyzerResults, prevItem:ActionCodeBlockItem): string {
-		
+
+	private convertAction(item: ActionCodeBlockItem, id: number, res, indexInBlock: number, ir: AnalyzerResults, prevItem: ActionCodeBlockItem): string {
+
 		switch (item.action.actionCode) {
 			case ActionCode.ActionJump:
 			case ActionCode.ActionReturn:
@@ -123,15 +124,15 @@ export class ActionsDataCompiler {
 				var result = '  calls.' + item.action.actionName + '(ectx' +
 					(item.action.args ? ',[' + this.convertArgs(item.action.args, id, res, ir) + ']' : '') +
 					');\n';
-				if(item.action.actionName=="ActionCallMethod"){
-					if(!prevItem) {
-						result = `// strange oppcode at ${item.action.position}\n` + result
+				if (item.action.actionName == 'ActionCallMethod') {
+					if (!prevItem) {
+						result = `// strange oppcode at ${item.action.position}\n` + result;
 					}
-					if(prevItem && prevItem.action.actionCode==ActionCode.ActionPush){
-						let args=this.convertArgs(prevItem.action.args, id-1, res, ir);
-						if(args=='"gotoAndStop"' || args=='"gotoAndPlay"'){
-						//|| args=='"nextFrame"' || args=='"prevFrame"'){							
-							result+="  if(ectx.scopeList && ectx.scopeList.scope && ectx.scopeList.scope.adaptee && !ectx.scopeList.scope.adaptee.parent){ ectx.framescriptmanager.execute_avm1_constructors(); return;}\n"
+					if (prevItem && prevItem.action.actionCode == ActionCode.ActionPush) {
+						const args = this.convertArgs(prevItem.action.args, id - 1, res, ir);
+						if (args == '"gotoAndStop"' || args == '"gotoAndPlay"') {
+						//|| args=='"nextFrame"' || args=='"prevFrame"'){
+							result += '  if(ectx.scopeList && ectx.scopeList.scope && ectx.scopeList.scope.adaptee && !ectx.scopeList.scope.adaptee.parent){ ectx.framescriptmanager.execute_avm1_constructors(); return;}\n';
 
 						}
 					}
@@ -139,19 +140,20 @@ export class ActionsDataCompiler {
 				return result;
 		}
 	}
+
 	generate(ir: AnalyzerResults, debugPath: string = null): Function {
-		var blocks = ir.blocks;
-		var res = {};
-		var uniqueId = 0;
-		var debugName = ir.dataId.replace(IS_INVALID_NAME, "_");
-		var fn = 'return function ' + debugName + '(ectx) {\n' +
+		const blocks = ir.blocks;
+		const res = {};
+		let uniqueId = 0;
+		const debugName = ir.dataId.replace(IS_INVALID_NAME, '_');
+		let fn = 'return function ' + debugName + '(ectx) {\n' +
 			'var position = 0;\n' +
 			'var checkTimeAfter = 0;\n' +
 			'var constantPool = ectx.constantPool, registers = ectx.registers, stack = ectx.stack;\n';
 		if (avm1DebuggerEnabled.value) {
 			fn += '/* Running ' + debugName + ' */ ' +
 				'if (Shumway.AVM1.Debugger.pause || Shumway.AVM1.Debugger.breakpoints.' +
-				debugName + ') { debugger; }\n'
+				debugName + ') { debugger; }\n';
 		}
 		fn += 'while (!ectx.isEndOfActions) {\n' +
 			'if (checkTimeAfter <= 0) { checkTimeAfter = ' + CHECK_AVM1_HANG_EVERY + '; ectx.context.checkTimeout(); }\n' +
@@ -161,16 +163,16 @@ export class ActionsDataCompiler {
 			let prevItem;
 			b.items.forEach((item: ActionCodeBlockItem, index: number) => {
 				fn += this.convertAction(item, uniqueId++, res, index, ir, prevItem);
-				prevItem=item;
+				prevItem = item;
 			});
 			fn += '  position = ' + b.jump + ';\n' +
 				'  checkTimeAfter -= ' + b.items.length + ';\n' +
-				'  break;\n'
+				'  break;\n';
 		});
 		fn += ' default: ectx.isEndOfActions = true; break;\n}\n}\n' +
 			'return stack.pop();};';
-		fn += '//# sourceURL=http://jit/' + (debugPath && !IS_INVALID_NAME.test(debugPath) ? debugPath: debugName);
-		
+		fn += '//# sourceURL=http://jit/' + (debugPath && !IS_INVALID_NAME.test(debugPath) ? debugPath : debugName);
+
 		try {
 			return (new Function('calls', 'res', fn))(getActionsCalls(), res);
 		} catch (e) {
@@ -185,16 +187,16 @@ export class ActionsDataCompiler {
 // The functions/patterns were selected by analyzing the large amount of
 // real-life SWFs.
 export function findWellknowCompilation(actionsData: AVM1ActionsData, context: AVM1Context): Function {
-	var bytes = actionsData.bytes;
+	const bytes = actionsData.bytes;
 
-	var fn: Function = null;
+	let fn: Function = null;
 	if (bytes.length === 0 || bytes[0] === ActionCode.None) {
 		// Empty/no actions or first command is ActionEnd.
 		fn = actionsNoop;
 	} else if (bytes.length >= 2 && bytes[1] === ActionCode.None) {
 		// Single bytes actions: ActionPlay, ActionStop, ActionStopSounds
 		// Example: 07 00
-		switch(bytes[0]) {
+		switch (bytes[0]) {
 			case ActionCode.ActionPlay:
 				fn = actionsPlay;
 				break;
@@ -211,7 +213,7 @@ export function findWellknowCompilation(actionsData: AVM1ActionsData, context: A
 		bytes[5] === ActionCode.ActionPlay) {
 		// ActionGotoFrame n, ActionPlay
 		// Example: 81 02 00 04 00 06 00
-		var frameIndex = bytes[3] | (bytes[4] << 8);
+		const frameIndex = bytes[3] | (bytes[4] << 8);
 		fn = actionsGotoFrame.bind(null, [frameIndex, true]);
 	} else if (bytes.length >= 6 && bytes[0] === ActionCode.ActionGoToLabel &&
 		bytes[2] === 0 && bytes.length >= bytes[1] + 5 &&
@@ -219,8 +221,8 @@ export function findWellknowCompilation(actionsData: AVM1ActionsData, context: A
 		bytes[bytes[1] + 3] === ActionCode.ActionPlay) {
 		//  ActionGoToLabel s, ActonPlay
 		// Example: 8c 03 00 73 31 00 06 00
-		var stream = new ActionsDataStream(bytes.subarray(3, 3 + bytes[1]), context.swfVersion);
-		var label = stream.readString();
+		const stream = new ActionsDataStream(bytes.subarray(3, 3 + bytes[1]), context.swfVersion);
+		const label = stream.readString();
 		fn = actionsGotoLabel.bind(null, [label, true]);
 	}
 

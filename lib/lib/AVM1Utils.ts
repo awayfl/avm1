@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-
-import {AVM1ActionsData, AVM1Context} from "../context";
+import { AVM1ActionsData, AVM1Context } from '../context';
 import {
 	alDefineObjectProperties, AVM1NativeFunction, AVM1PropertyFlags
-} from "../runtime";
-import {isNullOrUndefined, Debug, release, AVM1ClipEvents} from "@awayfl/swf-loader";
-import {AVM1ArrayNative} from "../natives";
+} from '../runtime';
+import { isNullOrUndefined, Debug, release, AVM1ClipEvents } from '@awayfl/swf-loader';
+import { AVM1ArrayNative } from '../natives';
 
-import {DisplayObject, TextField, MovieClip, DisplayObjectContainer } from "@awayjs/scene";
+import { DisplayObject, TextField, MovieClip, DisplayObjectContainer } from '@awayjs/scene';
 
-import {AVM1SymbolBase} from "./AVM1SymbolBase";
-import {AVM1Object} from "../runtime/AVM1Object";
-import { AVM1Function } from "../runtime/AVM1Function";
-import { AVM1PropertyDescriptor } from "../runtime/AVM1PropertyDescriptor";
-import { ClipEventMappings, AVM1EventProps, AVM1KeyCodeMap } from "./AVM1EventHandler";
+import { AVM1SymbolBase } from './AVM1SymbolBase';
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1Function } from '../runtime/AVM1Function';
+import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
+import { ClipEventMappings, AVM1EventProps, AVM1KeyCodeMap } from './AVM1EventHandler';
 
 export var DEPTH_OFFSET = 16384;
 
@@ -38,7 +37,7 @@ export interface IHasAS3ObjectReference {
 
 export interface IAVM1SymbolBase extends IHasAS3ObjectReference{
 	context: AVM1Context;
-	initAVM1SymbolInstance(context: AVM1Context, awayObject:DisplayObject);
+	initAVM1SymbolInstance(context: AVM1Context, awayObject: DisplayObject);
 	updateAllEvents();
 	getDepth(): number;
 }
@@ -58,7 +57,7 @@ export function hasAwayJSAdaptee(obj: any): boolean {
  * Returns obj's reference to a native AS3 object. If the reference
  * does not exist, returns undefined.
  */
-export function getAwayJSAdaptee(obj: IHasAS3ObjectReference):any{//80pro} ASObject {
+export function getAwayJSAdaptee(obj: IHasAS3ObjectReference): any {//80pro} ASObject {
 	return obj.adaptee;
 }
 
@@ -80,8 +79,8 @@ export function getAwayObjectOrTemplate<T extends DisplayObjectContainer>(obj: A
 	// The _as3ObjectTemplate is not really an ASObject type, but we will fake
 	// that for AVM1SymbolBase's properties transfers.
 	if (!obj._as3ObjectTemplate) {
-		var template;
-		var proto = obj.alPrototype;
+		let template;
+		let proto = obj.alPrototype;
 		while (proto && !(<any>proto).initAVM1SymbolInstance) {
 			template = (<any>proto)._as3ObjectTemplate;
 			if (template) {
@@ -94,40 +93,39 @@ export function getAwayObjectOrTemplate<T extends DisplayObjectContainer>(obj: A
 	return <T>obj._as3ObjectTemplate;
 }
 
-
-export var BlendModesMap = [undefined, "normal", "layer", "multiply",
-	"screen", "lighten", "darken", "difference", "add", "subtract", "invert",
-	"alpha", "erase", "overlay", "hardlight"];
+export var BlendModesMap = [undefined, 'normal', 'layer', 'multiply',
+	'screen', 'lighten', 'darken', 'difference', 'add', 'subtract', 'invert',
+	'alpha', 'erase', 'overlay', 'hardlight'];
 
 export function avm1HasEventProperty(context: AVM1Context, target: any, propertyName: string): boolean {
 	if (target.alHasProperty(propertyName) &&
 		(target.alGet(propertyName) instanceof AVM1Function)) {
 		return true;
-    }
-    if (target.alHasProperty(propertyName) &&
+	}
+	if (target.alHasProperty(propertyName) &&
     (target._ownProperties[propertyName] &&  target._ownProperties[propertyName].value)) {
-        return true;
-}
-	var listenersField = target.alGet('_listeners');
+		return true;
+	}
+	const listenersField = target.alGet('_listeners');
 	if (!(listenersField instanceof AVM1ArrayNative)) {
 		return false;
 	}
-	var listeners: any[] = listenersField.value;
+	const listeners: any[] = listenersField.value;
 	return listeners.some(function (listener) {
 		return (listener instanceof AVM1Object) && listener.alHasProperty(propertyName);
 	});
 }
 
 export function avm1BroadcastNativeEvent(context: AVM1Context, target: any, propertyName: string, args: any[] = null): void {
-    //console.log("avm1BroadcastNativeEvent", propertyName)
-	var handler: AVM1Function = target.alGet(propertyName);
+	//console.log("avm1BroadcastNativeEvent", propertyName)
+	const handler: AVM1Function = target.alGet(propertyName);
 	if (handler instanceof AVM1Function) {
-		if(propertyName.toLowerCase()=="onenterframe")	handler.isOnEnter=true;
+		if (propertyName.toLowerCase() == 'onenterframe')	handler.isOnEnter = true;
 		context.executeFunction(handler, target, args);
 	}
-	var _listeners = target.alGet('_listeners');
+	const _listeners = target.alGet('_listeners');
 	if (_listeners instanceof AVM1ArrayNative) {
-		var handlerOnListener: AVM1Function=null;
+		let handlerOnListener: AVM1Function = null;
 		_listeners.value.forEach(function (listener) {
 			if (!(listener instanceof AVM1Object)) {
 				return;
@@ -141,13 +139,13 @@ export function avm1BroadcastNativeEvent(context: AVM1Context, target: any, prop
 }
 
 export function avm1BroadcastEvent(context: AVM1Context, target: any, propertyName: string, args: any[] = null): void {
-	var handler: AVM1Function = target.alGet(propertyName);
+	const handler: AVM1Function = target.alGet(propertyName);
 	if (handler instanceof AVM1Function) {
 		handler.alCall(target, args);
 	}
-	var _listeners = target.alGet('_listeners');
+	const _listeners = target.alGet('_listeners');
 	if (_listeners instanceof AVM1ArrayNative) {
-		var handlerOnListener: AVM1Function=null;
+		let handlerOnListener: AVM1Function = null;
 		_listeners.value.forEach(function (listener) {
 			if (!(listener instanceof AVM1Object)) {
 				return;
@@ -159,12 +157,12 @@ export function avm1BroadcastEvent(context: AVM1Context, target: any, propertyNa
 		});
 	}
 }
-var myCount=0;
+let myCount = 0;
 
-function createAVM1NativeObject(ctor, nativeObject:DisplayObject, context: AVM1Context) {
+function createAVM1NativeObject(ctor, nativeObject: DisplayObject, context: AVM1Context) {
 	// We need to walk on __proto__ to find right ctor.prototype.
-	var template;
-	var proto = ctor.alGetPrototypeProperty();
+	let template;
+	let proto = ctor.alGetPrototypeProperty();
 	while (proto && !(<any>proto).initAVM1SymbolInstance) {
 		if ((<any>proto)._as3ObjectTemplate && !template) {
 			template = (<any>proto)._as3ObjectTemplate;
@@ -173,16 +171,14 @@ function createAVM1NativeObject(ctor, nativeObject:DisplayObject, context: AVM1C
 	}
 	release || Debug.assert(proto);
 
-
-	var avm1Object = Object.create(proto);
+	const avm1Object = Object.create(proto);
 	(<any>proto).initAVM1SymbolInstance.call(avm1Object, context, nativeObject);
 	avm1Object.alPrototype = ctor.alGetPrototypeProperty();
 	avm1Object.alSetOwnConstructorProperty(ctor);
 	(<any>nativeObject)._as2Object = avm1Object;
 	ctor.alCall(avm1Object);
 
-
-	(<any>avm1Object).aCount=myCount++;
+	(<any>avm1Object).aCount = myCount++;
 	//	80pro: creating a new _ownProperties
 	//  makes sure that newly added properties are added to instance, not to prototype
 	//avm1Object._ownProperties={};
@@ -190,14 +186,14 @@ function createAVM1NativeObject(ctor, nativeObject:DisplayObject, context: AVM1C
 
 	if (template) {
 		// transfer properties from the template
-		for (var prop in template) {
+		for (const prop in template) {
 			nativeObject[prop] = template[prop];
 		}
 	}
 	return avm1Object;
 }
 
-export function getAVM1Object<T extends AVM1Object> (awayObject:DisplayObject, context: AVM1Context): T {
+export function getAVM1Object<T extends AVM1Object> (awayObject: DisplayObject, context: AVM1Context): T {
 	if (!awayObject) {
 		return null;
 	}
@@ -205,25 +201,23 @@ export function getAVM1Object<T extends AVM1Object> (awayObject:DisplayObject, c
 	if ((<any>awayObject)._as2Object) {
 		return (<any>awayObject)._as2Object;
 	}
-	var avmObject;
+	let avmObject;
 
-	if(awayObject.isAsset(MovieClip)){
-		if((<MovieClip>awayObject).timeline.isButton){
-			avmObject=<AVM1Object>createAVM1NativeObject(context.globals.Button, awayObject, context);
+	if (awayObject.isAsset(MovieClip)) {
+		if ((<MovieClip>awayObject).timeline.isButton) {
+			avmObject = <AVM1Object>createAVM1NativeObject(context.globals.Button, awayObject, context);
+		} else {
+			avmObject = <AVM1Object>createAVM1NativeObject(context.globals.MovieClip, awayObject, context);
 		}
-		else{     
-            avmObject=<AVM1Object>createAVM1NativeObject(context.globals.MovieClip, awayObject, context);
-		}
+	} else if (awayObject.isAsset(TextField)) {
+		avmObject = <AVM1Object>createAVM1NativeObject(context.globals.TextField, awayObject, context);
 	}
-	else if(awayObject.isAsset(TextField)){
-		avmObject=<AVM1Object>createAVM1NativeObject(context.globals.TextField, awayObject, context);
+	if (avmObject) {
+		(<any>awayObject)._as2Object = avmObject;
+		awayObject.adapter = avmObject;
+		avmObject.adaptee = awayObject;
 	}
-	if(avmObject){
-		(<any>awayObject)._as2Object=avmObject;
-		awayObject.adapter=avmObject;
-		avmObject.adaptee=awayObject;
-	}
-	(<any>awayObject)._as2Object=avmObject;
+	(<any>awayObject)._as2Object = avmObject;
 	return avmObject as T;
 
 }
@@ -238,14 +232,14 @@ export function wrapAVM1NativeMembers(context: AVM1Context, wrap: AVM1Object, ob
 			return new AVM1NativeFunction(context, fn);
 		}
 		return new AVM1NativeFunction(context, function () {
-			var args = Array.prototype.slice.call(arguments, 0);
+			const args = Array.prototype.slice.call(arguments, 0);
 			args.unshift(context);
 			return fn.apply(this, args);
 		});
 	}
 	function getMemberDescriptor(memberName): PropertyDescriptor {
-		var desc;
-		for (var p = obj; p; p = Object.getPrototypeOf(p)) {
+		let desc;
+		for (let p = obj; p; p = Object.getPrototypeOf(p)) {
 			desc = Object.getOwnPropertyDescriptor(p, memberName);
 			if (desc) {
 				return desc;
@@ -260,20 +254,20 @@ export function wrapAVM1NativeMembers(context: AVM1Context, wrap: AVM1Object, ob
 	members.forEach(function (memberName) {
 		if (memberName[memberName.length - 1] === '#') {
 			// Property mapping
-			var getterName = 'get' + memberName[0].toUpperCase() + memberName.slice(1, -1);
-			var getter = obj[getterName];
-			var setterName = 'set' + memberName[0].toUpperCase() + memberName.slice(1, -1);
-			var setter = obj[setterName];
-			release || Debug.assert(getter || setter, 'define getter or setter')
+			const getterName = 'get' + memberName[0].toUpperCase() + memberName.slice(1, -1);
+			const getter = obj[getterName];
+			const setterName = 'set' + memberName[0].toUpperCase() + memberName.slice(1, -1);
+			const setter = obj[setterName];
+			release || Debug.assert(getter || setter, 'define getter or setter');
 			var desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.ACCESSOR |
 				AVM1PropertyFlags.DONT_DELETE |
 				AVM1PropertyFlags.DONT_ENUM,
-				null, wrapFunction(getter), wrapFunction(setter));
+			null, wrapFunction(getter), wrapFunction(setter));
 			wrap.alSetOwnProperty(memberName.slice(0, -1), desc);
 			return;
 		}
 
-		var nativeDesc = getMemberDescriptor(memberName);
+		const nativeDesc = getMemberDescriptor(memberName);
 		if (!nativeDesc) {
 			return;
 		}
@@ -282,14 +276,14 @@ export function wrapAVM1NativeMembers(context: AVM1Context, wrap: AVM1Object, ob
 			return;
 		}
 
-		var value = nativeDesc.value;
+		let value = nativeDesc.value;
 		if (typeof value === 'function') {
 			value = wrapFunction(value);
 		}
 		var desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA |
 			AVM1PropertyFlags.DONT_DELETE |
 			AVM1PropertyFlags.DONT_ENUM,
-			value);
+		value);
 		wrap.alSetOwnProperty(memberName, desc);
 	});
 }
@@ -298,7 +292,7 @@ export function wrapAVM1NativeClass(context: AVM1Context, wrapAsFunction: boolea
 	var wrappedFn = wrapAsFunction ?
 		new AVM1NativeFunction(context, call || function () { }, function () {
 			// Creating simple AVM1 object
-			var obj = new cls(context);
+			const obj = new cls(context);
 			obj.alPrototype = wrappedPrototype;
 			obj.alSetOwnConstructorProperty(wrappedFn);
 			if (cstr) {
@@ -328,26 +322,26 @@ export function wrapAVM1NativeClass(context: AVM1Context, wrapAsFunction: boolea
 export function initializeAVM1Object(awayObject: any,
 									 context: AVM1Context,
 									 placeObjectTag: any) {
-	var instanceAVM1 = <AVM1SymbolBase<DisplayObjectContainer>>getAVM1Object(awayObject, context);
+	const instanceAVM1 = <AVM1SymbolBase<DisplayObjectContainer>>getAVM1Object(awayObject, context);
 	release || Debug.assert(instanceAVM1);
 
 	if (placeObjectTag.variableName) {
 		instanceAVM1.alPut('variable', placeObjectTag.variableName);
 	}
 
-	var events = placeObjectTag.events;
+	const events = placeObjectTag.events;
 	if (!events) {
 		return;
 	}
-	var swfEvent;
-	var actionsData;
-	var handler;
-	var flags;
-	var eventFlag;
-	var eventMapping;
-	var eventName;
-	var eventProps=null;
-	for (var j = 0; j < events.length; j++) {
+	let swfEvent;
+	let actionsData;
+	let handler;
+	let flags;
+	let eventFlag;
+	let eventMapping;
+	let eventName;
+	let eventProps = null;
+	for (let j = 0; j < events.length; j++) {
 		swfEvent = events[j];
 		actionsData;
 		if (swfEvent.actionsBlock) {
@@ -360,39 +354,36 @@ export function initializeAVM1Object(awayObject: any,
 		release || Debug.assert(actionsData);
 		handler = clipEventHandler.bind(null, actionsData, instanceAVM1);
 		flags = swfEvent.flags;
-		for (var key in ClipEventMappings) {
-			eventFlag=parseInt(key);
+		for (const key in ClipEventMappings) {
+			eventFlag = parseInt(key);
 			eventFlag |= 0;
 			if (!(flags & (eventFlag | 0))) {
 				continue;
-            }
-            else if(eventFlag==AVM1ClipEvents.Construct){
-				awayObject.onConstruct=handler;
-                continue;
+			} else if (eventFlag == AVM1ClipEvents.Construct) {
+				awayObject.onConstruct = handler;
+				continue;
+			} else if (eventFlag == AVM1ClipEvents.Initialize) {
+				awayObject.onInitialize = handler;
+				continue;
+			} else if (eventFlag == AVM1ClipEvents.Load) {
+				awayObject.onLoaded = handler;
+				continue;
 			}
-			else if(eventFlag==AVM1ClipEvents.Initialize){
-				awayObject.onInitialize=handler;
-                continue;
-			}
-            else if(eventFlag==AVM1ClipEvents.Load){
-				awayObject.onLoaded=handler;
-                continue;
-            }
 
 			eventMapping = ClipEventMappings[eventFlag];
 			eventName = eventMapping.eventName;
-            //console.log("eventName", eventName, eventMapping, eventFlag, swfEvent);
+			//console.log("eventName", eventName, eventMapping, eventFlag, swfEvent);
 			if (!eventName) {
-				Debug.warning("ClipEvent: " + eventFlag + ' not implemented');
+				Debug.warning('ClipEvent: ' + eventFlag + ' not implemented');
 				continue;
 			}
-			if(swfEvent.keyCode){
-				eventProps=new AVM1EventProps();
-				eventProps.keyCode=swfEvent.keyCode;
-				if(swfEvent.keyCode < 32 &&	AVM1KeyCodeMap[swfEvent.keyCode])
-					eventProps.keyCode=AVM1KeyCodeMap[swfEvent.keyCode]
+			if (swfEvent.keyCode) {
+				eventProps = new AVM1EventProps();
+				eventProps.keyCode = swfEvent.keyCode;
+				if (swfEvent.keyCode < 32 &&	AVM1KeyCodeMap[swfEvent.keyCode])
+					eventProps.keyCode = AVM1KeyCodeMap[swfEvent.keyCode];
 			}
-			instanceAVM1._addOnClipEventListener(eventMapping, handler, eventProps);			
+			instanceAVM1._addOnClipEventListener(eventMapping, handler, eventProps);
 		}
 	}
 }
@@ -402,35 +393,29 @@ export function toTwipFloor(value: number): number {
 	//return Math.round(value*20)/20;
 	// because AwayJS does not use big.js internally, floats might have this nasty rounding error
 	// we need to floor twips, and add a additional twip in case it had the floating error
-	var isNeg=value<0?-1:1;
-	value=Math.abs(value);
-	var twip:number=Math.floor(value*20)/20;
-	if(value>twip && (value-twip)>0.04){
-		twip+=0.05;
-		// the addition might introduce float issue again, 
-		// so make sure go back to twips 
-		twip=Math.round(twip*20)/20;
+	const isNeg = value < 0 ? -1 : 1;
+	value = Math.abs(value);
+	let twip: number = Math.floor(value * 20) / 20;
+	if (value > twip && (value - twip) > 0.04) {
+		twip += 0.05;
+		// the addition might introduce float issue again,
+		// so make sure go back to twips
+		twip = Math.round(twip * 20) / 20;
 	}
-	return twip*isNeg;
+	return twip * isNeg;
 
 }
 export function toTwipRound(value: number): number {
-	return Math.round(value*20)/20;
+	return Math.round(value * 20) / 20;
 
 }
 export function avm2AwayDepth(value: number): number {
-	return value+1;
+	return value + 1;
 }
 export function away2avmDepth(value: number): number {
-	return value-1;
+	return value - 1;
 }
 function clipEventHandler(actionsData: AVM1ActionsData,
 						  receiver: IAVM1SymbolBase) {
 	return receiver.context.executeActions(actionsData, receiver);
 }
-
-
-
-
-
-

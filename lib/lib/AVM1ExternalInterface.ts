@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {alCoerceString, alIsFunction} from "../runtime";
-import {wrapAVM1NativeClass} from "./AVM1Utils";
-import {AVM1Context} from "../context";
-import {AVM1Object} from "../runtime/AVM1Object";
-import { AVM1Function } from "../runtime/AVM1Function";
-
+import { alCoerceString, alIsFunction } from '../runtime';
+import { wrapAVM1NativeClass } from './AVM1Utils';
+import { AVM1Context } from '../context';
+import { AVM1Object } from '../runtime/AVM1Object';
+import { AVM1Function } from '../runtime/AVM1Function';
 
 //module Shumway.AVM1.Lib {
 
@@ -39,19 +38,19 @@ export class AVM1ExternalInterface extends AVM1Object {
 			return false;
 		}
 		try {
-			if(!window["flashObject"]){
-				window["flashObject"]={};
+			if (!window['flashObject']) {
+				window['flashObject'] = {};
 			}
-			window["flashObject"][methodName]=function(...args){
-				
-				var desc=instance.alGet(methodName.toLowerCase());
-				if(desc && alIsFunction(desc))
+			window['flashObject'][methodName] = function(...args) {
+
+				const desc = instance.alGet(methodName.toLowerCase());
+				if (desc && alIsFunction(desc))
 					desc.alCall(instance, args);
 				else if (desc && desc.value)
 					desc.value.alCall(instance, args);
 				//_this.mwAdaptee.runScripts();
 
-			}
+			};
 			/*context.sec.flash.external.ExternalInterface.axClass.addCallback(methodName, function () {
 				var args = Array.prototype.slice.call(arguments, 0);
 				var result = context.executeFunction(method, instance, args);
@@ -64,29 +63,29 @@ export class AVM1ExternalInterface extends AVM1Object {
 	}
 
 	public static call(context: AVM1Context, methodName: string, ...parameters: any[]): any {
-		var args = [];// [alCoerceString(context, methodName)];
-		var paramsLength:number=parameters.length;
-		var i:number=0;
+		let args = [];// [alCoerceString(context, methodName)];
+		const paramsLength: number = parameters.length;
+		let i: number = 0;
 		for (i = 0; i < paramsLength; i++) {
 			// TODO convert AVM1 objects to AVM2
 			args.push(parameters[i]);
 		}
-		if(args.length==1){
-			args=args[0];
+		if (args.length == 1) {
+			args = args[0];
 		}
 		try {
-			var methodnames=methodName.split(".");
-			var method:any=window;
-			for(i=0; i<methodnames.length; i++){
-				method=method[methodnames[i]];
+			const methodnames = methodName.split('.');
+			let method: any = window;
+			for (i = 0; i < methodnames.length; i++) {
+				method = method[methodnames[i]];
 			}
 
 			method(args);
 			/*var result = context.sec.flash.external.ExternalInterface.axClass.call.apply(
 				context.sec.flash.external.ExternalInterface.axClass, args);
 				*/
-			
-			var result="";
+
+			const result = '';
 			// TODO convert AVM2 result to AVM1
 			return result;
 		} catch (e) {
@@ -94,4 +93,3 @@ export class AVM1ExternalInterface extends AVM1Object {
 		}
 	}
 }
-
