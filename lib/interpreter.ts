@@ -1134,7 +1134,7 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 	// For now it is just very much magical -- designed to pass some of the swfdec tests
 	// FIXME refactor
 	release || Debug.assert(variableName);
-	
+
 	let i = 0, j = variableName.length;
 	let markedAsTarget = true;
 	let resolved, ch, needsScopeResolution;
