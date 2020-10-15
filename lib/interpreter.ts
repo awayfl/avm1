@@ -1134,11 +1134,18 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 	// For now it is just very much magical -- designed to pass some of the swfdec tests
 	// FIXME refactor
 	release || Debug.assert(variableName);
+	
+	let i = 0, j = variableName.length;
+	let markedAsTarget = true;
+	let resolved, ch, needsScopeResolution;
+	var propertyName = null, scope = null, obj = undefined;
+
 	// Canonicalizing the name here is ok even for paths: the only thing that (potentially)
 	// happens is that the name is converted to lower-case, which is always valid for paths.
 	// The original name is saved because the final property name needs to be extracted from
 	// it for property name paths.
 	const originalName = variableName;
+
 	if (!avm1VariableNameHasPath(variableName)) {
 		variableName = ectx.context.normalizeName(variableName);
 		if (typeof variableName === 'string' && variableName.startsWith('_level')) {
@@ -1159,10 +1166,7 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 	if (variableName[variableName.length - 1] == '.') {
 		return null;
 	}
-	let i = 0, j = variableName.length;
-	let markedAsTarget = true;
-	let resolved, ch, needsScopeResolution;
-	var propertyName = null, scope = null, obj = undefined;
+
 	if (variableName[0] === '/') {
 
 		noVarGetDebug || console.log('originalName starts with a \'/\'');
