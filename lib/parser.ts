@@ -137,6 +137,7 @@ export interface ParsedAction {
 	actionCode: number;
 	actionName: string;
 	args: any[];
+	knownAction?: boolean;
 }
 
 export interface ArgumentAssignment {
@@ -481,11 +482,13 @@ export class ActionsDataParser {
 				args = [mode];
 				break;
 		}
+
 		stream.position = nextPosition;
 		return {
 			position: currentPosition - this._initialPosition,
 			actionCode: actionCode,
 			actionName: ActionNamesMap[actionCode],
+			knownAction: !!(ActionNamesMap[actionCode]),
 			args: args
 		};
 	}
@@ -501,7 +504,7 @@ export class ActionsDataParser {
 	}
 }
 
-var ActionNamesMap = {
+const ActionNamesMap = {
 	0x00: 'EOA',
 	0x04: 'ActionNextFrame',
 	0x05: 'ActionPreviousFrame',

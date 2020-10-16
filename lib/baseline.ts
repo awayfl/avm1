@@ -40,6 +40,11 @@ function getActionsCalls() {
 	return cachedActionsCalls;
 }
 
+interface IHoistMap {
+	forward: StringMap<string>;
+	back: StringMap<string>;
+}
+
 /**
  *  Bare-minimum JavaScript code generator to make debugging better.
  */
@@ -94,7 +99,10 @@ export class ActionsDataCompiler {
 		return parts.join(',');
 	}
 
-	private convertAction(item: ActionCodeBlockItem, id: number, res, indexInBlock: number, ir: AnalyzerResults, prevItem: ActionCodeBlockItem): string {
+	/* eslint-disable-next-line max-len */
+	private convertAction(item: ActionCodeBlockItem, id: number, res, indexInBlock: number, ir: AnalyzerResults, items: ActionCodeBlockItem[], hoists: IHoistMap): string {
+		// const calls = getActionsCalls();
+		const prevItem = items[indexInBlock - 1];
 
 		switch (item.action.actionCode) {
 			case ActionCode.ActionJump:
@@ -102,28 +110,44 @@ export class ActionsDataCompiler {
 				return '';
 			case ActionCode.ActionConstantPool:
 				res.constantPool = item.action.args[0];
-				return '  constantPool = [' + this.convertArgs(item.action.args[0], id, res, ir) + '];\n' +
-					'  ectx.constantPool = constantPool;\n';
+				hoists.forward[`constPool${id}`] = `[${this.convertArgs(item.action.args[0], id, res, ir)}]`;
+				return `  constantPool = ectx.constantPool = constPool${id};\n`;
+
 			case ActionCode.ActionPush:
 				return '  stack.push(' + this.convertArgs(item.action.args, id, res, ir) + ');\n';
-			case ActionCode.ActionStoreRegister:
-				var registerNumber = item.action.args[0];
+			case ActionCode.ActionStoreRegister: {
+				const registerNumber = item.action.args[0];
 				if (registerNumber < 0 || registerNumber >= ir.registersLimit) {
 					return ''; // register is out of bounds -- noop
 				}
 				return '  registers[' + registerNumber + '] = stack[stack.length - 1];\n';
+			}
 			case ActionCode.ActionWaitForFrame:
-			case ActionCode.ActionWaitForFrame2:
+			case ActionCode.ActionWaitForFrame2: {
+				const args = this.convertArgs(item.action.args, id, res, ir);
+
 				return '  if (calls.' + item.action.actionName + '(ectx,[' +
-					this.convertArgs(item.action.args, id, res, ir) + '])) { position = ' + item.conditionalJumpTo + '; ' +
+					args + '])) { position = ' + item.conditionalJumpTo + '; ' +
 					'checkTimeAfter -= ' + (indexInBlock + 1) + '; break; }\n';
+			}
 			case ActionCode.ActionIf:
 				return '  if (!!stack.pop()) { position = ' + item.conditionalJumpTo + '; ' +
 					'checkTimeAfter -= ' + (indexInBlock + 1) + '; break; }\n';
-			default:
-				var result = '  calls.' + item.action.actionName + '(ectx' +
-					(item.action.args ? ',[' + this.convertArgs(item.action.args, id, res, ir) + ']' : '') +
-					');\n';
+			default: {
+				if (!item.action.knownAction) {
+					return `  // unknown actionCode ${item.action.actionCode} at ${item.action.position}\n`;
+				}
+
+				let args = item.action.args ? `[${this.convertArgs(item.action.args, id, res, ir)}]` : '';
+				if (item.action.actionCode === 0x8E /* ActionDefineFunction2 */) {
+					const name = `defFunArgs${id}`;
+					hoists.forward[name] = args;
+					args = name;
+				}
+
+				let result = '  calls.' + item.action.actionName + '(ectx' +
+					(args ? ', ' + args : '') + ');\n';
+
 				if (item.action.actionName == 'ActionCallMethod') {
 					if (!prevItem) {
 						result = `// strange oppcode at ${item.action.position}\n` + result;
@@ -132,50 +156,72 @@ export class ActionsDataCompiler {
 						const args = this.convertArgs(prevItem.action.args, id - 1, res, ir);
 						if (args == '"gotoAndStop"' || args == '"gotoAndPlay"') {
 						//|| args=='"nextFrame"' || args=='"prevFrame"'){
+							/* eslint-disable-next-line max-len */
 							result += '  if(ectx.scopeList && ectx.scopeList.scope && ectx.scopeList.scope.adaptee && !ectx.scopeList.scope.adaptee.parent){ ectx.framescriptmanager.execute_avm1_constructors(); return;}\n';
 
 						}
 					}
 				}
 				return result;
+			}
 		}
 	}
 
 	generate(ir: AnalyzerResults, debugPath: string = null): Function {
 		const blocks = ir.blocks;
 		const res = {};
-		let uniqueId = 0;
+		const hoists: IHoistMap = {
+			forward: {}, back: {}
+		};
+
 		const debugName = ir.dataId.replace(IS_INVALID_NAME, '_');
-		let fn = 'return function ' + debugName + '(ectx) {\n' +
+		const header = 'return function ' + debugName + '(ectx) {\n' +
 			'var position = 0;\n' +
 			'var checkTimeAfter = 0;\n' +
 			'var constantPool = ectx.constantPool, registers = ectx.registers, stack = ectx.stack;\n';
+
+		let beforeHeader = '';
+		let fn = '';
+
 		if (avm1DebuggerEnabled.value) {
 			fn += '/* Running ' + debugName + ' */ ' +
 				'if (Shumway.AVM1.Debugger.pause || Shumway.AVM1.Debugger.breakpoints.' +
 				debugName + ') { debugger; }\n';
 		}
 		fn += 'while (!ectx.isEndOfActions) {\n' +
-			'if (checkTimeAfter <= 0) { checkTimeAfter = ' + CHECK_AVM1_HANG_EVERY + '; ectx.context.checkTimeout(); }\n' +
+			`if (checkTimeAfter <= 0) { checkTimeAfter = ${CHECK_AVM1_HANG_EVERY}; ectx.context.checkTimeout(); }\n\n` +
 			'switch(position) {\n';
+
+		let uuid = 0;
 		blocks.forEach((b: ActionCodeBlock) => {
 			fn += ' case ' + b.label + ':\n';
-			let prevItem;
-			b.items.forEach((item: ActionCodeBlockItem, index: number) => {
-				fn += this.convertAction(item, uniqueId++, res, index, ir, prevItem);
-				prevItem = item;
+
+			const actLines = b.items.map((item: ActionCodeBlockItem, index: number) => {
+				return this.convertAction(item, uuid++, res, index, ir, b.items, hoists);
 			});
+
+			fn += actLines.join('');
+
 			fn += '  position = ' + b.jump + ';\n' +
 				'  checkTimeAfter -= ' + b.items.length + ';\n' +
 				'  break;\n';
 		});
 		fn += ' default: ectx.isEndOfActions = true; break;\n}\n}\n' +
 			'return stack.pop();};';
+
+		beforeHeader += '\n// hoisted vars\n';
+		for (const key in hoists.forward) {
+			beforeHeader += `var ${key} = ${hoists.forward[key]};\n`;
+		}
+		beforeHeader += '\n';
+
+		fn = beforeHeader + header + fn;
 		fn += '//# sourceURL=http://jit/' + (debugPath && !IS_INVALID_NAME.test(debugPath) ? debugPath : debugName);
 
 		try {
 			return (new Function('calls', 'res', fn))(getActionsCalls(), res);
 		} catch (e) {
+			// eslint-disable-next-line no-debugger
 			debugger;
 			throw e;
 		}
