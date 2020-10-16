@@ -28,6 +28,7 @@ export class AVM1Function extends AVM1Object implements IAVM1Callable {
 		const fn = this;
 		const context = this.context;
 		return function () {
+			/* eslint-disable-next-line prefer-rest-params */
 			const args = Array.prototype.slice.call(arguments, 0);
 			return context.executeFunction(fn, thisArg, args);
 		};

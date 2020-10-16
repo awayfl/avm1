@@ -95,6 +95,8 @@ export class AVM1NativeFunction extends AVM1Function {
 		if (!this._ctor) {
 			throw new Error('not a constructor');
 		}
+
+		/* eslint-disable-next-line prefer-spread */
 		return this._ctor.apply(this, args);
 	}
 
@@ -150,7 +152,7 @@ export function alToPrimitive(context: IAVM1Context, v, preferredType?: AVM1Defa
 
 export function bToRuntimeBool (context: IAVM1Context, v: boolean | number): boolean | number  {
 	const is5 = context.swfVersion >= 5;
-	const is7 = context.swfVersion >= 7;
+	//const is7 = context.swfVersion >= 7;
 
 	if (is5) {
 		return !!v;
@@ -256,7 +258,7 @@ export function alToString(context: IAVM1Context, v): string {
 			return '[type ' + alGetObjectClass(v) + ']';
 		case 'boolean':
 			return v ? 'true' : 'false';
-		case 'number':{			
+		case 'number': {
 			if (isFinite(v)) {
 				// https://esbench.com/bench/5f888a98b4632100a7dcd403
 				const e =  Math.floor(Math.log10(Math.abs(+v)));
@@ -396,8 +398,9 @@ export function alIsArrayLike(context: IAVM1Context, v): boolean {
 	return true;
 }
 
-export function alIterateArray(context: IAVM1Context, arr: AVM1Object,
-							   fn: (obj: any, index?: number) => void, thisArg: any = null): void {
+/* eslint-disable-next-line max-len */
+export function alIterateArray(context: IAVM1Context, arr: AVM1Object, fn: (obj: any, index?: number) => void, thisArg: any = null): void {
+
 	const length = alToInteger(context, arr.alGet('length'));
 	if (isNaN(length) || length >= 4294967296) {
 		return;
