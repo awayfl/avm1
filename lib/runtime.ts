@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-import { AVM1Context } from './context';
 import { AVM1ArrayNative, AVM1BooleanNative, AVM1NumberNative, AVM1StringNative } from './natives';
-import { IDisplayObjectAdapter, DisplayObject } from '@awayjs/scene';
-import { IAsset } from '@awayjs/core';
 import { AVM1Object } from './runtime/AVM1Object';
 import { AVM1Function } from './runtime/AVM1Function';
-import { AVM1Globals } from './lib/AVM1Globals';
 import { AVM1PropertyDescriptor } from './runtime/AVM1PropertyDescriptor';
-import Big from 'big.js';
 import { Debug, release, isNullOrUndefined, isIndex } from '@awayfl/swf-loader';
 
 // Just assigning class prototype to null will not work, using next best thing.
@@ -254,21 +249,24 @@ export function alToString(context: IAVM1Context, v): string {
 				let outputStr: string = '';
 				for (let i: number = 0; i < v.length; i++) {
 					outputStr += alToString(context, v[i]);
-					outputStr += i == v.length - 1 ? '' : ',';
+					outputStr += (i === v.length - 1) ? '' : ',';
 				}
 				return outputStr;
 			}
 			return '[type ' + alGetObjectClass(v) + ']';
 		case 'boolean':
 			return v ? 'true' : 'false';
-		case 'number':
+		case 'number':{			
 			if (isFinite(v)) {
-				let bigv = Big(v);
-				if (Math.abs(bigv.e) < 14)
-					bigv = bigv.round(14 - bigv.e, 1);
-				return bigv.toString();
+				// https://esbench.com/bench/5f888a98b4632100a7dcd403
+				const e =  Math.floor(Math.log10(Math.abs(+v)));
+				if (Math.abs(e) < 14) {
+					const p = Math.pow(10, 14 - e);
+					v = Math.round(v * p) / p;
+				}
 			}
-			return v.toString();
+			return (v).toString();
+		}
 		case 'string':
 			return v;
 		default:
