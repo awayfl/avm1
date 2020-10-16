@@ -1,7 +1,6 @@
 import {
-	avm1CompilerEnabled, avm1DebuggerEnabled, avm1ErrorsEnabled, avm1TimeoutDisabled, avm1TraceEnabled,
+	avm1CompilerEnabled,  avm1ErrorsEnabled, avm1TimeoutDisabled, avm1TraceEnabled,
 	avm1WarningsEnabled,
-	avm1WellknownActionsCompilationsEnabled
 } from './settings';
 import { AVM1ActionsData, AVM1Context, IAVM1RuntimeUtils } from './context';
 import { ActionCodeBlockItem, ActionsDataAnalyzer, AnalyzerResults } from './analyze';
@@ -10,7 +9,7 @@ import {
 	ActionsDataParser, ArgumentAssignment, ArgumentAssignmentType, ParsedAction,
 	ParsedPushConstantAction, ParsedPushRegisterAction
 } from './parser';
-import { ActionsDataCompiler, findWellknowCompilation } from './baseline';
+import { ActionsDataCompiler } from './baseline';
 import {
 	alCoerceString, alDefineObjectProperties, alForEachProperty, alIsFunction, alIsName, alNewObject, alToBoolean,
 	alToInt32,
@@ -31,9 +30,18 @@ import { AVM1PropertyDescriptor } from './runtime/AVM1PropertyDescriptor';
 import { MovieClipProperties } from './interpreter/MovieClipProperties';
 import { TextField, FrameScriptManager } from '@awayjs/scene';
 
-const noVarGetDebug: boolean = true;
+type AMV1ValidType = AVM1Object | number | string | null | undefined;
 
-declare let Proxy;
+interface IMakrkedFunction extends Function {
+	flags?: {
+		// function support apply stack as arguments
+		AllowStackToArgs?: boolean;
+		// function support return value
+		AllowReturnValue?: boolean;
+	}
+}
+
+const noVarGetDebug: boolean = true;
 
 declare class Error {
 	constructor(obj: string);
@@ -43,7 +51,7 @@ declare class InternalError extends Error {
 	constructor(obj: string);
 }
 
-export var Debugger = {
+export const Debugger = {
 	pause: false,
 	breakpoints: {}
 };
@@ -56,12 +64,13 @@ function avm1Warn(message: string, arg1?: any, arg2?: any, arg3?: any, arg4?: an
 		}
 	}
 	if (avm1WarningsEnabled.value) {
+		/* eslint-disable-next-line */
 		Debug.warning.apply(console, arguments);
 	}
 }
 
-export var MAX_AVM1_HANG_TIMEOUT = 1000;
-export var CHECK_AVM1_HANG_EVERY = 1000;
+export const MAX_AVM1_HANG_TIMEOUT = 1000;
+export const CHECK_AVM1_HANG_EVERY = 1000;
 const MAX_AVM1_ERRORS_LIMIT = 1000;
 const MAX_AVM1_STACK_LIMIT = 256;
 
@@ -152,6 +161,7 @@ class AVM1RuntimeUtilsImpl implements IAVM1RuntimeUtils {
 	}
 
 	public warn(msg: string): void {
+		/* eslint-disable-next-line */
 		avm1Warn.apply(null, arguments);
 	}
 }
@@ -337,7 +347,7 @@ function as2Compare(context: AVM1Context, x: any, y: any): boolean {
 /**
  * Performs equality comparison of two arugments. The equality comparison
  * algorithm from EcmaScript 3, Section 11.9.3 is applied.
- * http://ecma-international.org/publications/files/ECMA-ST-ARCH/ECMA-262,%203rd%20edition,%20December%201999.pdf#page=67
+ * @see http://ecma-international.org/publications/files/ECMA-ST-ARCH/ECMA-262,%203rd%20edition,%20December%201999.pdf#page=67
  * @returns {boolean} Coerces x and y to the same type and returns true if they're equal, false otherwise.
  */
 function as2Equals(context: AVM1Context, x: any, y: any): boolean {
@@ -567,7 +577,7 @@ function as2Enumerate(obj, fn: (name) => void, thisArg): void {
 	while (i > 0) {
 		i--;
 		avmObj = obj.alGet(props[i]);
-		if (typeof avmObj === 'undefined' || (avmObj.adaptee && avmObj.adaptee.isAsset(TextField) && avmObj.adaptee.isStatic))
+		if (typeof avmObj === 'undefined' || (avmObj.adaptee?.isAsset(TextField) && avmObj.adaptee.isStatic))
 			continue;
 		fn.call(thisArg, props[i]);
 	}
@@ -661,9 +671,9 @@ class AVM1SuperWrapper extends AVM1Object {
 }
 
 class AVM1Arguments extends AVM1ArrayNative {
-	public constructor(context: AVM1Context, args: any[],
-					   callee: AVM1Function, caller: AVM1Function) {
+	public constructor(context: AVM1Context, args: any[], callee: AVM1Function, caller: AVM1Function) {
 		super(context, args);
+
 		alDefineObjectProperties(this, {
 			callee: {
 				value: callee
@@ -744,6 +754,7 @@ export class ExecutionContext {
 		}
 	}
 
+	/* eslint-disable-next-line */
 	static create(context: AVM1ContextImpl, scopeList: AVM1ScopeListItem, constantPool: any[], registerCount: number): ExecutionContext {
 		const state: typeof ExecutionContext = context.getStaticState(ExecutionContext);
 		let ectx: ExecutionContext;
@@ -876,8 +887,8 @@ export class AVM1InterpretedFunction extends AVM1EvalFunction {
 					case ArgumentAssignmentType.Global:
 						registers[i] = currentContext.globals;
 						break;
-					case ArgumentAssignmentType.Parent:
-						var parentObj = null;
+					case ArgumentAssignmentType.Parent: {
+						let parentObj = null;
 						if (oldScope) {
 							parentObj = oldScope.alGet('_parent');
 							if (!parentObj) {
@@ -902,7 +913,7 @@ export class AVM1InterpretedFunction extends AVM1EvalFunction {
 							// for setInterval: if its still not has a parent found
 							//  we look back at the previous-scopes until we find a scope that can provide a _parent
 							if (!parentObj) {
-								if (this.scopeList && this.scopeList.previousScopeItem && this.scopeList.previousScopeItem.scope) {
+								if (this.scopeList?.previousScopeItem?.scope) {
 									let currentScope = this.scopeList.previousScopeItem;
 									while (currentScope) {
 
@@ -934,6 +945,7 @@ export class AVM1InterpretedFunction extends AVM1EvalFunction {
 							//console.log("_parent not defined");
 						}
 						break;
+					}
 					case ArgumentAssignmentType.Root:
 						registers[i] = avm1ResolveRoot(ectx);
 						break;
@@ -1027,10 +1039,6 @@ function avm1SetTarget(ectx: ExecutionContext, targetPath: string) {
 	}
 }
 
-function isGlobalObject(obj) {
-	return obj === this;
-}
-
 function avm1DefineFunction(ectx: ExecutionContext,
 	actionsData: AVM1ActionsData,
 	functionName: string,
@@ -1043,7 +1051,10 @@ function avm1DefineFunction(ectx: ExecutionContext,
 }
 
 function avm1VariableNameHasPath(variableName: string): boolean {
-	return variableName && (variableName.indexOf('.') >= 0 || variableName.indexOf(':') >= 0 || variableName.indexOf('/') >= 0);
+	return variableName && (
+		variableName.indexOf('.') >= 0
+		|| variableName.indexOf(':') >= 0
+		|| variableName.indexOf('/') >= 0);
 }
 
 const enum AVM1ResolveVariableFlags {
@@ -1072,6 +1083,7 @@ function avm1IsTarget(target): boolean {
 	return target instanceof AVM1Object && hasAwayJSAdaptee(target);
 }
 
+/* eslint-disable-next-line */
 function avm1ResolveSimpleVariable(scopeList: AVM1ScopeListItem, variableName: string, flags: AVM1ResolveVariableFlags, additionalName: string = null): IAVM1ResolvedVariableResult {
 	release || Debug.assert(alIsName(scopeList.scope.context, variableName));
 	let currentTarget;
@@ -1087,14 +1099,21 @@ function avm1ResolveSimpleVariable(scopeList: AVM1ScopeListItem, variableName: s
 				// last scope/target we can modify (exclude globals)
 				resolved.scope = currentTarget || p.scope;
 				resolved.propertyName = variableName;
-				resolved.value = (flags & AVM1ResolveVariableFlags.GET_VALUE) ? resolved.scope.alGet(variableName) : undefined;
+				resolved.value = (flags & AVM1ResolveVariableFlags.GET_VALUE)
+					? resolved.scope.alGet(variableName)
+					: undefined;
+
 				return resolved;
 			}
+
 			if ((flags & AVM1ResolveVariableFlags.READ) && currentTarget) {
 				if (currentTarget.alHasProperty(variableName)) {
 					resolved.scope = currentTarget;
 					resolved.propertyName = variableName;
-					resolved.value = (flags & AVM1ResolveVariableFlags.GET_VALUE) ? currentTarget.alGet(variableName) : undefined;
+					resolved.value = (flags & AVM1ResolveVariableFlags.GET_VALUE)
+						? currentTarget.alGet(variableName)
+						: undefined;
+
 					return resolved;
 				}
 				continue;
@@ -1104,9 +1123,16 @@ function avm1ResolveSimpleVariable(scopeList: AVM1ScopeListItem, variableName: s
 		//console.log("scope :", p.scope.aCount);
 		if (p.scope.alHasProperty(variableName)) {
 			const value = p.scope.alGet(variableName);
-			if (additionalName && (!value || typeof value !== 'object' ||  !value.alHasProperty || !value.alHasProperty(additionalName))) {
+
+			if (additionalName && (
+				!value
+				|| typeof value !== 'object'
+				|| !value.alHasProperty
+				|| !value.alHasProperty(additionalName))
+			) {
 				continue;
 			}
+
 			resolved.scope = p.scope;
 			resolved.propertyName = variableName;
 			resolved.value = (flags & AVM1ResolveVariableFlags.GET_VALUE) ? p.scope.alGet(variableName) : undefined;
@@ -1130,15 +1156,19 @@ function avm1ResolveSimpleVariable(scopeList: AVM1ScopeListItem, variableName: s
 	return undefined;
 }
 
+/* eslint-disable-next-line */
 function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags: AVM1ResolveVariableFlags): IAVM1ResolvedVariableResult {
 	// For now it is just very much magical -- designed to pass some of the swfdec tests
 	// FIXME refactor
 	release || Debug.assert(variableName);
 
-	let i = 0, j = variableName.length;
+	const len = variableName.length;
+	let i = 0;
 	let markedAsTarget = true;
 	let resolved, ch, needsScopeResolution;
-	var propertyName = null, scope = null, obj = undefined;
+	let propertyName = null;
+	let scope = null;
+	let obj = undefined;
 
 	// Canonicalizing the name here is ok even for paths: the only thing that (potentially)
 	// happens is that the name is converted to lower-case, which is always valid for paths.
@@ -1170,7 +1200,8 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 	if (variableName[0] === '/') {
 
 		noVarGetDebug || console.log('originalName starts with a \'/\'');
-		resolved = avm1ResolveSimpleVariable(ectx.scopeList, '_root', AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
+		resolved = avm1ResolveSimpleVariable(
+			ectx.scopeList, '_root', AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
 		if (resolved) {
 
 			noVarGetDebug || console.log('resolved', resolved);
@@ -1186,31 +1217,32 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 	}
 
 	noVarGetDebug || console.log('needsScopeResolution', needsScopeResolution);
-	if (i >= j) {
+	if (i >= len) {
 		return resolved;
 	}
 
-	const lastMC: any = null;
-	var q = i;
-	while (i < j) {
+	let q = i;
+	while (i < len) {
 		if (!needsScopeResolution && !(obj instanceof AVM1Object)) {
+			/* eslint-disable-next-line */
 			noVarGetDebug || console.log('Unable to resolve variable on invalid object ' + variableName.substring(q, i - 1) + ' (expr ' + variableName + ')');
+			/* eslint-disable-next-line */
 			avm1Warn('Unable to resolve variable on invalid object ' + variableName.substring(q, i - 1) + ' (expr ' + variableName + ')');
 			return null;
 		}
 
-		var propertyName;
-		var q = i;
+		q = i;
+
 		if (variableName[i] === '.' && variableName[i + 1] === '.') {
 			i += 2;
 			propertyName = '_parent';
 		} else {
-			while (i < j && ((ch = variableName[i]) !== '/' && ch !== '.' && ch !== ':')) {
+			while (i < len && ((ch = variableName[i]) !== '/' && ch !== '.' && ch !== ':')) {
 				i++;
 			}
 			propertyName = variableName.substring(q, i);
 		}
-		if (propertyName === '' && i < j) {
+		if (propertyName === '' && i < len) {
 			// Ignoring double delimiters in the middle of the path
 			i++;
 			continue;
@@ -1221,7 +1253,8 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 
 		if (markedAsTarget) {
 			// Trying movie clip children first
-			const child = obj instanceof AVM1MovieClip ? (<AVM1MovieClip>obj)._lookupChildByName(propertyName) : undefined;
+			const child = obj instanceof AVM1MovieClip ? (<AVM1MovieClip>obj)._lookupChildByName(propertyName) : void 0;
+
 			if (child) {
 				valueFound = true;
 				obj = child;
@@ -1229,18 +1262,20 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 		}
 		if (!valueFound) {
 			if (needsScopeResolution) {
-				//  80pro:
-				//  if we need to resolve the scope, we want to know the next property name
-				//  if a next property name exists, we pass it as extra argument to  avm1ResolveSimpleVariable
-				//  this will make sure that avm1ResolveSimpleVariable returns the scope that has the property name available
-				var q = i + 1;
+				// 80pro:
+				// if we need to resolve the scope, we want to know the next property name
+				// if a next property name exists, we pass it as extra argument to avm1ResolveSimpleVariable
+				// this will make sure that avm1ResolveSimpleVariable
+				// returns the scope that has the property name available
+
+				q = i + 1;
 				let k = i + 1;
 				let nextPropName = '';
 				if (variableName[k] === '.' && variableName[k + 1] === '.') {
 					k += 2;
 					nextPropName = '_parent';
 				} else {
-					while (k < j && ((ch = variableName[k]) !== '/' && ch !== '.' && ch !== ':')) {
+					while (k < len && ((ch = variableName[k]) !== '/' && ch !== '.' && ch !== ':')) {
 						k++;
 					}
 					nextPropName = variableName.substring(q, k);
@@ -1250,7 +1285,8 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 
 				resolved = avm1ResolveSimpleVariable(ectx.scopeList, propertyName, flags, nextPropName);
 				if (!resolved && nextPropName) {
-					// if we tried to get with a nextPropName, and got nothing returned, we try again without any nextpropName
+					// if we tried to get with a nextPropName,
+					// and got nothing returned, we try again without any nextpropName
 					resolved = avm1ResolveSimpleVariable(ectx.scopeList, propertyName, flags);
 				}
 
@@ -1259,7 +1295,7 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 					propertyName = resolved.propertyName;
 					scope = resolved.scope;
 					obj = resolved.value;
-					if (i < j && !obj && scope) {
+					if (i < len && !obj && scope) {
 						obj = scope;
 					}
 				}
@@ -1281,11 +1317,12 @@ function avm1ResolveVariable(ectx: ExecutionContext, variableName: string, flags
 		}
 
 		if (!valueFound && !(flags & AVM1ResolveVariableFlags.WRITE)) {
+			/* eslint-disable-next-line */
 			avm1Warn('Unable to resolve ' + propertyName + ' on ' + variableName.substring(q, i - 1) +	' (expr ' + variableName + ')');
 			return null;
 		}
 
-		if (i >= j) {
+		if (i >= len) {
 			break;
 		}
 
@@ -1411,7 +1448,7 @@ function avm1_0x81_ActionGotoFrame(ectx: ExecutionContext, args: any[]) {
 }
 
 function avm1_0x83_ActionGetURL(ectx: ExecutionContext, args: any[]) {
-	const actions = ectx.actions;
+	// const actions = ectx.actions;
 
 	const urlString: string = args[0];
 	const targetString: string = args[1];
@@ -1444,7 +1481,7 @@ function avm1_0x09_ActionStopSounds(ectx: ExecutionContext) {
 
 function avm1_0x8A_ActionWaitForFrame(ectx: ExecutionContext, args: any[]) {
 	const frame: number = args[0];
-	const count: number = args[1];
+	// const count: number = args[1];
 	return !ectx.actions.ifFrameLoaded(frame);
 }
 
@@ -1830,7 +1867,7 @@ function avm1_0x99_ActionJump(ectx: ExecutionContext, args: any[]) {
 function avm1_0x9D_ActionIf(ectx: ExecutionContext, args: any[]) {
 	const stack = ectx.stack;
 
-	const offset: number = args[0];
+	// const offset: number = args[0];
 	return !!stack.pop();
 }
 
@@ -1850,7 +1887,8 @@ function avm1_0x1C_ActionGetVariable(ectx: ExecutionContext) {
 	const sp = stack.length;
 	stack.push(undefined);
 
-	const method = avm1ResolveVariable(ectx, '__get__' + variableName, AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
+	const method = avm1ResolveVariable(
+		ectx, '__get__' + variableName, AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
 
 	// call __set__
 	if (method && method.value) {
@@ -1862,42 +1900,26 @@ function avm1_0x1C_ActionGetVariable(ectx: ExecutionContext) {
 		}
 	}
 
-	let resolved = avm1ResolveVariable(ectx, variableName,AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
+	let resolved = avm1ResolveVariable(
+		ectx, variableName,AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
+
 	if (isNullOrUndefined(resolved)) {
-		if (variableName == 'TRUE')
+		if (variableName == 'TRUE') {
 			stack[sp] = true;
-		else if (variableName == 'FALSE')
+		} else if (variableName == 'FALSE') {
 			stack[sp] = false;
-		else if (variableName && variableName.indexOf('this.') == 0) {
+		} else if (variableName && variableName.indexOf('this.') == 0) {
 			variableName = variableName.replace('this.', '');
-			resolved = avm1ResolveVariable(ectx, variableName,AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
+			resolved = avm1ResolveVariable(
+				ectx, variableName,AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
 			stack[sp] = resolved ? resolved.value : undefined;
-		}
-		/*
-		else if (variableName && variableName.indexOf(".")>=0){
-			var varnames=variableName.split(".");
-			if (varnames.length>1 && varnames[0]=="this"){
-				var resolved1 = avm1ResolveVariable(ectx, varnames[0],AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
-				if(resolved1 && resolved1.value && resolved1.value.adaptee && resolved1.value.adaptee.name==varnames[1]){
-					stack[sp]=resolved1.value;
-					return;
-				}
-				var resolved1 = avm1ResolveVariable(ectx, varnames[1],AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
-				if(resolved1 && resolved1.value && resolved1.value.adaptee){
-					stack[sp]=resolved1.value;
-					return;
-				}
-			}
-        }
-        */
-		else if (avm1WarningsEnabled.value) {
+		} else if (avm1WarningsEnabled.value) {
 			avm1Warn('AVM1 warning: cannot look up variable \'' + variableName + '\'');
 		}
-		//console.log("avm1_0x1C_ActionGetVariable", ectx, resolved, variableName);
 		return;
 	}
+
 	stack[sp] = resolved ? resolved.value : undefined;
-	//console.log("avm1_0x1C_ActionGetVariable", ectx, resolved, variableName);
 }
 
 function avm1_0x1D_ActionSetVariable(ectx: ExecutionContext) {
@@ -1906,13 +1928,14 @@ function avm1_0x1D_ActionSetVariable(ectx: ExecutionContext) {
 
 	const variableName = '' + stack.pop();
 
-	const method = avm1ResolveVariable(ectx, '__set__' + variableName, AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
+	const method = avm1ResolveVariable(
+		ectx, '__set__' + variableName, AVM1ResolveVariableFlags.READ | AVM1ResolveVariableFlags.GET_VALUE);
 
 	// call __set__
 	if (method && method.value) {
-		const { result, called } = avm1_callableHelper(ectx, method.scope,  method.propertyName, [value]);
+		const state = avm1_callableHelper(ectx, method.scope,  method.propertyName, [value]);
 
-		if (called) {
+		if (state.called) {
 			return;
 		}
 	}
@@ -2027,21 +2050,22 @@ function avm1_0x25_ActionRemoveSprite(ectx: ExecutionContext) {
 
 function avm1_0x27_ActionStartDrag(ectx: ExecutionContext) {
 	const stack = ectx.stack;
+	const method = ectx.actions.startDrag;
 
 	const target = stack.pop();
 	const lockcenter = stack.pop();
-	const constrain = !stack.pop() ? null : {
-		y2: stack.pop(),
-		x2: stack.pop(),
-		y1: stack.pop(),
-		x1: stack.pop()
-	};
-	let dragParams = [target, lockcenter];
+	const constrain = !!stack.pop();
+
 	if (constrain) {
-		dragParams = dragParams.concat(constrain.x1, constrain.y1,
-			constrain.x2, constrain.y2);
+		const y2 = stack.pop();
+		const x2 = stack.pop();
+		const y1 = stack.pop();
+		const x1 = stack.pop();
+
+		method.call(ectx.actions, target, lockcenter, x1, y1, x2, y2);
+	} else {
+		method.call(ectx.actions, target, lockcenter);
 	}
-	ectx.actions.startDrag.apply(ectx.actions, dragParams);
 }
 
 function avm1_0x28_ActionEndDrag(ectx: ExecutionContext) {
@@ -2051,7 +2075,7 @@ function avm1_0x28_ActionEndDrag(ectx: ExecutionContext) {
 function avm1_0x8D_ActionWaitForFrame2(ectx: ExecutionContext, args: any[]) {
 	const stack = ectx.stack;
 
-	const count: number = args[0];
+	//const count: number = args[0];
 	const frame = stack.pop();
 	return !ectx.actions.ifFrameLoaded(frame);
 }
@@ -2120,6 +2144,7 @@ function avm1_0x52_ActionCallMethod(ectx: ExecutionContext) {
 		stack[sp] = call.result;
 }
 
+/* eslint-disable-next-line max-len */
 function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Function, methodName: string, args: any[]): {result: any, called: boolean} {
 	// AVM1 simply ignores attempts to invoke methods on non-existing objects.
 	if (isNullOrUndefined(obj)) {
@@ -2138,7 +2163,7 @@ function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Funct
 	// a function to call.
 	if (isNullOrUndefined(methodName) || methodName === '') {
 		if (obj instanceof AVM1SuperWrapper) {
-			var superFrame = (<AVM1SuperWrapper>obj).callFrame;
+			const superFrame = (<AVM1SuperWrapper>obj).callFrame;
 			superArg = avm1FindSuperPropertyOwner(ectx.context, superFrame, '__constructor__');
 			if (superArg) {
 				fn = superArg.alGet('__constructor__');
@@ -2164,7 +2189,7 @@ function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Funct
 	}
 
 	if (obj instanceof AVM1SuperWrapper) {
-		var superFrame = (<AVM1SuperWrapper>obj).callFrame;
+		const superFrame = (<AVM1SuperWrapper>obj).callFrame;
 		superArg = avm1FindSuperPropertyOwner(ectx.context, superFrame, methodName);
 		if (superArg) {
 			fn = superArg.alGet(methodName);
@@ -2318,11 +2343,13 @@ function avm1_0x49_ActionEquals2(ectx: ExecutionContext) {
 	stack.push(as2Equals(ectx.context, a, b));
 }
 
-function avm1_0x4E_ActionGetMember(ectx: ExecutionContext) {
+function avm1_0x4E_ActionGetMember(ectx: ExecutionContext, name?: string, obj?: AVM1Object): AMV1ValidType {
+
 	const stack = ectx.stack;
 
-	const name = stack.pop();
-	const obj = stack.pop();
+	name = name || stack.pop();
+	obj = obj || stack.pop();
+
 	stack.push(undefined);
 
 	if (isNullOrUndefined(obj)) {
@@ -2334,14 +2361,19 @@ function avm1_0x4E_ActionGetMember(ectx: ExecutionContext) {
 	if (obj instanceof AVM1SuperWrapper) {
 		const superFrame = (<AVM1SuperWrapper>obj).callFrame;
 		const superArg = avm1FindSuperPropertyOwner(ectx.context, superFrame, name);
+
 		if (superArg) {
-			stack[stack.length - 1] = superArg.alGet(name);
+			return stack[stack.length - 1] = superArg.alGet(name);
 		}
-		return;
 	}
 
-	stack[stack.length - 1] = as2GetProperty(ectx.context, obj, name);
+	return stack[stack.length - 1] = as2GetProperty(ectx.context, obj, name);
 }
+
+(<IMakrkedFunction>avm1_0x4E_ActionGetMember).flags = {
+	AllowReturnValue: true,
+	AllowStackToArgs: true,
+};
 
 function avm1_0x42_ActionInitArray(ectx: ExecutionContext) {
 	const stack = ectx.stack;
@@ -2822,14 +2854,17 @@ function avm1_0x2D_ActionFSCommand2(ectx: ExecutionContext) {
 	const sp = stack.length;
 	stack.push(undefined);
 
+	/* eslint-disable-next-line */
 	const result = ectx.actions.fscommand.apply(ectx.actions, args);
 	stack[sp] = result;
 }
 
 function avm1_0x89_ActionStrictMode(ectx: ExecutionContext, args: any[]) {
-	const mode: number = args[0];
+	// const mode: number = args[0];
 }
 
+/*
+// legacy
 function wrapAvm1Error(fn: Function): Function {
 	return function avm1ErrorWrapper(executionContext: ExecutionContext, args: any[]) {
 		let currentContext: AVM1ContextImpl;
@@ -2867,9 +2902,13 @@ function wrapAvm1Error(fn: Function): Function {
 		// }
 	};
 }
+*/
 
 export function generateActionCalls() {
-	let wrap: Function;
+	const wrap: Function = (fn: Function) => fn;
+
+	/*
+	// legacy
 	if (!avm1ErrorsEnabled.value) {
 		wrap = wrapAvm1Error;
 	} else {
@@ -2877,6 +2916,8 @@ export function generateActionCalls() {
 			return fn;
 		};
 	}
+	*/
+
 	return {
 		ActionGotoFrame: wrap(avm1_0x81_ActionGotoFrame),
 		ActionGetURL: wrap(avm1_0x83_ActionGetURL),
@@ -3311,10 +3352,11 @@ function interpretAction(executionContext: ExecutionContext, parsedAction: Parse
 	return shallBranch;
 }
 
-function interpretActionWithRecovery(executionContext: ExecutionContext,
-									 parsedAction: ParsedAction): boolean {
+function interpretActionWithRecovery(executionContext: ExecutionContext, parsedAction: ParsedAction): boolean {
+
 	let currentContext: AVM1ContextImpl;
 	let result;
+
 	try {
 		result = interpretAction(executionContext, parsedAction);
 
@@ -3323,13 +3365,13 @@ function interpretActionWithRecovery(executionContext: ExecutionContext,
 	} catch (e) {
 		// handling AVM1 errors
 		currentContext = executionContext.context;
-		e = as2CastError(e);
+		const ce = as2CastError(e);
 		if ((avm1ErrorsEnabled.value && !currentContext.isTryCatchListening) ||
-			e instanceof AVM1CriticalError) {
-			throw e;
+			ce instanceof AVM1CriticalError) {
+			throw ce;
 		}
-		if (e instanceof AVM1Error) {
-			throw e;
+		if (ce instanceof AVM1Error) {
+			throw ce;
 		}
 
 		Telemetry.instance.reportTelemetry({ topic: 'error', error: ErrorTypes.AVM1_ERROR });
@@ -3398,19 +3440,24 @@ function interpretActionsData(ectx: ExecutionContext, actionsData: AVM1ActionsDa
 
 	const compiled = actionsData.compiled;
 	if (compiled) {
-		release || (currentContext.actionTracer && currentContext.actionTracer.message('Running compiled ' + actionsData.id));
+		release || (
+			currentContext.actionTracer && currentContext.actionTracer.message('Running compiled ' + actionsData.id)
+		);
 		return compiled(ectx);
 	}
 
 	let instructionsExecuted = 0;
 	const abortExecutionAt = currentContext.abortExecutionAt;
+	const ir = actionsData.ir;
 
+	/*
+	// legacy, deopt
 	if (avm1DebuggerEnabled.value &&
 		(Debugger.pause || Debugger.breakpoints[(<AnalyzerResults>ir).dataId])) {
 		debugger;
 	}
+	*/
 
-	var ir = actionsData.ir;
 	release || Debug.assert(ir);
 
 	let position = 0;
@@ -3430,8 +3477,8 @@ function interpretActionsData(ectx: ExecutionContext, actionsData: AVM1ActionsDa
 		}
 		nextAction = (<AnalyzerResults>ir).actions[position];
 	}
-	const stack = ectx.stack;
-	return stack.pop();
+
+	return ectx.stack.pop();
 }
 
 export class ActionTracer {
