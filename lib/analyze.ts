@@ -17,8 +17,6 @@
 //module Shumway.AVM1 {
 
 import { ActionCode, ActionsDataParser, ParsedAction } from './parser';
-import { release } from '@awayfl/swf-loader';
-import { AVM1ActionsData } from './context';
 
 export interface ActionCodeBlock {
 	label: number;
@@ -30,6 +28,8 @@ export interface ActionCodeBlockItem {
 	action: ParsedAction;
 	next: number;
 	conditionalJumpTo: number;
+	optimised?: boolean;
+	killed?: boolean;
 }
 
 export interface AnalyzerResults {
@@ -60,7 +60,7 @@ export class ActionsDataAnalyzer {
 		let position;
 		let action: ParsedAction;
 		let nextPosition;
-		var item: ActionCodeBlockItem;
+		let item: ActionCodeBlockItem;
 		let jumpPosition: number;
 		let branching: boolean;
 		let nonConditionalBranching: boolean;
@@ -155,7 +155,7 @@ export class ActionsDataAnalyzer {
 		const blocks: ActionCodeBlock[] = [];
 		let items: ActionCodeBlockItem[];
 		let lastPosition;
-		var item: ActionCodeBlockItem;
+
 		labels.forEach((position) => {
 			if (!actions[position]) {
 				return;
@@ -163,6 +163,7 @@ export class ActionsDataAnalyzer {
 			items = [];
 			lastPosition = position;
 
+			let item;
 			// continue grabbing items until other label or next code exist
 			do {
 				item = actions[lastPosition];

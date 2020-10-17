@@ -32,7 +32,7 @@ interface IExecutionContext {
 	isEndOfActions: boolean;
 }
 
-let cachedActionsCalls = null;
+let cachedActionsCalls: StringMap<Function> = null;
 function getActionsCalls() {
 	if (!cachedActionsCalls) {
 		cachedActionsCalls = generateActionCalls();
@@ -40,10 +40,45 @@ function getActionsCalls() {
 	return cachedActionsCalls;
 }
 
+class CustomOperationAction {
+	constructor(
+		public inlinePop: boolean = false) {}
+}
+
 interface IHoistMap {
 	forward: StringMap<string>;
 	back: StringMap<string>;
 }
+
+interface IOptFlags  {
+	// function support apply stack as arguments
+	AllowStackToArgs?: boolean;
+	// function support return value
+	AllowReturnValue?: boolean;
+	ArgsCount?: number;
+}
+
+const ActionOptMap: NumberMap<IOptFlags> = {
+	[ActionCode.ActionGetMember]: {
+		AllowReturnValue: true,
+		AllowStackToArgs: true,
+		ArgsCount: 2,
+	},
+	[ActionCode.ActionSetMember]: {
+		AllowStackToArgs: true,
+		ArgsCount: 3,
+	},
+	[ActionCode.ActionAdd2]: {
+		AllowStackToArgs: true,
+		AllowReturnValue: true,
+		ArgsCount: 2,
+	},
+	[ActionCode.ActionGreater]: {
+		AllowStackToArgs: true,
+		AllowReturnValue: true,
+		ArgsCount: 2,
+	},
+};
 
 /**
  *  Bare-minimum JavaScript code generator to make debugging better.
@@ -87,6 +122,8 @@ export class ActionsDataCompiler {
 					resName = 'code_' + id + '_' + i;
 					res[resName] = arg;
 					parts.push('res.' + resName);
+				} else if (arg instanceof CustomOperationAction) {
+					if (arg.inlinePop) parts.push('stack.pop()');
 				} else {
 					notImplemented('Unknown AVM1 action argument type');
 				}
@@ -103,6 +140,19 @@ export class ActionsDataCompiler {
 	private convertAction(item: ActionCodeBlockItem, id: number, res, indexInBlock: number, ir: AnalyzerResults, items: ActionCodeBlockItem[], hoists: IHoistMap): string {
 		// const calls = getActionsCalls();
 		const prevItem = items[indexInBlock - 1];
+		let result = '';
+
+		if (item.optimised) {
+			result = `  /* ${item.action.actionName} optimised */\n`;
+		}
+
+		if (item.killed) {
+			return `  /* ${item.action.actionName} killed by optimiser */\n`;
+		}
+
+		if (!item.action.knownAction) {
+			return `  // unknown actionCode ${item.action.actionCode} at ${item.action.position}\n`;
+		}
 
 		switch (item.action.actionCode) {
 			case ActionCode.ActionJump:
@@ -114,7 +164,7 @@ export class ActionsDataCompiler {
 				return `  constantPool = ectx.constantPool = constPool${id};\n`;
 
 			case ActionCode.ActionPush:
-				return '  stack.push(' + this.convertArgs(item.action.args, id, res, ir) + ');\n';
+				return result + '  stack.push(' + this.convertArgs(item.action.args, id, res, ir) + ');\n';
 			case ActionCode.ActionStoreRegister: {
 				const registerNumber = item.action.args[0];
 				if (registerNumber < 0 || registerNumber >= ir.registersLimit) {
@@ -134,18 +184,14 @@ export class ActionsDataCompiler {
 				return '  if (!!stack.pop()) { position = ' + item.conditionalJumpTo + '; ' +
 					'checkTimeAfter -= ' + (indexInBlock + 1) + '; break; }\n';
 			default: {
-				if (!item.action.knownAction) {
-					return `  // unknown actionCode ${item.action.actionCode} at ${item.action.position}\n`;
-				}
-
 				let args = item.action.args ? `[${this.convertArgs(item.action.args, id, res, ir)}]` : '';
-				if (item.action.actionCode === 0x8E /* ActionDefineFunction2 */) {
+				if (item.action.actionCode === ActionCode.ActionDefineFunction2) {
 					const name = `defFunArgs${id}`;
 					hoists.forward[name] = args;
 					args = name;
 				}
 
-				let result = '  calls.' + item.action.actionName + '(ectx' +
+				result += '  calls.' + item.action.actionName + '(ectx' +
 					(args ? ', ' + args : '') + ');\n';
 
 				if (item.action.actionName == 'ActionCallMethod') {
@@ -164,6 +210,79 @@ export class ActionsDataCompiler {
 				}
 				return result;
 			}
+		}
+	}
+
+	optimiser(block: ActionCodeBlock): void {
+		const items = block.items;
+		const pushStack = [];
+
+		for (let i = 0, l = items.length; i < l; i++) {
+			const item = items[i];
+			const code = item.action.actionCode;
+
+			if (code !== ActionCode.ActionPush) {
+				/*
+				  optimise push, push, push instruction to one push (arg, arg1, arg2)
+				  to many used in obfuscated code
+				 */
+				if (pushStack.length > 1) {
+					const from = pushStack[0];
+					const to = pushStack[pushStack.length - 1];
+					const target = items[from].action;
+
+					for (let i = from + 1; i <= to; i++) {
+						target.args = target.args.concat(items[i].action.args);
+						items[i].killed = true;
+					}
+				}
+
+			}
+
+			switch (code) {
+				case ActionCode.ActionPush: {
+					pushStack.push(i);
+					break;
+				}
+				default: {
+					if (!pushStack.length) {
+						break;
+					}
+
+					const pushItem = items[pushStack[0]];
+					pushStack.length = 0;
+
+					const flags = ActionOptMap[code];
+					if (!flags || !flags.AllowStackToArgs) {
+						break;
+					}
+
+					const stackArgs = pushItem.action.args;
+					// push stack args to getMemberArgs, to reduce array movements
+
+					if (stackArgs.length === flags.ArgsCount) {
+						pushItem.killed = true;
+						item.action.args = stackArgs;
+					} else if (stackArgs.length > flags.ArgsCount) {
+						const index = stackArgs.length - flags.ArgsCount;
+
+						item.action.args = stackArgs.slice(index);
+						stackArgs.length = index;
+						pushItem.optimised = true;
+					} else {
+						pushItem.killed = true;
+						item.action.args = stackArgs.slice();
+
+						for (let i = 0; i < flags.ArgsCount - stackArgs.length; i++) {
+							item.action.args.unshift(new CustomOperationAction(true));
+						}
+					}
+
+					item.optimised = true;
+					break;
+				}
+			}
+
 		}
 	}
 
@@ -196,6 +315,7 @@ export class ActionsDataCompiler {
 		blocks.forEach((b: ActionCodeBlock) => {
 			fn += ' case ' + b.label + ':\n';
 
+			this.optimiser(b);
 			const actLines = b.items.map((item: ActionCodeBlockItem, index: number) => {
 				return this.convertAction(item, uuid++, res, index, ir, b.items, hoists);
 			});

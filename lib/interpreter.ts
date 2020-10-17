@@ -32,15 +32,6 @@ import { TextField, FrameScriptManager } from '@awayjs/scene';
 
 type AMV1ValidType = AVM1Object | number | string | null | undefined;
 
-interface IMakrkedFunction extends Function {
-	flags?: {
-		// function support apply stack as arguments
-		AllowStackToArgs?: boolean;
-		// function support return value
-		AllowReturnValue?: boolean;
-	}
-}
-
 const noVarGetDebug: boolean = true;
 
 declare class Error {
@@ -2343,12 +2334,12 @@ function avm1_0x49_ActionEquals2(ectx: ExecutionContext) {
 	stack.push(as2Equals(ectx.context, a, b));
 }
 
-function avm1_0x4E_ActionGetMember(ectx: ExecutionContext, name?: string, obj?: AVM1Object): AMV1ValidType {
+function avm1_0x4E_ActionGetMember(ectx: ExecutionContext, args?: [AVM1Object, string]): AMV1ValidType {
 
 	const stack = ectx.stack;
 
-	name = name || stack.pop();
-	obj = obj || stack.pop();
+	const name = args ? args[1] : stack.pop();
+	const obj = args ? args[0] : stack.pop();
 
 	stack.push(undefined);
 
@@ -2369,11 +2360,6 @@ function avm1_0x4E_ActionGetMember(ectx: ExecutionContext, name?: string, obj?: 
 
 	return stack[stack.length - 1] = as2GetProperty(ectx.context, obj, name);
 }
-
-(<IMakrkedFunction>avm1_0x4E_ActionGetMember).flags = {
-	AllowReturnValue: true,
-	AllowStackToArgs: true,
-};
 
 function avm1_0x42_ActionInitArray(ectx: ExecutionContext) {
 	const stack = ectx.stack;
@@ -2459,12 +2445,12 @@ function avm1_0x40_ActionNewObject(ectx: ExecutionContext) {
 	stack[sp] = result;
 }
 
-function avm1_0x4F_ActionSetMember(ectx: ExecutionContext) {
+function avm1_0x4F_ActionSetMember(ectx: ExecutionContext, args?: [AVM1Object, string, any]) {
 	const stack = ectx.stack;
 
-	const value = stack.pop();
-	let name = stack.pop();
-	let obj = stack.pop();
+	const value = args ? args[2] : stack.pop();
+	let name = args ? args[1] : stack.pop();
+	let obj = args ? args[0] : stack.pop();
 
 	if (isNullOrUndefined(obj)) {
 		// AVM1 just ignores sets on non-existant containers
@@ -2537,13 +2523,21 @@ function avm1_0x44_ActionTypeOf(ectx: ExecutionContext) {
 	stack.push(result);
 }
 
-function avm1_0x47_ActionAdd2(ectx: ExecutionContext) {
+function avm1_0x47_ActionAdd2(ectx: ExecutionContext, args?: [any, any]) {
 	const stack = ectx.stack;
 
-	let a = as2ToAddPrimitive(ectx.context, stack.pop());
-	let b = as2ToAddPrimitive(ectx.context, stack.pop());
+	let a, b;
+
+	if (args) {
+		b = alToPrimitive(ectx.context, args[1]);
+		a = alToPrimitive(ectx.context, args[0]);
+	} else {
+		b = alToPrimitive(ectx.context, stack.pop());
+		a = alToPrimitive(ectx.context, stack.pop());
+	}
+
 	if (typeof a === 'string' || typeof b === 'string') {
-		stack.push(alToString(ectx.context, b) + alToString(ectx.context, a));
+		return stack[stack.length] = alToString(ectx.context, a) + alToString(ectx.context, b);
 	} else {
 		if (!ectx.isSwfVersion7) {
 			if (typeof a === 'undefined')
@@ -2577,6 +2571,8 @@ function avm1_0x47_ActionAdd2(ectx: ExecutionContext) {
 			stack.push(a + b);
 		}
 	}
+
+	return stack[stack.length - 1];
 }
 
 function avm1_0x48_ActionLess2(ectx: ExecutionContext) {
@@ -2751,12 +2747,13 @@ function avm1_0x66_ActionStrictEquals(ectx: ExecutionContext) {
 	stack.push(b === a);
 }
 
-function avm1_0x67_ActionGreater(ectx: ExecutionContext) {
+function avm1_0x67_ActionGreater(ectx: ExecutionContext, args? : [any, any]) {
 	const stack = ectx.stack;
 
-	const a = stack.pop();
-	const b = stack.pop();
-	stack.push(as2Compare(ectx.context, a, b));
+	const a = args ? args[1] : stack.pop();
+	const b = args ? args[0] : stack.pop();
+
+	return stack[stack.length] = (as2Compare(ectx.context, a, b));
 }
 
 function avm1_0x68_ActionStringGreater(ectx: ExecutionContext) {
