@@ -2334,31 +2334,48 @@ function avm1_0x49_ActionEquals2(ectx: ExecutionContext) {
 	stack.push(as2Equals(ectx.context, a, b));
 }
 
-function avm1_0x4E_ActionGetMember(ectx: ExecutionContext, args?: [AVM1Object, string]): AMV1ValidType {
+function avm1_0x4E_ActionGetMember(ectx: ExecutionContext, args?: [AVM1Object, ...string[]]): AMV1ValidType {
 
 	const stack = ectx.stack;
+	let name = args ? args[1] : stack.pop();
+	let obj = args ? args[0] : stack.pop();
+	const loops = !args ? 1 : args.length - 1;
 
-	const name = args ? args[1] : stack.pop();
-	const obj = args ? args[0] : stack.pop();
+	let result: AMV1ValidType = void 0;
 
-	stack.push(undefined);
+	// serach over all args, first is object, next - chained name field.
 
-	if (isNullOrUndefined(obj)) {
-		// AVM1 just ignores gets on non-existant containers.
-		avm1Warn('AVM1 warning: cannot get member \'' + name + '\' on undefined object');
-		return;
-	}
+	let i = 0;
+	while (i < loops) {
+		if (obj == null) {
+			// AVM1 just ignores gets on non-existant containers.
+			avm1Warn('AVM1 warning: cannot get member \'' + name + '\' on undefined object');
 
-	if (obj instanceof AVM1SuperWrapper) {
-		const superFrame = (<AVM1SuperWrapper>obj).callFrame;
-		const superArg = avm1FindSuperPropertyOwner(ectx.context, superFrame, name);
-
-		if (superArg) {
-			return stack[stack.length - 1] = superArg.alGet(name);
+			return stack[stack.length] = void 0;
 		}
+
+		if (obj instanceof AVM1SuperWrapper) {
+			const superFrame = (<AVM1SuperWrapper>obj).callFrame;
+			const superArg = avm1FindSuperPropertyOwner(ectx.context, superFrame, name);
+
+			if (superArg) {
+				result = superArg.alGet(name);
+			}
+		} else {
+			result = as2GetProperty(ectx.context, obj, name);
+		}
+
+		if (i === loops - 1) {
+			return stack[stack.length] = result;
+		}
+
+		obj = result;
+		name = args[i + 2];
+
+		i++;
 	}
 
-	return stack[stack.length - 1] = as2GetProperty(ectx.context, obj, name);
+	return stack[stack.length] = result;
 }
 
 function avm1_0x42_ActionInitArray(ectx: ExecutionContext) {
@@ -3418,13 +3435,13 @@ function analyzeAndCompileActionsData(ectx: ExecutionContext, actionsData: AVM1A
 	actionsData.ir = ir;
 
 	if (avm1CompilerEnabled.value) {
-		try {
+		//try {
 			const c = new ActionsDataCompiler();
 			compiled = c.generate(ir, actionsData.debugPath);
 			actionsData.compiled = compiled;
-		} catch (e) {
-			console.error('Unable to compile AVM1 function: ' + e);
-		}
+		//} catch (e) {
+		//	console.error('Unable to compile AVM1 function: ' + e);
+		//}
 	}
 
 }

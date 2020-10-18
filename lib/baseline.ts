@@ -53,21 +53,23 @@ interface IHoistMap {
 interface IOptFlags  {
 	// function support apply stack as arguments
 	AllowStackToArgs?: boolean;
-
 	// generate arguments instad of passing as array
 	// (ctx, [a, b]) => (ctx, a, b)
 	PlainArgs?: boolean;
+	ArgsCount?: number;
+
 	// function support return value
 	AllowReturnValue?: boolean;
-	ArgsCount?: number;
+	AllowCallapsDouble?: boolean;
 }
 
-interface ISharedFlags extends ActionItemFlags, IOptFlags {};
+interface ISharedFlags extends ActionItemFlags, IOptFlags {}
 
 const ActionOptMap: NumberMap<IOptFlags> = {
 	[ActionCode.ActionGetMember]: {
 		AllowReturnValue: true,
 		AllowStackToArgs: true,
+		AllowCallapsDouble: true,
 		ArgsCount: 2,
 	},
 	[ActionCode.ActionSetMember]: {
@@ -226,15 +228,62 @@ export class ActionsDataCompiler {
 		}
 	}
 
+	basicOptBlock(item: ActionCodeBlockItem, items: ActionCodeBlockItem[], pushStack: number[]): void {
+		if (!pushStack.length) {
+			return;
+		}
+		const itemFlags: ISharedFlags = item.flags;
+		const code = item.action.actionCode;
+		const pushItem = items[pushStack[0]];
+
+		pushStack.length = 0;
+
+		const flags = ActionOptMap[code];
+		if (!flags || !flags.AllowStackToArgs) {
+			return;
+		}
+
+		itemFlags.PlainArgs = flags.PlainArgs;
+
+		const stackArgs = pushItem.action.args;
+		// push stack args to getMemberArgs, to reduce array movements
+
+		if (stackArgs.length === flags.ArgsCount) {
+			pushItem.flags.killed = true;
+			item.action.args = stackArgs;
+		} else if (stackArgs.length > flags.ArgsCount) {
+			const index = stackArgs.length - flags.ArgsCount;
+
+			item.action.args = stackArgs.slice(index);
+			stackArgs.length = index;
+			pushItem.flags.optimised = true;
+		} else {
+			const delta = flags.ArgsCount - stackArgs.length;
+			if (delta > 1) {
+				// Optimiser pop operands to arguments in reverse order
+				// this is BUGed if args more that 1. Skip this;
+				return;
+			}
+
+			pushItem.flags.killed = true;
+			item.action.args = stackArgs.slice();
+
+			for (let i = 0; i < delta; i++) {
+				item.action.args.unshift(new CustomOperationAction(true));
+			}
+		}
+
+		itemFlags.optimised = true;
+	}
+
 	optimiser(block: ActionCodeBlock): void {
 		const items = block.items;
 		const pushStack = [];
 
 		for (let i = 0, l = items.length; i < l; i++) {
 			const item = items[i];
-			const itemFlags: ISharedFlags = item.flags = item.flags || {};
-
 			const code = item.action.actionCode;
+			item.flags = item.flags || {};
 
 			if (code !== ActionCode.ActionPush) {
 				/*
@@ -252,6 +301,7 @@ export class ActionsDataCompiler {
 					}
 				}
 
+				this.basicOptBlock(item, items, pushStack);
 			}
 
 			switch (code) {
@@ -259,44 +309,44 @@ export class ActionsDataCompiler {
 					pushStack.push(i);
 					break;
 				}
-				default: {
-					if (!pushStack.length) {
+
+				case ActionCode.ActionGetMember: {
+					// collaps doubled calls to args
+					const selfArgs = item.action.args;
+
+					// args not inlined, skip
+					if (!selfArgs?.length) {
 						break;
 					}
 
-					const pushItem = items[pushStack[0]];
-					pushStack.length = 0;
-
-					const flags = ActionOptMap[code];
-					if (!flags || !flags.AllowStackToArgs) {
+					const first = selfArgs[0];
+					// first item should be inline pop, that we shure that opp not statically passed
+					if (!(first instanceof CustomOperationAction) || !first.inlinePop) {
 						break;
 					}
 
-					itemFlags.PlainArgs = flags.PlainArgs;
-
-					const stackArgs = pushItem.action.args;
-					// push stack args to getMemberArgs, to reduce array movements
-
-					if (stackArgs.length === flags.ArgsCount) {
-						pushItem.flags.killed = true;
-						item.action.args = stackArgs;
-					} else if (stackArgs.length > flags.ArgsCount) {
-						const index = stackArgs.length - flags.ArgsCount;
-
-						item.action.args = stackArgs.slice(index);
-						stackArgs.length = index;
-						pushItem.flags.optimised = true;
-					} else {
-						pushItem.flags.killed = true;
-						item.action.args = stackArgs.slice();
-
-						for (let i = 0; i < flags.ArgsCount - stackArgs.length; i++) {
-							item.action.args.unshift(new CustomOperationAction(true));
+					let j = i - 1;
+					// skip oppcodes, that is killed
+					for (; j >= 0; j--) {
+						if (!items[j].flags.killed) {
+							break;
 						}
 					}
 
-					item.flags.optimised = true;
-					break;
+					const topOpp = items[j];
+
+					// chain
+					const topArgs = topOpp.action.args;
+					if (topOpp.action.actionCode === ActionCode.ActionGetMember && topArgs?.length) {
+						topOpp.flags.killed = true;
+						item.flags.optimised = true;
+
+						// prepend arguments from top, drop first, because it pop
+						selfArgs.shift();
+						for (let i = topArgs.length - 1; i >= 0; i--) {
+							selfArgs.unshift(topArgs[i]);
+						}
+					}
 				}
 			}
 
