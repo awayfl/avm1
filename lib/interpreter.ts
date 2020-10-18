@@ -3436,9 +3436,9 @@ function analyzeAndCompileActionsData(ectx: ExecutionContext, actionsData: AVM1A
 
 	if (avm1CompilerEnabled.value) {
 		//try {
-			const c = new ActionsDataCompiler();
-			compiled = c.generate(ir, actionsData.debugPath);
-			actionsData.compiled = compiled;
+		const c = new ActionsDataCompiler();
+		compiled = c.generate(ir, actionsData.debugPath);
+		actionsData.compiled = compiled;
 		//} catch (e) {
 		//	console.error('Unable to compile AVM1 function: ' + e);
 		//}
