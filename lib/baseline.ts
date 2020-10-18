@@ -16,7 +16,7 @@
 //module Shumway.AVM1 {
 
 import { CHECK_AVM1_HANG_EVERY, generateActionCalls } from './interpreter';
-import { ActionCodeBlock, ActionCodeBlockItem, AnalyzerResults } from './analyze';
+import { ActionCodeBlock, ActionCodeBlockItem, ActionItemFlags, AnalyzerResults } from './analyze';
 import { ActionCode, ParsedPushConstantAction, ParsedPushRegisterAction } from './parser';
 import { AVM1ActionsData, AVM1Context } from './context';
 import { avm1DebuggerEnabled } from './settings';
@@ -53,10 +53,16 @@ interface IHoistMap {
 interface IOptFlags  {
 	// function support apply stack as arguments
 	AllowStackToArgs?: boolean;
+
+	// generate arguments instad of passing as array
+	// (ctx, [a, b]) => (ctx, a, b)
+	PlainArgs?: boolean;
 	// function support return value
 	AllowReturnValue?: boolean;
 	ArgsCount?: number;
 }
+
+interface ISharedFlags extends ActionItemFlags, IOptFlags {};
 
 const ActionOptMap: NumberMap<IOptFlags> = {
 	[ActionCode.ActionGetMember]: {
@@ -71,6 +77,7 @@ const ActionOptMap: NumberMap<IOptFlags> = {
 	[ActionCode.ActionAdd2]: {
 		AllowStackToArgs: true,
 		AllowReturnValue: true,
+		PlainArgs: true,
 		ArgsCount: 2,
 	},
 	[ActionCode.ActionGreater]: {
@@ -140,13 +147,14 @@ export class ActionsDataCompiler {
 	private convertAction(item: ActionCodeBlockItem, id: number, res, indexInBlock: number, ir: AnalyzerResults, items: ActionCodeBlockItem[], hoists: IHoistMap): string {
 		// const calls = getActionsCalls();
 		const prevItem = items[indexInBlock - 1];
+		const flags: ISharedFlags = item.flags;
 		let result = '';
 
-		if (item.optimised) {
+		if (flags?.optimised) {
 			result = `  /* ${item.action.actionName} optimised */\n`;
 		}
 
-		if (item.killed) {
+		if (flags?.killed) {
 			return `  /* ${item.action.actionName} killed by optimiser */\n`;
 		}
 
@@ -184,7 +192,12 @@ export class ActionsDataCompiler {
 				return '  if (!!stack.pop()) { position = ' + item.conditionalJumpTo + '; ' +
 					'checkTimeAfter -= ' + (indexInBlock + 1) + '; break; }\n';
 			default: {
-				let args = item.action.args ? `[${this.convertArgs(item.action.args, id, res, ir)}]` : '';
+				let args = item.action.args ? this.convertArgs(item.action.args, id, res, ir) : '';
+
+				if (args && !flags.PlainArgs) {
+					args = '[' + args + ']';
+				}
+
 				if (item.action.actionCode === ActionCode.ActionDefineFunction2) {
 					const name = `defFunArgs${id}`;
 					hoists.forward[name] = args;
@@ -219,6 +232,8 @@ export class ActionsDataCompiler {
 
 		for (let i = 0, l = items.length; i < l; i++) {
 			const item = items[i];
+			const itemFlags: ISharedFlags = item.flags = item.flags || {};
+
 			const code = item.action.actionCode;
 
 			if (code !== ActionCode.ActionPush) {
@@ -233,7 +248,7 @@ export class ActionsDataCompiler {
 
 					for (let i = from + 1; i <= to; i++) {
 						target.args = target.args.concat(items[i].action.args);
-						items[i].killed = true;
+						items[i].flags.killed = true;
 					}
 				}
 
@@ -257,20 +272,22 @@ export class ActionsDataCompiler {
 						break;
 					}
 
+					itemFlags.PlainArgs = flags.PlainArgs;
+
 					const stackArgs = pushItem.action.args;
 					// push stack args to getMemberArgs, to reduce array movements
 
 					if (stackArgs.length === flags.ArgsCount) {
-						pushItem.killed = true;
+						pushItem.flags.killed = true;
 						item.action.args = stackArgs;
 					} else if (stackArgs.length > flags.ArgsCount) {
 						const index = stackArgs.length - flags.ArgsCount;
 
 						item.action.args = stackArgs.slice(index);
 						stackArgs.length = index;
-						pushItem.optimised = true;
+						pushItem.flags.optimised = true;
 					} else {
-						pushItem.killed = true;
+						pushItem.flags.killed = true;
 						item.action.args = stackArgs.slice();
 
 						for (let i = 0; i < flags.ArgsCount - stackArgs.length; i++) {
@@ -278,7 +295,7 @@ export class ActionsDataCompiler {
 						}
 					}
 
-					item.optimised = true;
+					item.flags.optimised = true;
 					break;
 				}
 			}

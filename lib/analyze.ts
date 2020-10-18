@@ -24,12 +24,15 @@ export interface ActionCodeBlock {
 	jump: number;
 }
 
+export interface ActionItemFlags {
+	optimised?: boolean;
+	killed?: boolean;
+}
 export interface ActionCodeBlockItem {
 	action: ParsedAction;
 	next: number;
 	conditionalJumpTo: number;
-	optimised?: boolean;
-	killed?: boolean;
+	flags?: ActionItemFlags;
 }
 
 export interface AnalyzerResults {

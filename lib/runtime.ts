@@ -143,6 +143,12 @@ function AVM1TypeError(msg?) {
 AVM1TypeError.prototype = Object.create(Error.prototype);
 
 export function alToPrimitive(context: IAVM1Context, v, preferredType?: AVM1DefaultValueHint) {
+	const t = typeof v;
+
+	if (t === 'string' || t === 'number' || t === 'undefined') {
+		return v;
+	}
+
 	if (!(v instanceof AVM1Object)) {
 		return v;
 	}
@@ -259,6 +265,11 @@ export function alToString(context: IAVM1Context, v): string {
 		case 'boolean':
 			return v ? 'true' : 'false';
 		case 'number': {
+			// int
+			if ((v | 0) === v) {
+				return '' + v;
+			}
+
 			if (isFinite(v)) {
 				// https://esbench.com/bench/5f888a98b4632100a7dcd403
 				const e =  Math.floor(Math.log10(Math.abs(+v)));
@@ -267,7 +278,7 @@ export function alToString(context: IAVM1Context, v): string {
 					v = Math.round(v * p) / p;
 				}
 			}
-			return (v).toString();
+			return '' + v;
 		}
 		case 'string':
 			return v;

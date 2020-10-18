@@ -2523,27 +2523,38 @@ function avm1_0x44_ActionTypeOf(ectx: ExecutionContext) {
 	stack.push(result);
 }
 
-function avm1_0x47_ActionAdd2(ectx: ExecutionContext, args?: [any, any]) {
+function avm1_0x47_ActionAdd2(ectx: ExecutionContext, a?: any, b?: any) {
 	const stack = ectx.stack;
 
-	let a, b;
-
-	if (args) {
-		b = alToPrimitive(ectx.context, args[1]);
-		a = alToPrimitive(ectx.context, args[0]);
+	if (arguments.length > 1) {
+		b = alToPrimitive(ectx.context, b);
+		a = alToPrimitive(ectx.context, a);
 	} else {
 		b = alToPrimitive(ectx.context, stack.pop());
 		a = alToPrimitive(ectx.context, stack.pop());
 	}
 
-	if (typeof a === 'string' || typeof b === 'string') {
-		return stack[stack.length] = alToString(ectx.context, a) + alToString(ectx.context, b);
+	const ta = typeof a;
+	const tb = typeof b;
+	const aIsString = ta === 'string';
+	const bIsString = tb === 'string';
+
+	if (aIsString && bIsString) {
+
+		return stack[stack.length] = a + b;
+
+	} else if (aIsString || bIsString) {
+
+		return stack[stack.length] =
+			(aIsString ? a : alToString(ectx.context, a)) +
+			(bIsString ? b : alToString(ectx.context, b));
+
 	} else {
 		if (!ectx.isSwfVersion7) {
-			if (typeof a === 'undefined')
+			if (ta === 'undefined')
 				a = 0;
 
-			if (typeof b === 'undefined')
+			if (tb === 'undefined')
 				b = 0;
 		}
 
