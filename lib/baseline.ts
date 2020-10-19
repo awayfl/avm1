@@ -228,10 +228,12 @@ export class ActionsDataCompiler {
 		}
 	}
 
-	basicOptBlock(item: ActionCodeBlockItem, items: ActionCodeBlockItem[], pushStack: number[]): void {
+	inlineStackOpt(index: number, items: ActionCodeBlockItem[], pushStack: number[]): boolean {
 		if (!pushStack.length) {
-			return;
+			return false;
 		}
+
+		const item = items[index];
 		const itemFlags: ISharedFlags = item.flags;
 		const code = item.action.actionCode;
 		const pushItem = items[pushStack[0]];
@@ -240,7 +242,7 @@ export class ActionsDataCompiler {
 
 		const flags = ActionOptMap[code];
 		if (!flags || !flags.AllowStackToArgs) {
-			return;
+			return false;
 		}
 
 		itemFlags.PlainArgs = flags.PlainArgs;
@@ -262,7 +264,7 @@ export class ActionsDataCompiler {
 			if (delta > 1) {
 				// Optimiser pop operands to arguments in reverse order
 				// this is BUGed if args more that 1. Skip this;
-				return;
+				return false;
 			}
 
 			pushItem.flags.killed = true;
@@ -274,11 +276,14 @@ export class ActionsDataCompiler {
 		}
 
 		itemFlags.optimised = true;
+		return true;
 	}
 
 	optimiser(block: ActionCodeBlock): void {
 		const items = block.items;
 		const pushStack = [];
+
+		let lastStackOpPassed = true;
 
 		for (let i = 0, l = items.length; i < l; i++) {
 			const item = items[i];
@@ -301,12 +306,22 @@ export class ActionsDataCompiler {
 					}
 				}
 
-				this.basicOptBlock(item, items, pushStack);
+				// we should skip optimiser if can't shure, that stack is inlined clear
+				if (lastStackOpPassed) {
+					lastStackOpPassed = this.inlineStackOpt(i, items, pushStack);
+				} else {
+					lastStackOpPassed = false;
+				}
+
+				pushStack.length = 0;
 			}
 
 			switch (code) {
 				case ActionCode.ActionPush: {
 					pushStack.push(i);
+					// last op is pushStack, optimiser sould be passed
+					lastStackOpPassed = true;
+
 					break;
 				}
 
