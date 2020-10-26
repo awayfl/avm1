@@ -18,7 +18,7 @@ import {
 	alCoerceNumber, alCoerceString, alToBoolean, alToInt32, alToInteger, alToNumber, alToString
 } from '../runtime';
 import { AVM1Context } from '../context';
-import { getAVM1Object, wrapAVM1NativeClass, toTwipFloor, toTwipRound } from './AVM1Utils';
+import { getAVM1Object, wrapAVM1NativeClass, toTwipFloor, toTwipRound, away2avmDepth } from './AVM1Utils';
 import { AVM1TextFormat } from './AVM1TextFormat';
 import { notImplemented } from '@awayfl/swf-loader';
 import { EventBase as Event } from '@awayjs/core';
@@ -30,6 +30,7 @@ import { EventsListForMC } from './AVM1EventHandler';
 import { AVM1Globals } from './AVM1Globals';
 import { alCallProperty, } from '../runtime';
 import { AVM1Stage } from './AVM1Stage';
+import { AVM1MovieClip } from './AVM1MovieClip';
 
 interface mapNumberToString{
 	[key: number]: string;
@@ -127,8 +128,14 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 		}
 	}
 
-	public removeTextField() {
-		this.removeMovieClip();
+	public removeMovieClip() {
+		if (this.adaptee.isAVMScene) {
+			return; // let's not remove root symbol
+		}
+		if (this.adaptee.parent && away2avmDepth(this.adaptee._depthID) >= -1) {
+			const avm1parent: AVM1MovieClip = <AVM1MovieClip> this.adaptee.parent.adapter;
+			avm1parent.removeChildAtDepth(this.adaptee._depthID);
+		}
 	}
 
 	public alPut(p, v) {

@@ -27,14 +27,16 @@ import {
 	alToString, AVM1PropertyFlags, alIsArray
 } from '../runtime';
 import { AVM1Context } from '../context';
-import { isNullOrUndefined, release, assert, Debug, notImplemented, somewhatImplemented, warning } from '@awayfl/swf-loader';
+import { isNullOrUndefined, release, assert, Debug, somewhatImplemented, warning } from '@awayfl/swf-loader';
 import { AVM1BitmapData, toAS3BitmapData } from './AVM1BitmapData';
 import { toAS3Matrix } from './AVM1Matrix';
 import { AVM1ArrayNative } from '../natives';
 import { copyAS3PointTo, toAS3Point } from './AVM1Point';
 import { MovieClipProperties } from '../interpreter/MovieClipProperties';
-import { IMovieClipAdapter, DisplayObject, MovieClip, TextField, Billboard, TextFormat, MouseManager, FrameScriptManager } from '@awayjs/scene';
-import { AssetLibrary, Matrix3D, Point, WaveAudio, URLRequest, Rectangle } from '@awayjs/core';
+import { IMovieClipAdapter, DisplayObject, MovieClip, TextField, Billboard,
+	TextFormat, MouseManager, FrameScriptManager, Timeline, IDisplayObjectAdapter,
+	DisplayObjectContainer, IFrameScript } from '@awayjs/scene';
+import { AssetLibrary, Matrix3D, Point, WaveAudio, Rectangle } from '@awayjs/core';
 import { AVM1TextField } from './AVM1TextField';
 import { Graphics, LineScaleMode, GradientType } from '@awayjs/graphics';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
@@ -49,17 +51,22 @@ import { AVM1InterpretedFunction } from '../interpreter';
 import { PickGroup } from '@awayjs/view';
 
 import { MethodMaterial } from '@awayjs/materials';
-
-export interface IFrameScript {
-	(any?): any;
-	precedence?: number[];
-	context?: MovieClip;
+import { AVM1Function } from '../runtime/AVM1Function';
+interface IVirtualSceneGraphItem {
+	sessionID: number,
+	depth: number,
+	addedOnTargetFrame: boolean,
+	symbolID?: number
 }
 
 export const enum LookupChildOptions {
 	DEFAULT = 0,
 	IGNORE_CASE = 1,
 	INCLUDE_NON_INITIALIZED = 2
+}
+
+function sortByDepth(a: DisplayObject, b: DisplayObject) {
+	return a._depthID - b._depthID;
 }
 
 function convertAS3RectangeToBounds(as3Rectange: any, context): AVM1Object {
@@ -72,10 +79,18 @@ function convertAS3RectangeToBounds(as3Rectange: any, context): AVM1Object {
 }
 
 export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieClipAdapter {
+
+	private _depth_childs: NumberMap<DisplayObject>;
+	private _nextHighestDepth: number = 0;
+	private _nextHighestDepthDirty: boolean;
+
+	private _depth_sessionIDs: Object;
+
 	public static currentMCAssetNameSpace: string = '';
 	public static currentDraggedMC: AVM1MovieClip = null;
 
-	// if a stop-action occurs, we check if a child with this name is present, and if so, we execute the function provided
+	// if a stop-action occurs, we check if a child with this name is present,
+	// and if so, we execute the function provided
 	public static pokiSDKonStopActionChildName: string = null;
 	public static pokiSDKonStopAction: any = null;
 	public static createAVM1Class(context: AVM1Context): AVM1Object {
@@ -112,6 +127,386 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		'horizontal': LineScaleMode.HORIZONTAL
 	}
 
+	public onLoaded: Function;
+	public onConstruct: AVM1Function;
+	public onInitialize: AVM1Function;
+
+	private _tempSessionID: number = 0;
+	private _tempDepthID: number = 0;
+
+	public getChildForDraw(child: DisplayObject): DisplayObject {
+		this._tempSessionID = child._sessionID;
+		this._tempDepthID = child._depthID;
+		child._setParent(null);
+		return child;
+	}
+
+	public returnChildAfterDraw(child: DisplayObject) {
+		child._sessionID = this._tempSessionID;
+		child._depthID = this._tempDepthID;
+		child._setParent(<DisplayObjectContainer> this.adaptee);
+	}
+
+	public addTimelineChildAtDepth(child: DisplayObject, depth: number) {
+		depth -= 16383;
+		if (child.adapter != child && (<any>child.adapter).deleteOwnProperties) {
+			(<any>child.adapter).deleteOwnProperties();
+		}
+		child.reset();
+		this.addChildAtDepth(child, depth, true);
+	}
+
+	public removeTimelineChildAt(value: number): void {
+		// avm1 supplied value is depth
+		value -= 16383;
+		this.removeChildAtDepth(value);
+	}
+
+	public removeAllTimelineChilds(): void {
+		//(<MovieClip>this.adaptee).removeAllTimelineChilds();
+	}
+
+	public getTimelineChildAtSessionID(sessionID: number): DisplayObject {
+		return (<MovieClip> this.adaptee).getTimelineChildAtSessionID(sessionID);
+	}
+
+	public getDepthIndexInternal(depth: number): number {
+		if (!this._depth_childs[depth])
+			return -1;
+
+		return this.adaptee._children.indexOf(this._depth_childs[depth]);
+	}
+
+	public removeChildAtDepth(depth: number) {
+		const idx: number = this.getDepthIndexInternal(depth);
+		if (idx >= 0)
+			this.removeChildAt(idx);
+	}
+
+	public removeChildAt(index: number) {
+		const child: DisplayObject = this.adaptee._children.splice(index, 1)[0];
+
+		if (child._adapter)
+			(<IMovieClipAdapter>child.adapter).freeFromScript();
+
+		this.unregisterScriptObject(child);
+
+		child._setParent(null);
+		//update next highest depth
+		if (this._nextHighestDepth == child._depthID + 1)
+			this._nextHighestDepthDirty = true;
+
+		delete this.adaptee._sessionID_childs[child._sessionID];
+		delete this._depth_childs[child._depthID];
+		delete this._depth_sessionIDs[child._depthID];
+
+		child._sessionID = -1;
+		child._depthID = -16384;
+
+	}
+
+	private addChildAtDepth<T extends DisplayObject>(child: T,
+		depth: number,
+		fromTimeline: boolean = false): AVM1Object {
+
+		//console.log("[AVM1MovieClip]", this.adaptee.name, "addChildAtDepth", child, depth, fromTimeline);
+
+		// if depth is already occupied:
+		//		- when addChild is invoke from script: replace existing object
+		//		- when addChild is invoked from timeline: return and do nothing
+		if (child == null)
+			throw ('Parameter child cannot be null.');
+
+		//if child already has a parent, remove it.
+		//if (child.parent)
+		//child.parent.removeChildAtInternal(child.parent.getChildIndex(child));
+
+		const index = this.getDepthIndexInternal(depth);
+
+		if (index != -1) {
+			if (fromTimeline) {
+				console.log('depth is occupied');
+				return null;
+			}
+			this.removeChildAt(index);
+		}
+
+		if (this.adaptee.isSlice9ScaledMC && child.assetType == '[asset Sprite]') {
+			child.isSlice9ScaledSprite = true;
+		}
+
+		if (this._nextHighestDepth < depth + 1)
+			this._nextHighestDepth = depth + 1;
+
+		//console.log("[ADDCHILDAT]", this.adaptee.name, this.adaptee.id, child.id, depth, this, child);
+
+		this.adaptee._children.push(child);
+
+		child._depthID = depth;
+
+		child._setParent(this.adaptee);
+
+		this.adaptee._children.sort(sortByDepth);
+
+		if (child.adapter != child) {
+			// initAdapter is only used for avm1 to queue constructors / init-actions
+			// for avm2 this is handled via FrameScriptManager.execute_as3_constructors_recursiv
+			(<IDisplayObjectAdapter>child.adapter).initAdapter();
+		}
+		this._depth_childs[depth] = child;
+		if (fromTimeline) {
+			this.adaptee._sessionID_childs[child._sessionID] = child;
+			this._depth_sessionIDs[depth] = child._sessionID;
+		}
+
+		return getAVM1Object(child, <AVM1Context> this._avm1Context);
+	}
+
+	public sortVirtualSceneGraph(a, b): number {
+		if (a.depth > b.depth) {
+			return -1;
+		}
+		if (a.depth < b.depth) {
+			return 1;
+		}
+		return 0;
+	}
+
+	/**
+	 * queue the framescripts for a specific frame
+	 * @param timeline
+	 * @param frame_idx
+	 * @param scriptPass1
+	 */
+	public queueFrameScripts(timeline: Timeline, frame_idx: number, scriptPass1: boolean) {
+		const frameScripts = timeline.get_script_for_frame(this.adaptee, frame_idx, true);
+		if (frameScripts) {
+			//console.log("add framescript", target_mc, target_mc.name, keyframe_idx, scriptPass1 );
+			if (scriptPass1)
+				FrameScriptManager.add_script_to_queue(this.adaptee, frameScripts);
+			else
+				FrameScriptManager.add_script_to_queue_pass2(this.adaptee, frameScripts);
+		}
+	}
+
+	// should only be called from timeline when navigating frames
+	public constructFrame(timeline: Timeline, start_construct_idx: number,
+		target_keyframe_idx: number, jump_forward: boolean,
+		frame_idx: number, queue_pass2: boolean, queue_script: boolean) {
+
+		let len = this.adaptee._children.length;
+		const virtualSceneGraphMap: NumberMap<IVirtualSceneGraphItem> = {};
+
+		// collect the existing children into a virtual-scenegraph
+		if (jump_forward) {
+			for (let i = 0; i < len; i++) {
+				const child = this.adaptee._children[i];
+				virtualSceneGraphMap[child._depthID] = {
+					sessionID:child._sessionID,
+					addedOnTargetFrame:false,
+					depth:child._depthID
+				};
+			}
+		}
+
+		// apply add/remove commands to virtual-scenegraph
+
+		let i: number;
+		let k: number;
+
+		timeline._update_indices.length = 0;
+		timeline._update_frames.length = 0;
+		let update_cnt = 0;
+		let start_index: number;
+		let end_index: number;
+		for (k = start_construct_idx; k <= target_keyframe_idx; k++) {
+			let frame_command_idx: number = timeline.frame_command_indices[k];
+			const frame_recipe: number = timeline.frame_recipe[k];
+
+			/*if(frame_recipe & 1){
+				//console.log("frame_recipe & 1");
+				for(var key in virtualSceneGraphMap){
+					if(virtualSceneGraphMap[key].sessionID>=0)
+						delete virtualSceneGraphMap[key];
+				}
+			}*/
+
+			if (frame_recipe & 2) {
+				// remove childs by depth. no matter what object is at the depth, it gets removed
+				start_index = timeline.command_index_stream[frame_command_idx];
+				end_index = start_index + timeline.command_length_stream[frame_command_idx++];
+				for (i = start_index; i < end_index; i++) {
+					delete virtualSceneGraphMap[timeline.remove_child_stream[i] - 16383];
+				}
+			}
+			if (frame_recipe & 4) {
+				start_index = timeline.command_index_stream[frame_command_idx];
+				end_index = start_index + timeline.command_length_stream[frame_command_idx++];
+				if (queue_pass2) {
+					for (i = end_index - 1; i >= start_index; i--) {
+						// in as2 only want to add childs if the the depth is free
+						if (!virtualSceneGraphMap[timeline.add_child_stream[i * 3 + 1] - 16383]) {
+							virtualSceneGraphMap[timeline.add_child_stream[i * 3 + 1] - 16383] = {
+								sessionID:timeline.add_child_stream[i * 3],
+								symbolID:timeline.add_child_stream[i * 3 + 2],
+								addedOnTargetFrame:k == target_keyframe_idx,
+								depth:timeline.add_child_stream[i * 3 + 1] - 16383
+							};
+						}
+					}
+				} else {
+					for (i = start_index; i < end_index; i++) {
+						if (!virtualSceneGraphMap[timeline.add_child_stream[i * 3 + 1] - 16383]) {
+							virtualSceneGraphMap[timeline.add_child_stream[i * 3 + 1] - 16383] = {
+								sessionID:timeline.add_child_stream[i * 3],
+								symbolID:timeline.add_child_stream[i * 3 + 2],
+								addedOnTargetFrame:k == target_keyframe_idx,
+								depth:timeline.add_child_stream[i * 3 + 1] - 16383
+							};
+						}
+					}
+				}
+			}
+			if (frame_recipe & 8) {
+				timeline._update_frames[update_cnt] = timeline.keyframe_firstframes[k];
+				timeline._update_indices[update_cnt++] = frame_command_idx++;// execute update command later
+			}
+
+			if (frame_recipe & 16 && k == target_keyframe_idx) {
+				timeline.start_sounds(this.adaptee, frame_command_idx);
+			}
+		}
+
+		// transform virtual scenegrap0h in array sorted by depth
+
+		const virtualSceneGraph: IVirtualSceneGraphItem[] = [];
+		for (const key in virtualSceneGraphMap) {
+			virtualSceneGraph[virtualSceneGraph.length] = virtualSceneGraphMap[key];
+		}
+		virtualSceneGraph.sort(this.sortVirtualSceneGraph);
+
+		const newChildren: DisplayObject[] = [];
+		let vsItem: IVirtualSceneGraphItem;
+		const newChilds: DisplayObject[] = [];
+		const newChildsOnTargetFrame: DisplayObject[] = [];
+
+		this._depth_childs = {};
+		this._depth_sessionIDs = {};
+		this.adaptee._sessionID_childs = {};
+
+		// collect all existing session ids
+
+		const existingSessionIDs = {};
+		len = this.adaptee._children.length;
+		for (let i = 0; i < len; i++) {
+			existingSessionIDs[this.adaptee._children[i]._sessionID] = this.adaptee._children[i];
+		}
+
+		// compare virtual scenegraph against current children
+		// child exists in both, and has same session id, we keep it alive
+		// old childs with no sessioID keep alive
+
+		len = newChildren.length = virtualSceneGraph.length;
+		for (let i = 0; i < len; i++) {
+			vsItem = virtualSceneGraph[i];
+			if (existingSessionIDs[vsItem.sessionID]) {
+				//	the same sessionID already is child of the mc
+				const existingChild = existingSessionIDs[vsItem.sessionID];
+				const depth = vsItem.depth;
+
+				//	set existing child to correct depth:
+				existingChild._depthID = depth;
+				this._depth_childs[depth] = existingChild;
+				this._depth_sessionIDs[depth] = existingChild._sessionID = vsItem.sessionID;
+				this.adaptee._sessionID_childs[vsItem.sessionID] = existingChild;
+				newChildren[i] = existingChild;
+				//console.log("vsItem.exists", vsItem);
+				if (!jump_forward) {
+					if (newChildren[i]._adapter) {
+						if (!(<IDisplayObjectAdapter> newChildren[i].adapter).isColorTransformByScript()) {
+							newChildren[i].transform.clearColorTransform();
+						}
+						if (!(<IDisplayObjectAdapter> newChildren[i].adapter).isBlockedByScript()
+							&& !(<any>newChildren[i]).noTimelineUpdate) {
+							newChildren[i].transform.clearMatrix3D();
+							newChildren[i].masks = null;
+							newChildren[i].maskMode = false;
+						}
+						if (!(<IDisplayObjectAdapter> newChildren[i].adapter).isVisibilityByScript()) {
+							newChildren[i].visible = true;
+						}
+					} else {
+						newChildren[i].transform.clearColorTransform();
+						newChildren[i].transform.clearMatrix3D();
+						newChildren[i].visible = true;
+						newChildren[i].masks = null;
+						newChildren[i].maskMode = false;
+					}
+				}
+			} else {
+				const newChild = <DisplayObject>timeline.getChildInstance(vsItem.symbolID, vsItem.sessionID);
+				if (this.adaptee.isSlice9ScaledMC && newChildren[i].assetType == '[asset Sprite]') {
+					newChild.isSlice9ScaledSprite = true;
+				}
+				const depth = newChild._depthID = vsItem.depth;
+
+				this._depth_childs[depth] = newChild;
+				this._depth_sessionIDs[depth] = newChild._sessionID = vsItem.sessionID;
+				this.adaptee._sessionID_childs[vsItem.sessionID] = newChild;
+
+				newChildren[i] = newChild;
+				if (vsItem.addedOnTargetFrame) {
+					newChildsOnTargetFrame[newChildsOnTargetFrame.length] = newChild;
+				} else {
+					newChilds[newChilds.length] = newChild;
+				}
+			}
+		}
+		len = this.adaptee._children.length;
+		for (let i = 0; i < len; i++) {
+			if (newChildren.indexOf(this.adaptee._children[i]) < 0)
+				this.adaptee._children[i]._setParent(null);
+		}
+		this.adaptee._children = newChildren;
+
+		this.adaptee.preventScript = true;
+		this.finalizeChildren(newChilds);
+		this.adaptee.preventScript = false;
+
+		// if there is a framescript on this frame, we queue it now, so it sits after the initAdapter of the children
+		if (queue_script)
+			this.queueFrameScripts(timeline, frame_idx, !queue_pass2);
+
+		this.finalizeChildren(newChildsOnTargetFrame);
+	}
+
+	public finalizeChildren(children: DisplayObject[]) {
+		const len = children.length;
+		for (let i = 0; i < len; i++) {
+			const newChild = children[i];
+			if (newChild.adapter != newChild && (<any>newChild.adapter).deleteOwnProperties) {
+				(<any>newChild.adapter).deleteOwnProperties();
+			}
+			newChild._setParent(this.adaptee);
+			newChild.reset();
+			if (newChild.adapter != newChild) {
+				// initAdapter is only used for avm1 to queue constructors / init-actions
+				// for avm2 this is handled via FrameScriptManager.execute_as3_constructors_recursiv
+				(<IDisplayObjectAdapter>newChild.adapter).initAdapter();
+			}
+		}
+	}
+
+	public removeMovieClip() {
+		if (this.adaptee.isAVMScene) {
+			return; // let's not remove root symbol
+		}
+		if (this.adaptee.parent && away2avmDepth(this.adaptee._depthID) >= -1) {
+			const avm1parent: AVM1MovieClip = <AVM1MovieClip> this.adaptee.parent.adapter;
+			avm1parent.removeChildAtDepth(this.adaptee._depthID);
+		}
+	}
+
 	protected _mouseButtonListenerCount: number;
 	public _updateMouseEnabled(event: AVM1EventHandler, enabled: boolean): void {
 		if (!this.adaptee.isAVMScene) {
@@ -146,7 +541,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 	}
 
-	public onLoaded: Function = null;
 	public executeConstructor: Function = null;
 	/**
 	 * Lock object of `unregister` method. Required for AVM1BtimapData.draw
@@ -173,8 +567,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			targetTimeline.keyframe_firstframes = [timeline.keyframe_firstframes[0]];
 			targetTimeline.keyframe_indices = [timeline.keyframe_indices[0]];
 		}
-		(<any> this.adaptee).cloneForEveryInstance = true;
-		(<any>clone.adaptee).cloneForEveryInstance = true;
 		return clone;
 	}
 
@@ -192,28 +584,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 	}
 
-	// this is used for ordering AVM1 Framescripts into correct order
-	private compareAVM1FrameScripts(a: IFrameScript, b: IFrameScript): number {
-		if (!a.precedence) {
-			return !b.precedence ? 0 : -1;
-		} else if (!b.precedence) {
-			return 1;
-		}
-		let i = 0;
-		while (i < a.precedence.length && i < b.precedence.length && a.precedence[i] === b.precedence[i]) {
-			i++;
-		}
-		if (i >= a.precedence.length) {
-			return a.precedence.length === b.precedence.length ? 0 : -1;
-		} else {
-			return i >= b.precedence.length ? 1 : a.precedence[i] - b.precedence[i];
-		}
-	}
-
-	public executeScript(actionsBlocks: any) {
-		if (typeof actionsBlocks === 'number') {
-			actionsBlocks = (<MovieClip> this.adaptee).timeline.get_script_for_frame(<MovieClip> this.adaptee, (<MovieClip> this.adaptee).currentFrameIndex);
-		}
+	public executeScript(actionsBlocks: IFrameScript[]) {
 		AVM1MovieClip.currentMCAssetNameSpace = this.adaptee.assetNamespace;
 		AVM1TextField.syncQueedTextfields();
 		if (!actionsBlocks) {
@@ -223,65 +594,22 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		if (!this.adaptee.parent)
 			return;
-		const unsortedScripts: any[] = [];
 
 		for (let k = 0; k < actionsBlocks.length; k++) {
 			const actionsBlock: any = actionsBlocks[k];
-			const script: IFrameScript = function (actionsData) {
-				(<any> this)._avm1Context.executeActions(actionsData, this);
+			const script = function (actionsData) {
+				this._avm1Context.executeActions(actionsData, this);
 			}.bind(this, actionsBlock.data);
-
-			// this uses parents of current scenegraph. so its not possible to easy preset in parser
-			script.precedence = this.adaptee.getScriptPrecedence().concat(actionsBlock.precedence);
-
+			script.precedence = actionsBlock.precedence;
 			script.context = this.adaptee;
-			unsortedScripts.push(script);
+			script.call(this.adaptee);
 		}
-		if (unsortedScripts.length) {
-			unsortedScripts.sort(this.compareAVM1FrameScripts);
-			const sortedFrameScripts = unsortedScripts;
-			for (let k = 0; k < sortedFrameScripts.length; k++) {
-				const myScript = sortedFrameScripts[k];
-				const mc = myScript.context;
-				myScript.call(mc);
-			}
-		}
-	}
-
-	public addScript(source: any, frameIdx: number): any {
-		const allscripts = source;
-		const translatedScripts: any[] = [];
-		for (let i = 0; i < allscripts.length; i++) {
-			const scripts = allscripts[i];
-			if (Array.isArray(scripts)) {
-				for (let s = 0; s < scripts.length; s++) {
-					const script = scripts[s];
-					var mcName: any = this.adaptee.name;
-					if (typeof mcName != 'string') {
-						mcName = mcName.toString();
-					}
-					script.data = (<AVM1Context> this._avm1Context).actionsDataFactory.createActionsData(
-						script, 'script_' + mcName.replace(/[^\w]/g, '') + '_' + this.adaptee.id + '_frame_' + frameIdx + '_idx_' + i);
-					translatedScripts[translatedScripts.length] = script;
-				}
-			} else {
-				const script = scripts;
-				var mcName: any = this.adaptee.name;
-				if (typeof mcName != 'string') {
-					mcName = mcName.toString();
-				}
-				script.data = (<AVM1Context> this._avm1Context).actionsDataFactory.createActionsData(
-					script, 'script_' + mcName.replace(/[^\w]/g, '') + '_' + this.adaptee.id + '_frame_' + frameIdx + '_idx_' + i);
-				translatedScripts[translatedScripts.length] = script;
-
-			}
-		}
-		return translatedScripts;
 	}
 
 	public stopAllSounds() {
 		const allProps = this.alGetKeys();
-		for (var i = 0; i < allProps.length; i++) {
+		let i;
+		for (i = 0; i < allProps.length; i++) {
 			const desc = this.alGetProperty(allProps[i]);
 			const val = desc ? desc.value : null;
 			if (val && val._sound && val._sound.isAsset && val._sound.isAsset(WaveAudio)) {
@@ -293,7 +621,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		i = this.adaptee.numChildren;
 		while (i > 0) {
 			i--;
-			child = this.adaptee.getChildAt(i);
+			child = this.adaptee._children[i];
 			if (child.isAsset(MovieClip) && child.adapter != child) {
 				(<IMovieClipAdapter>child.adapter).freeFromScript();
 			}
@@ -321,7 +649,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		// execute the init-actionscript that is stored on timeline
 		for (const key in this.adaptee.timeline.avm1InitActions)
-			this.executeScript(this.addScript(this.adaptee.timeline.avm1InitActions[key], <any>('initActionsData' + key)));
+			this.executeScript(this.adaptee.timeline.symbolDecoder.prepareFrameScriptsForAVM1(
+				this.adaptee.timeline.avm1InitActions[key], 0, 'initActionsData' + key, this.adaptee.id));
 
 		if ((<any> this).initEvents) {
 			initializeAVM1Object(this.adaptee, <AVM1Context> this._avm1Context, (<any> this).initEvents);
@@ -329,7 +658,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		this.attachCustomConstructor();
 		this.initialDepth = this.adaptee._depthID;
 
-		if ((<any> this.adaptee).onLoaded || (<any> this.adaptee).onConstruct || this.executeConstructor) {
+		if ((<any> this.adaptee).onLoaded
+			|| (<any> this.adaptee).onConstruct
+			|| (<any> this.adaptee).onInitialize
+			|| this.executeConstructor) {
 			FrameScriptManager.add_loaded_action_to_queue(this.adaptee);
 		}
 
@@ -337,10 +669,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public registerScriptObject(child: DisplayObject, fromTimeline: boolean = true): void {
 
-		// 	whenever multiple childs get registered for the same name, the child with the lowest depth wins
-		//	this is true for objects added via timeline, attachMovie, duplicateMovieClip and CreateEmptyMovieClip and also when renaming objects
+		//	whenever multiple childs get registered for the same name, the child with the lowest depth wins
+		//	this is true for objects added via
+		//	timeline, attachMovie, duplicateMovieClip and CreateEmptyMovieClip and also when renaming objects
 
-		// 	if a avm1 variable for a registered child-name was defined via script, it always wins over the child registration.
+		//	if a avm1 variable for a registered child-name was defined via script,
+		//	it always wins over the child registration.
 		//	for example, after setting "testMC='something'" in script, trying to get "testMC" will return "something",
 		//	and childs with the name "testMC" will no longer be accessible.
 		//	this is true for all datatypes. once a variable is set by script, the value set by script will be returned.
@@ -355,13 +689,15 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		//			testMC._y=100;
 		//			indirectRef._x=100;
 		//			indirectRef._y=100;
-		//	this code will move both objects, because the attachMovie changes the object that is available under the name "testMC",
+		//	this code will move both objects,
+		//	because the attachMovie changes the object that is available under the name "testMC",
 		//	but the indirectRef still holds the reference to the original object.
 		//	however, if we remove the original child via removeMovieCLip or if it is removed via timeline,
 		//	the variable will return a reference to the current object that might now be registered
 		//	under the same name as the object that the variable was created for.
 
-		// 	if a movieclip was tinted by a color object, and than another mc gets registered for the name, the tinting is applied to the new mc
+		// 	if a movieclip was tinted by a color object,
+		//	and than another mc gets registered for the name, the tinting is applied to the new mc
 
 		if (child.adapter != child)
 			(<any>child.adapter).setEnabled(true);
@@ -395,52 +731,15 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			//			- the already registered object has a higher depthID than the new object
 			if (!this._childrenByName[name]
 				|| (this._childrenByName[name].adaptee && this._childrenByName[name].adaptee.parent == null)
-				|| (this._childrenByName[name].adaptee && this._childrenByName[name].adaptee._depthID > child._depthID)) {
+				|| (this._childrenByName[name].adaptee
+				&& this._childrenByName[name].adaptee._depthID > child._depthID)) {
 
 				//register new object
 				this._childrenByName[name] = getAVM1Object(child, this.context);
 				if (!fromTimeline) {
 					this.alPut(name, this._childrenByName[name]);
 				}
-
 			}
-
-			/* old stuff:
-            if(force || !this._childrenByName[child.name] || (this._childrenByName[child.name].adaptee && this._childrenByName[child.name].adaptee.parent==null) ||
-                this._childrenByName[child.name].adaptee._depthID>child._depthID){
-
-                // only replace value if no property exists yet, or if a existing prop was a Away-Object
-                var existingValue=this.alGet(child.name);
-                if(existingValue && existingValue.adaptee){
-                    this.alPut(child.name, child.adapter);
-                    if(this.scriptRefsToChilds[child.name]){
-                        // update indirectReferences to this prop
-                        this.scriptRefsToChilds[child.name].obj.alPut(this.scriptRefsToChilds[child.name].name, child.adapter);
-                    }
-                }
-                else if(existingValue){
-                }
-                else{
-                    this.alPut(child.name, child.adapter);
-                    if(this.scriptRefsToChilds[child.name]){
-                        // update indirectReferences to this prop
-                        this.scriptRefsToChilds[child.name].obj.alPut(this.scriptRefsToChilds[child.name].name, child.adapter);
-                    }
-                }
-                if(this.unregisteredColors[child.name]){
-                    this.unregisteredColors[child.name].changeTarget(child.adapter);
-                    this.unregisteredColors[child.name]=null;
-                }
-                // always register the child by name on the parent, no matter what avm1prop existed previously
-				this._childrenByName[child.name]=child._adapter;
-			}
-			*/
-			/*
-			else{
-
-				this._unregisteredChilds[child.name]=child;
-            }
-            */
 		}
 	}
 
@@ -546,6 +845,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public initAVM1SymbolInstance(context: AVM1Context, awayObject: any) {//MovieClip
 		this._childrenByName = Object.create(null);
+		this._depth_childs = Object.create(null);
+		this._depth_sessionIDs = Object.create(null);
 		super.initAVM1SymbolInstance(context, awayObject);
 		this.dragListenerDelegate = (event) => this.dragListener(event);
 		this.stopDragDelegate = (event) => this.stopDrag(event);
@@ -561,11 +862,11 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	private _lookupChildInAS3Object(name: string): AVM1Object {
-		let lookupOptions = LookupChildOptions.INCLUDE_NON_INITIALIZED;
+		//80pro todo lookupOptions
+		/*let lookupOptions = LookupChildOptions.INCLUDE_NON_INITIALIZED;
 		if (!this.context.isPropertyCaseSensitive) {
 			lookupOptions |= LookupChildOptions.IGNORE_CASE;
-		}
-		//80pro todo lookupOptions
+		}*/
 		const as3Child = this.adaptee.getChildByName(name);//, lookupOptions);
 		return getAVM1Object(as3Child, this.context);
 	}
@@ -597,7 +898,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		console.warn('[AVM1MovieClip] attachAudio not implemented');
 	}
 
-	public attachBitmap(bmp: AVM1BitmapData, depth: number, pixelSnapping: string = 'auto', smoothing: boolean = false): void {
+	public attachBitmap(bmp: AVM1BitmapData, depth: number,
+		pixelSnapping: string = 'auto',
+		smoothing: boolean = false): void {
+
 		pixelSnapping = alCoerceString(this.context, pixelSnapping);
 		smoothing = alToBoolean(this.context, smoothing);
 		const awayBitmapImage2D = bmp.as3BitmapData;
@@ -606,8 +910,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		billboardMaterial.alphaBlending = true;
 		billboardMaterial.useColorTransform = true;
 
-		const billboard: Billboard = new Billboard(billboardMaterial, pixelSnapping, smoothing);// this.context.sec.flash.display.Bitmap.axClass.axConstruct([as3BitmapData, pixelSnapping, smoothing]);
-		this._insertChildAtDepth(billboard, depth);
+		const billboard: Billboard = new Billboard(billboardMaterial, pixelSnapping, smoothing);
+		this.addChildAtDepth(billboard, depth);
 	}
 
 	public _constructMovieClipSymbol(symbolId: string, name: string): MovieClip {
@@ -619,12 +923,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return undefined;
 		}
 
-		/*
-		var props: SpriteSymbol = Object.create(symbol.symbolProps);
-		props.avm1Name = name;
-		*/
-		let mc: MovieClip;
-		mc = (<any>symbol.adaptee).clone();//constructClassFromSymbol(props, this.context.sec.flash.display.MovieClip.axClass);
+		const mc: MovieClip = (<any>symbol.adaptee).clone();
 		mc.name = name;
 		getAVM1Object(mc, <any> this._avm1Context);
 		return mc;
@@ -659,12 +958,13 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		depth = alToNumber(this.context, depth);
 
+		let oldAVMMC;
 		if (name)
-			var oldAVMMC = this._childrenByName[name.toLowerCase()];
+			oldAVMMC = this._childrenByName[name.toLowerCase()];
 
 		mc.reset();
 		//console.log("attachMovie", name, avm2AwayDepth(depth));
-		const avmMc = <AVM1MovieClip> this._insertChildAtDepth(mc, avm2AwayDepth(depth));
+		const avmMc = <AVM1MovieClip> this.addChildAtDepth(mc, avm2AwayDepth(depth));
 		if (initObject) {
 			avmMc._init(initObject);
 		}
@@ -716,29 +1016,29 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		focalPointRatio: number = 0.0): void {
 		const context = this.context;
 		// fillType = alToString(this.context, fillType);
-		const colorsNative = AVM1ArrayNative.mapToJSArray(colors, (item) => alToInt32(this.context, item));
-		const alphasNative = AVM1ArrayNative.mapToJSArray(alphas, (item) => alToNumber(this.context, item) / 100.0);
-		const ratiosNative = AVM1ArrayNative.mapToJSArray(ratios, (item) => alToNumber(this.context, item));
+		const colorsNative = AVM1ArrayNative.mapToJSArray(colors, (item) => alToInt32(context, item));
+		const alphasNative = AVM1ArrayNative.mapToJSArray(alphas, (item) => alToNumber(context, item) / 100.0);
+		const ratiosNative = AVM1ArrayNative.mapToJSArray(ratios, (item) => alToNumber(context, item));
 		const matrixNative = null;
 		if (isNullOrUndefined(matrix)) {
 			console.warn('[AVM1MovieClip] beginGradientFill not fully implemented');
 		}
-		spreadMethod = alToString(this.context, spreadMethod);
-		interpolationMethod = alToString(this.context, interpolationMethod);
-		focalPointRatio = alToNumber(this.context, focalPointRatio);
+		spreadMethod = alToString(context, spreadMethod);
+		interpolationMethod = alToString(context, interpolationMethod);
+		focalPointRatio = alToNumber(context, focalPointRatio);
 		this.graphics.beginGradientFill(fillType, colorsNative, alphasNative, ratiosNative, matrixNative,
 			spreadMethod, interpolationMethod, focalPointRatio);
 	}
 
 	public _callFrame(frame: any): any {
-		let script;
+		let scripts;
 		if (typeof frame === 'string') {
 			frame = frame.toLowerCase();
-			script = this.adaptee.timeline.getScriptForLabel(this.adaptee, frame);
+			scripts = this.adaptee.timeline.getScriptForLabel(this.adaptee, frame, true);
 		} else if (typeof frame === 'number')
-			script = this.adaptee.timeline.get_script_for_frame(this.adaptee, frame - 1);
-		if (script)
-			this.executeScript(script);
+			scripts = this.adaptee.timeline.get_script_for_frame(this.adaptee, frame - 1, true);
+		if (scripts)
+			this.executeScript(scripts);
 	}
 
 	public clear(): void {
@@ -754,11 +1054,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	 * reduces the time spent in looking up children. In some cases by two orders of magnitude.
 	 */
 	private _childrenByName: Map<string, AVM1MovieClip>;
-
-	private _insertChildAtDepth<T extends DisplayObject>(mc: T, depth: number): AVM1Object {
-		this.adaptee.addChildAtDepth(mc, depth);
-		return getAVM1Object(mc, <AVM1Context> this._avm1Context);
-	}
 
 	public _updateChildName(child: AVM1MovieClip, oldName: string, newName: string) {
 		if (oldName === newName) {
@@ -801,8 +1096,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public createEmptyMovieClip(name, depth): AVM1MovieClip {
 
-		// 	creates a new empty movieclip.
-		//	if a mc already exists for the name, but at different depth, it will create a new movieclip, and also keep the existing alive
+		//	creates a new empty movieclip.
+		//	if a mc already exists for the name,
+		//	but at different depth, it will create a new movieclip, and also keep the existing alive
 		//	if a mc already exists at same depth, it will replace the existing movieclip with the new one
 
 		name = alToString(this.context, name);
@@ -812,7 +1108,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		getAVM1Object(mc, <AVM1Context> this._avm1Context);
 
 		//console.log("createEmptyMovieClip", name, avm2AwayDepth(depth));
-		const avmMC: AVM1MovieClip = <AVM1MovieClip> this._insertChildAtDepth(mc, avm2AwayDepth(depth));
+		const avmMC: AVM1MovieClip = <AVM1MovieClip> this.addChildAtDepth(mc, avm2AwayDepth(depth));
 		avmMC.dynamicallyCreated = true;
 		this.registerScriptObject(mc, false);
 
@@ -829,7 +1125,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		text.name = name;
 		text.textFormat = new TextFormat();
 		getAVM1Object(text, <AVM1Context> this._avm1Context);
-		const myTF = <AVM1TextField> this._insertChildAtDepth(text, avm2AwayDepth(depth));
+		const myTF = <AVM1TextField> this.addChildAtDepth(text, avm2AwayDepth(depth));
 		this.registerScriptObject(text, false);
 		text.x = x;
 		text.y = y;
@@ -909,7 +1205,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		(<any>mc.adapter).placeObjectTag = (<any> this).placeObjectTag;
 		(<any>mc.adapter).initEvents = (<any> this).initEvents;
 
-		const avmMc = <AVM1MovieClip>parent._insertChildAtDepth(mc, avm2AwayDepth(depth));
+		const avmMc = <AVM1MovieClip>parent.addChildAtDepth(mc, avm2AwayDepth(depth));
 		// dynamicallyCreated needs to be set after adding child, otherwise it gets reset
 		avmMc.dynamicallyCreated = true;
 		avmMc._avm1Context = this._avm1Context;
@@ -973,7 +1269,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public getInstanceAtDepth(depth: number): AVM1MovieClip {
-		const child: DisplayObject = this.adaptee.getChildAtDepth(avm2AwayDepth(depth));
+		const child: DisplayObject = this._depth_childs[avm2AwayDepth(depth)];
 		if (!child) {
 			return null;
 		}
@@ -1006,7 +1302,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	public getNextHighestDepth(): number {
 		if (this.context.swfVersion < 7)
 			return 0;
-		return away2avmDepth(this.adaptee.getNextHighestDepth());
+		return away2avmDepth(this._nextHighestDepth);
 	}
 
 	public getRect(bounds): AVM1Object {
@@ -1179,16 +1475,16 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		focalPointRatio: number = 0.0): void {
 		const context = this.context;
 		// fillType = alToString(this.context, fillType);
-		const colorsNative = AVM1ArrayNative.mapToJSArray(colors, (item) => alToInt32(this.context, item));
-		const alphasNative = AVM1ArrayNative.mapToJSArray(alphas, (item) => alToNumber(this.context, item) / 100.0);
-		const ratiosNative = AVM1ArrayNative.mapToJSArray(ratios, (item) => alToNumber(this.context, item));
+		const colorsNative = AVM1ArrayNative.mapToJSArray(colors, (item) => alToInt32(context, item));
+		const alphasNative = AVM1ArrayNative.mapToJSArray(alphas, (item) => alToNumber(context, item) / 100.0);
+		const ratiosNative = AVM1ArrayNative.mapToJSArray(ratios, (item) => alToNumber(context, item));
 		const matrixNative = null;
 		if (isNullOrUndefined(matrix)) {
 			somewhatImplemented('AVM1MovieClip.lineGradientStyle');
 		}
-		spreadMethod = alToString(this.context, spreadMethod);
-		interpolationMethod = alToString(this.context, interpolationMethod);
-		focalPointRatio = alToNumber(this.context, focalPointRatio);
+		spreadMethod = alToString(context, spreadMethod);
+		interpolationMethod = alToString(context, interpolationMethod);
+		focalPointRatio = alToNumber(context, focalPointRatio);
 		this.graphics.lineGradientStyle(
 			fillType, colorsNative, alphasNative,
 			ratiosNative, matrixNative, spreadMethod,
@@ -1300,12 +1596,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		lock = alToBoolean(this.context, lock);
 		this._dragBounds = null;
 		if (left > right) {
-			var tmp = right;
+			const tmp = right;
 			right = left;
 			left = tmp;
 		}
 		if (top > bottom) {
-			var tmp = bottom;
+			const tmp = bottom;
 			bottom = top;
 			top = tmp;
 		}
@@ -1320,7 +1616,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		if (!this.isDragging) {
 			this.isDragging = true;
-			this.startDragPoint = this.adaptee.parent.transform.globalToLocal(new Point((<AVM1Stage> this.context.globals.Stage).avmStage.mouseX, (<AVM1Stage> this.context.globals.Stage).avmStage.mouseY));
+			this.startDragPoint = this.adaptee.parent.transform.globalToLocal(
+				new Point((<AVM1Stage> this.context.globals.Stage).avmStage.mouseX,
+					(<AVM1Stage> this.context.globals.Stage).avmStage.mouseY));
 			if (lock) {
 				this.adaptee.x = this.startDragPoint.x;
 				this.adaptee.y = this.startDragPoint.y;
@@ -1331,7 +1629,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			this.startDragMCPosition.y = this.adaptee.y;
 			AVM1Stage.avmStage.addEventListener('mouseMove3d', this.dragListenerDelegate);
 			AVM1Stage.avmStage.scene.mousePicker.dragEntity = this.adaptee;
-			MouseManager.getInstance(AVM1Stage.avmStage.scene.renderer.renderGroup.pickGroup).startDragObject(this.adaptee);
+			MouseManager.getInstance(AVM1Stage.avmStage.scene.renderer.renderGroup.pickGroup)
+				.startDragObject(this.adaptee);
 
 		}
 	}
@@ -1391,13 +1690,52 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		AVM1Stage.avmStage.removeEventListener('mouseMove3d', this.dragListenerDelegate);
 	}
 
+	public swapChildrenToDepth(child1: AVM1MovieClip, child2: AVM1MovieClip, depth1: number, depth2: number): void {
+
+		console.warn('[AVM1MovieClip] - swapChildrenToDepth not implemented');
+		/*delete this.adaptee._sessionID_childs[child1.adaptee._sessionID];
+		this._depth_childs[depth1]=child1.adaptee;
+		child1.adaptee._depthID=depth1;
+		child1.adaptee._sessionID=-1;
+		child1.adaptee._setParent(null);
+		child1.adaptee._setParent(this.adaptee);
+		child1.hasSwappedDepth=true;
+
+		let originalIdx1=this.getDepthIndexInternal(depth2);
+		if(child2){
+			let originalIdx2=this.getDepthIndexInternal(depth1);
+			const children=this.adaptee._children;
+			[children[originalIdx1], children[originalIdx2]] = [children[originalIdx2], children[originalIdx1]];
+			delete this.adaptee._sessionID_childs[child2.adaptee._sessionID];
+			this._depth_childs[depth2]=child2.adaptee;
+			child2.adaptee._depthID=depth1;
+			child2.adaptee._sessionID=-1;
+			child2.adaptee._setParent(null);
+			child2.adaptee._setParent(this.adaptee);
+			child2.hasSwappedDepth=true;
+		}
+		else{
+			delete this._depth_childs[depth2];
+		}
+
+		if (this.adaptee.name && parent) {
+			// we need to check if child registration must be updated
+			this.getLatestObjectForName(child1.adaptee.name.toLowerCase());
+			if(child2){
+				this.getLatestObjectForName(child2.adaptee.name.toLowerCase());
+			}
+		}*/
+
+	}
+
 	public swapDepths(target: any): void {
 		//return;
 		// if this is the scene, or if no parent exists, we do not want to do anything
 		if (this.adaptee.isAVMScene || !this.get_parent()) {
 			return;
 		}
-		const parent: MovieClip = <MovieClip>getAwayJSAdaptee(this.get_parent());
+		const parent: AVM1MovieClip = this.get_parent();
+		let targetChild: any = null;
 		if (!parent) {
 			console.warn('[AVM1MovieClip] swapDepth called for object with no parent');
 			return;
@@ -1407,27 +1745,20 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return;
 		}
 		if (typeof target === 'number') {
+			if (this.adaptee._depthID == target)
+				return;
+			targetChild = parent._depth_childs[target];
 			//console.log("swap to number", this.adaptee.name, target);
-			parent.swapDepths(this.adaptee, avm2AwayDepth(target));
+			//parent.swapChildToDepth(this.adaptee, avm2AwayDepth(target));
 		} else if (target.adaptee) {
-			target._blockedByScript = true;
-			target._ctBlockedByScript = true;
+			const targetParent = target.get_parent();
+			if (targetParent != parent)
+				return;
+			targetChild = target;
+			target = targetChild._depthID;
 			//console.log("swap to children", this.adaptee.name, target.adaptee.name);
-			parent.swapChildren(this.adaptee, target.adaptee);
 		}
-		this._blockedByScript = true;
-		this._ctBlockedByScript = true;
-
-		if (this.adaptee._depthID == this.initialDepth) {
-			this.hasSwappedDepth = false;
-		} else {
-			this.hasSwappedDepth = true;
-		}
-		if (this.adaptee.name && parent && parent.adapter) {
-			// the object has a name, and might be registered for access via script
-			// we need to check if that registration must be updated to another mc that has a higher depth
-			(<AVM1MovieClip>parent.adapter).getLatestObjectForName(this.adaptee.name.toLowerCase());
-		}
+		parent.swapChildrenToDepth(this, targetChild, target, this.adaptee._depthID);
 
 	}
 
