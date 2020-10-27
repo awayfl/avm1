@@ -758,11 +758,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			if (this.context.swfVersion < 8)
 				name = name.toLowerCase();
 
-			// todo:    not 100% sure about this
-			//          in MW (FP6) it looks like the prop needs to be deleted,
-			//          but in FPAWorld2 (FP11.2) this makes problems
-			if (this.context.swfVersion < 8)
-				this.alDeleteOwnProperty(name);
+			// todo: make sure this is correct for all cases
+			this.alDeleteOwnProperty(name);
 
 			if (this._childrenByName[name] && this._childrenByName[name].adaptee.id == child.id) {
 
