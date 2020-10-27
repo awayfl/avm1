@@ -45,7 +45,14 @@ export function copyAS3MatrixTo(m: Matrix, v: AVM1Object) {
 }
 
 export class AVM1Matrix extends AVM1Object {
-	constructor(context: AVM1Context, a: number = 1, b: number = 0, c: number = 0, d: number = 1, tx: number = 0, ty: number = 0) {
+	constructor(context: AVM1Context,
+		a: number = 1,
+		b: number = 0,
+		c: number = 0,
+		d: number = 1,
+		tx: number = 0,
+		ty: number = 0) {
+
 		super(context);
 		this.alPrototype = context.globals.Matrix.alGetPrototypeProperty();
 		this.alPut('a', a);
@@ -170,7 +177,11 @@ export class AVM1MatrixPrototype extends AVM1Object {
 		copyAS3MatrixTo(m, this);
 	}
 
-	public createGradientBox(width: number, height: number, rotation: number = 0, tx: number = 0, ty: number = 0): void {
+	public createGradientBox(width: number, height: number,
+		rotation: number = 0,
+		tx: number = 0,
+		ty: number = 0): void {
+
 		width = alCoerceNumber(this.context, width);
 		height = alCoerceNumber(this.context, height);
 		rotation = alCoerceNumber(this.context, rotation);

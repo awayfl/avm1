@@ -16,7 +16,7 @@
 
 //module Shumway.AVM1.Lib {
 
-import { jsGlobal, notImplemented, release, Debug, somewhatImplemented, warning, AVMStage } from '@awayfl/swf-loader';
+import { jsGlobal, notImplemented, release, Debug, somewhatImplemented, warning } from '@awayfl/swf-loader';
 
 import {
 	avm1BroadcastEvent, DEPTH_OFFSET, getAwayJSAdaptee, getAVM1Object, IAVM1SymbolBase,
@@ -49,27 +49,21 @@ import { AVM1ColorTransformFunction } from './AVM1ColorTransform';
 import { AVM1ExternalInterface } from './AVM1ExternalInterface';
 import { createFiltersClasses } from './AVM1Filters';
 import { URLLoaderEvent, AudioManager, URLRequest, URLLoader, URLLoaderDataFormat } from '@awayjs/core';
-import { MovieClip, FrameScriptManager, DisplayObject, DisplayObjectContainer, IDisplayObjectAdapter } from '@awayjs/scene';
+import { MovieClip, FrameScriptManager, DisplayObject,
+	DisplayObjectContainer, IDisplayObjectAdapter } from '@awayjs/scene';
 import { create, RandomSeed } from 'random-seed';
 
 import { AVM1Object } from '../runtime/AVM1Object';
 
 import { AVM1Selection } from './AVM1Selection';
-import { IAVMRandomProvider } from '../IAVMRandomProvider';
 import { ISoftKeyboardManager } from '../ISoftKeyboardManager';
 import { AVM1Function } from '../runtime/AVM1Function';
 import { AVM1ArrayNative } from '../natives';
+import { AVM1MatrixFunction } from './AVM1Matrix';
 
 const _escape: (str: string) => string = jsGlobal.escape;
 
 const _internalTimeouts: number[] = [];
-
-class AVM1MatrixFunction extends AVM1Object {
-	constructor(context: AVM1Context) {
-		super(context);
-	}
-
-}
 
 export class TraceLevel {
 	public static ALL: string='all';
@@ -149,10 +143,8 @@ export class AVM1Globals extends AVM1Object {
 
 		this._initBuiltins(context);
 
-		const swfVersion = context.swfVersion;
-		//if (swfVersion >= 8) {
 		this._initializeFlashObject(context);
-		//}
+
 	}
 
 	public flash: AVM1Object;
@@ -348,7 +340,7 @@ export class AVM1Globals extends AVM1Object {
 
 	public trace(expression: any): any {
 		if (this)
-			    (<any> this.context).actions.trace(expression);
+			(<any> this.context).actions.trace(expression);
 	}
 
 	public updateAfterEvent() {
@@ -473,10 +465,10 @@ export class AVM1Globals extends AVM1Object {
 		AVM1Broadcaster.initialize(context, this.Mouse);
 
 		// register own custom classes and class identifier
-		for (var k in AVM1Globals._registeredCustomClasses) {
+		for (const k in AVM1Globals._registeredCustomClasses) {
 			this.alPut(k, AVM1Globals._registeredCustomClasses[k]);
 		}
-		for (var k in AVM1Globals._registeredCustomClassInstances) {
+		for (const k in AVM1Globals._registeredCustomClassInstances) {
 			this.alPut(k, AVM1Globals._registeredCustomClassInstances[k]);
 		}
 	}
@@ -724,7 +716,7 @@ export class AVM1NativeActions {
 		const loader = new URLLoader();
 		//loader._ignoreDecodeErrors = true;
 		loader.dataFormat = 'variables'; // flash.net.URLLoaderDataFormat.VARIABLES;
-		var completeHandler = function (event: URLLoaderEvent): void {
+		const completeHandler = function (event: URLLoaderEvent): void {
 			loader.removeEventListener(URLLoaderEvent.LOAD_COMPLETE, completeHandler);
 			// If the response data is empty, URLLoader#data contains an empty string.
 			if (loader.dataFormat == URLLoaderDataFormat.VARIABLES) {
@@ -837,7 +829,7 @@ export class AVM1NativeActions {
 	public startDrag(target?, ...args: any[]): void {
 		const mc = <AVM1MovieClip> this.context.resolveTarget(target);
 		if (mc)
-			    mc.startDrag.apply(mc, args);
+			mc.startDrag.apply(mc, args);
 	}
 
 	public stop() {
