@@ -215,7 +215,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		}
 	}
 
-	public freeFromScript(): void{
+	public freeFromScript(): void {
 		super.freeFromScript();
 		this.enabled = true;
 		this.adaptee.mouseEnabled = false;
@@ -548,15 +548,6 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		return path;
 	}
 
-	public removeMovieClip() {
-		if (this.adaptee.isAVMScene) {
-			return; // let's not remove root symbol
-		}
-		if (this.adaptee.parent && away2avmDepth(this.adaptee._depthID) >= -1)
-			this.adaptee.parent.removeChild(this.adaptee);
-
-	}
-
 	private _avmTransform: AVM1Transform;
 
 	// transform is only available in FP8
@@ -682,7 +673,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	public getDepth() {
 		if (this.protoTypeChanged)
 			return null;
-		return away2avmDepth(this.adaptee._depthID);
+		return away2avmDepth(this.adaptee._avmDepthID);
 	}
 
 	public toString() {

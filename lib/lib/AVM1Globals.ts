@@ -49,7 +49,7 @@ import { AVM1ColorTransformFunction } from './AVM1ColorTransform';
 import { AVM1ExternalInterface } from './AVM1ExternalInterface';
 import { createFiltersClasses } from './AVM1Filters';
 import { URLLoaderEvent, AudioManager, URLRequest, URLLoader, URLLoaderDataFormat } from '@awayjs/core';
-import { MovieClip, FrameScriptManager, DisplayObject, DisplayObjectContainer } from '@awayjs/scene';
+import { MovieClip, FrameScriptManager, DisplayObject, DisplayObjectContainer, IDisplayObjectAdapter } from '@awayjs/scene';
 import { create, RandomSeed } from 'random-seed';
 
 import { AVM1Object } from '../runtime/AVM1Object';
@@ -179,11 +179,14 @@ export class AVM1Globals extends AVM1Object {
 			return this.registeredLevels[level];
 		getAVM1Object(root, this.context).adaptee;
 		AVM1Stage.avmStage.addChildAt(root, level);
+		if (root.adapter != root) {
+			(<IDisplayObjectAdapter>root.adapter).initAdapter();
+		}
 		this.registeredLevels[level] = root;
 		return root;
 	}
 
-	public _removeRoot(level: number): void{
+	public _removeRoot(level: number): void {
 		if (this.registeredLevels[level]) {
 			AVM1Stage.avmStage.removeChild(this.registeredLevels[level]);
 			delete this.registeredLevels[level];

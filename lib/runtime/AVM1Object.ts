@@ -67,7 +67,7 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	public initAdapter(): void {
 	}
 
-	public freeFromScript(): void{
+	public freeFromScript(): void {
 		this.protoTypeChanged = false;
 		this._blockedByScript = false;
 		this._ctBlockedByScript = false;

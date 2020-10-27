@@ -42,11 +42,11 @@ export class SharedObject {
 	public connect(myConnection: any , params: string = null): void {//todo NetConnection
 	}
 
-	public setDirty(propertyname: string): void{
+	public setDirty(propertyname: string): void {
 
 	}
 
-	public setProperty(propertyname: string, value: any): void{
+	public setProperty(propertyname: string, value: any): void {
 
 	}
 

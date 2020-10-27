@@ -18,8 +18,8 @@ import { DisplayObject as AwayDisplayObject } from '@awayjs/scene';
 export class AVM1Movie extends AwayDisplayObject {
 	_getLevelForRoot(root: AwayDisplayObject): number {return 0;}
 	_getRootForLevel(level: number): AwayDisplayObject {return null;}
-	_addRoot(level: number, root: AwayDisplayObject): void{}
-	_removeRoot(level: number): void{}
+	_addRoot(level: number, root: AwayDisplayObject): void {}
+	_removeRoot(level: number): void {}
 }
 export class ContextMenu {}
 export class ContextMenuItem {}
