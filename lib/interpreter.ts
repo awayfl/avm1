@@ -2466,8 +2466,8 @@ function avm1_0x4F_ActionSetMember(ectx: ExecutionContext, args?: [AVM1Object, s
 	const stack = ectx.stack;
 
 	const value = args ? args[2] : stack.pop();
-	let name = args ? args[1] : stack.pop();
-	let obj = args ? args[0] : stack.pop();
+	const name = args ? args[1] : stack.pop();
+	const obj = args ? args[0] : stack.pop();
 
 	if (isNullOrUndefined(obj)) {
 		// AVM1 just ignores sets on non-existant containers
