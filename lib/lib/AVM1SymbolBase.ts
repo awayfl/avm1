@@ -673,7 +673,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	public getDepth() {
 		if (this.protoTypeChanged)
 			return null;
-		return away2avmDepth(this.adaptee._depthID);
+		return away2avmDepth(this.adaptee._avmDepthID);
 	}
 
 	public toString() {

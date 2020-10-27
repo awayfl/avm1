@@ -132,9 +132,9 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 		if (this.adaptee.isAVMScene) {
 			return; // let's not remove root symbol
 		}
-		if (this.adaptee.parent && away2avmDepth(this.adaptee._depthID) >= -1) {
+		if (this.adaptee.parent && away2avmDepth(this.adaptee._avmDepthID) >= -1) {
 			const avm1parent: AVM1MovieClip = <AVM1MovieClip> this.adaptee.parent.adapter;
-			avm1parent.removeChildAtDepth(this.adaptee._depthID);
+			avm1parent.removeChildAtDepth(this.adaptee._avmDepthID);
 		}
 	}
 
