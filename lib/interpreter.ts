@@ -2482,25 +2482,6 @@ function avm1_0x4F_ActionSetMember(ectx: ExecutionContext, args?: [AVM1Object, s
 	if (typeof name === 'undefined')
 		return;
 
-	if (typeof name === 'string') {
-		const name_array = name.split('.');
-		if (name_array.length > 1) {
-			while (name_array.length > 1) {
-				const propName = name_array.shift();
-				const propObj = obj.alGet(propName);
-				if (propObj instanceof AVM1Object) {
-					obj = propObj;
-				} else {
-					avm1Warn('AVM1 warning: cannot set member \'' + name + '\' on super');
-					return;
-				}
-			}
-			if (name_array.length == 1) {
-				name = name_array[0];
-			}
-		}
-	}
-
 	as2SetProperty(ectx.context, obj, name, value);
 }
 
