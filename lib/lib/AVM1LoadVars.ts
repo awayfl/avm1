@@ -18,10 +18,10 @@ import { Debug, notImplemented, release, isNullOrUndefined, matchRedirect } from
 
 import { AVM1Context } from '../context';
 import {
-	alCoerceString, alDefineObjectProperties, alForEachProperty, alToString
+	alCoerceString, alDefineObjectProperties, alToString
 } from '../runtime';
 import { avm1BroadcastEvent } from './AVM1Utils';
-import { URLLoaderEvent as Event, URLLoader, URLRequest, URLLoaderEvent, LoaderEvent } from '@awayjs/core';
+import { URLLoaderEvent as Event, URLLoader, URLRequest } from '@awayjs/core';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Function } from '../runtime/AVM1Function';
 
@@ -33,8 +33,8 @@ export interface IAVM1DataObject {
 }
 
 export function loadAVM1DataObject(context: AVM1Context, url: string,
-								   method: string, contentType: string,
-								   data: any, target: IAVM1DataObject): void {
+	method: string, contentType: string,
+	data: any, target: IAVM1DataObject): void {
 
 	const request = new URLRequest(url);
 	const directUrl = request.url || '';
@@ -64,7 +64,7 @@ export function loadAVM1DataObject(context: AVM1Context, url: string,
 	}
 	const loader = new URLLoader();
 	loader.dataFormat = 'text'; // flash.net.URLLoaderDataFormat.TEXT;
-	var completeHandler = function (event: Event): void {
+	const completeHandler = function (event: Event): void {
 		loader.removeEventListener(Event.LOAD_COMPLETE, completeHandler);
 		release || Debug.assert(typeof loader.data === 'string');
 		avm1BroadcastEvent(context, target, 'onData', [loader.data]);
@@ -180,7 +180,7 @@ export class AVM1LoadVarsPrototype extends AVM1Object implements IAVM1DataObject
 	}
 
 	_toString(): string {
-		const context = this.context;
+		//const context = this.context;
 		/*var as3Variables = new context.sec.flash.net.URLVariables();
 		alForEachProperty(this, function (name) {
 			if (this.alHasOwnProperty(name)) {

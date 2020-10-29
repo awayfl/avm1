@@ -19,17 +19,11 @@ import { AVM1Context } from '../context';
 import { warning } from '@awayfl/swf-loader';
 import { IAVM1SymbolBase, wrapAVM1NativeClass } from './AVM1Utils';
 import { AVM1MovieClip } from './AVM1MovieClip';
-import { WaveAudio, AssetLibrary, Loader, AssetEvent, LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset } from '@awayjs/core';
-
-class SoundSymbol {
-
-}
+import { WaveAudio, AssetLibrary, Loader, AssetEvent,
+	LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset } from '@awayjs/core';
 
 class SoundChannel {
 	soundTransform: any;
-}
-class SoundTransform {
-
 }
 export class AVM1Sound extends AVM1Object {
 	static createAVM1Class(context: AVM1Context): AVM1Object {
@@ -122,7 +116,10 @@ export class AVM1Sound extends AVM1Object {
 	public loadSound(url: string, isStreaming: boolean): void {
 		if (isStreaming) {
 			this._playAfterLoading = true;
-			console.warn('[AVM1Sound] - loadSound called with isStreaming=true, but streaming not implemented yet', url, isStreaming);
+			console.warn(
+				'[AVM1Sound] - loadSound called with isStreaming=true, but streaming not implemented yet',
+				url, isStreaming
+			);
 		} else {
 			this._playAfterLoading = false;
 		}

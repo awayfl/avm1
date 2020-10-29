@@ -67,9 +67,9 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 	adaptee: TextFormat
 
 	public avm1Constructor(font?: string, size?: number, color?: number, bold?: boolean,
-						   italic?: boolean, underline?: boolean, url?: string, target?: string,
-						   align?: string, leftMargin?: number, rightMargin?: number,
-						   indent?: number, leading?: number) {
+		italic?: boolean, underline?: boolean, url?: string, target?: string,
+		align?: string, leftMargin?: number, rightMargin?: number,
+		indent?: number, leading?: number) {
 		const context = this.context;
 		font = (font == null) ? null : alToString(context, font);
 		size = (size == null) ? null : alToNumber(context, size);
@@ -269,7 +269,7 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 		result.alPut('height', textHeight);
 		result.alPut('textFieldWidth', textWidth + 4);
 		result.alPut('textFieldHeight', textHeight + 4);
-		const metrics = measureTextField.getLineMetrics(0);
+		//const metrics = measureTextField.getLineMetrics(0);
 		// todo: this causes compile errors:
 		//result.alPut('ascent', metrics.axGetPublicProperty('ascent'));
 		//result.alPut('descent',	metrics.axGetPublicProperty('descent'));

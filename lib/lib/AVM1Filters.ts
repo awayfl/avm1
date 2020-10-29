@@ -15,7 +15,7 @@
  */
 
 import {
-	alDefineObjectProperties, alNewObject, alToBoolean, alToNumber, alToString
+	alDefineObjectProperties, alNewObject
 } from '../runtime';
 import { AVM1Context } from '../context';
 import { AVM1Object } from '../runtime/AVM1Object';
@@ -67,7 +67,7 @@ class AVM1BitmapFilterPrototype extends AVM1Object {
 
 // Automates creation of the AVM1 filter classes.
 function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: AVM1Function,
-						   name: string, fields: string[]): void {
+	name: string, fields: string[]): void {
 	// Simple constructor for the class function.
 	function construct(args?: any[]): AVM1Object {
 		const as2Object = new AVM1Object(context);
@@ -120,7 +120,7 @@ function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: A
 
 	// Creates new prototype object and function for the class.
 	const proto = base.alGetPrototypeProperty();
-	var wrappedProto: AVM1BitmapFilterPrototype = Object.create(AVM1BitmapFilterPrototype.prototype);
+	const wrappedProto: AVM1BitmapFilterPrototype = Object.create(AVM1BitmapFilterPrototype.prototype);
 	AVM1Object.call(wrappedProto, context);
 	wrappedProto.alPrototype = proto;
 
@@ -238,10 +238,11 @@ export function createFiltersClasses(context: AVM1Context): AVM1Object {
 // 			release || Debug.assert(false, 'Unknown convertFromAS3Field type: ' + type);
 // 	}
 // }
-
+/*
 const knownFilters: string[] = ['BevelFilter', 'BlurFilter', 'ColorMatrixFilter',
 	'ConvolutionFilter', 'DisplacementMapFilter', 'DropShadowFilter', 'GlowFilter',
 	'GradientBevelFilter', 'GradientGlowFilter'];
+	*/
 
 // export function convertToAS3Filter(context: AVM1Context, as2Filter: AVM1Object): ASObject {
 // 	var proto = as2Filter ? as2Filter.alPrototype : null;

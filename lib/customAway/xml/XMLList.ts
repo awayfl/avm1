@@ -4,11 +4,15 @@ import { XML } from './XML';
  * can represent one or more XML objects or elements (including multiple nodes or attributes), so
  * you can call methods on the elements as a group or on the individual elements in the collection.
  * <p class="- topic/p ">If an XMLList object has only one XML element, you can use the XML class methods on the
- * XMLList object directly. In the following example, <codeph class="+ topic/ph pr-d/codeph ">example.two</codeph> is an XMLList
- * object of length 1, so you can call any XML method on it.</p><codeblock xml:space="preserve" class="+ topic/pre pr-d/codeblock ">
- * var example2 = &lt;example&gt;&lt;two&gt;2&lt;/two&gt;&lt;/example&gt;;</codeblock><p class="- topic/p ">If you attempt to use XML class methods with an XMLList object containing more than one XML
+ * XMLList object directly. In the following example,
+ * <codeph class="+ topic/ph pr-d/codeph ">example.two</codeph> is an XMLList
+ * object of length 1, so you can call any XML method on it.</p>
+ * <codeblock xml:space="preserve" class="+ topic/pre pr-d/codeblock ">
+ * var example2 = &lt;example&gt;&lt;two&gt;2&lt;/two&gt;&lt;/example&gt;;</codeblock>
+ * <p class="- topic/p ">If you attempt to use XML class methods with an XMLList object containing more than one XML
  * object, an exception is thrown; instead, iterate over the XMLList collection (using a
- * <codeph class="+ topic/ph pr-d/codeph ">for each..in</codeph> statement, for example) and apply the methods to each XML object in
+ * <codeph class="+ topic/ph pr-d/codeph ">
+ * for each..in</codeph> statement, for example) and apply the methods to each XML object in
  * the collection.</p>
  */
 export class XMLList {
@@ -191,7 +195,8 @@ export class XMLList {
 	 * Checks whether the XMLList object contains simple content. An XMLList object is
 	 * considered to contain simple content if one or more of the following
 	 * conditions is true:
-	 * The XMLList object is emptyThe XMLList object contains a single XML item with simple contentThe XMLList object contains no elements
+	 * The XMLList object is emptyThe XMLList object contains a single XML item with simple content
+	 * The XMLList object contains no elements
 	 * @return	If the XMLList contains simple content, then true; otherwise false.
 	 * @langversion	3.0
 	 * @playerversion	Flash 9

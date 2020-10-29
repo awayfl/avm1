@@ -64,7 +64,9 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		height = alToNumber(this.context, height);
 		transparent = arguments.length < 3 ? true : alToBoolean(this.context, transparent);
 		fillColor = arguments.length < 4 ? 0xFFFFFFFF : alToInt32(this.context, fillColor);
-		const awayObject = new BitmapData(width, height, transparent, fillColor, false, AVM1Stage.avmStage.scene.renderer.stage);
+		const awayObject = new BitmapData(
+			width, height, transparent, fillColor, false, AVM1Stage.avmStage.scene.renderer.stage
+		);
 		this.adaptee = awayObject;
 	}
 
@@ -115,15 +117,20 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		return (<BitmapData> this.adaptee).width;
 	}
 
-	public applyFilter(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object, filter: AVM1Object): number {
+	public applyFilter(sourceBitmap: AVM1BitmapData,
+		sourceRect: AVM1Object,
+		destPoint: AVM1Object,
+		filter: AVM1Object): number {
 		// TODO handle incorrect arguments
+		/*
 		const as3BitmapData = sourceBitmap.as3BitmapData;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
-		const as3DestPoint = toAS3Point(destPoint);
+		const as3DestPoint = toAS3Point(destPoint);*/
 		// var as3Filter = convertToAS3Filter(this.context, filter);
 
 		// todo 80pro
 		//this.as3BitmapData.applyFilter(as3BitmapData, as3SourceRect, as3DestPoint, as3Filter);
+		console.warn('[avm1/AVM1BitmapData] - applyFilter not implemented');
 		return 0;
 	}
 
@@ -144,11 +151,12 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		if (!(other instanceof AVM1BitmapData)) {
 			return false;
 		}
-		return true; // todo 80pro this.adaptee.compare((<AVM1BitmapData>other).adaptee);
+		console.warn('[avm1/AVM1BitmapData] - compare not implemented');
+		return true;
 	}
 
 	public copyChannel(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
-					   sourceChannel: number, destChannel: number): void {
+		sourceChannel: number, destChannel: number): void {
 		const as3BitmapData = sourceBitmap.as3BitmapData;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
 		const as3DestPoint = toAS3Point(destPoint);
@@ -158,22 +166,22 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	public copyPixels(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
-					  alphaBitmap?: AVM1BitmapData, alphaPoint?: AVM1Object,
-					  mergeAlpha?: boolean): void {
+		alphaBitmap?: AVM1BitmapData, alphaPoint?: AVM1Object,
+		mergeAlpha?: boolean): void {
 
 		if (!sourceBitmap) {
 			console.warn('[AVM1BitmapData::copyPixels] Empty source!');
 			return;
 		}
+		console.warn('[avm1/AVM1BitmapData] - copyPixels not implemented');
+		/*
 		const as3BitmapData = sourceBitmap.as3BitmapData;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
 		const as3DestPoint = toAS3Point(destPoint);
 		const as3AlphaData = alphaBitmap ? alphaBitmap.as3BitmapData : null;
 		const as3AlphaPoint = alphaPoint ? toAS3Point(alphaPoint) : null;
 		mergeAlpha = alToBoolean(this.context, mergeAlpha);
-
-		// todo: 80pro
-		//this.as3BitmapData.copyPixels(as3BitmapData, as3SourceRect, as3DestPoint, as3AlphaData,	as3AlphaPoint, mergeAlpha);
+		*/
 	}
 
 	dispose(): void {
@@ -181,7 +189,7 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	draw(source: AVM1Object | string, matrix?: AVM1Object, colorTransform?: AVM1ColorTransform, blendMode?: any,
-		 clipRect?: AVM1Object, smooth?: boolean): void {
+		clipRect?: AVM1Object, smooth?: boolean): void {
 
 		if (!source) {
 			console.warn('[AVM1BitmapData::draw] Empty source!');
@@ -229,12 +237,12 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		y = alCoerceNumber(this.context, y);
 		color = alToInt32(this.context, color);
 		// todo 80pro
-		Debug.notImplemented('AVM1BitmapData.floodFill');
+		console.warn('[avm1/AVM1BitmapData] - floodFill not implemented');
 		//this.adaptee.floodFill(x, y, color);
 	}
 
 	generateFilterRect(sourceRect: AVM1Object, filter: AVM1Object): AVM1Object {
-		Debug.notImplemented('AVM1BitmapData.generateFilterRect');
+		console.warn('[avm1/AVM1BitmapData] - generateFilterRect not implemented');
 		return undefined;
 	}
 
@@ -243,7 +251,7 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		color = alToInt32(this.context, color);
 		findColor = alToBoolean(this.context, findColor);
 		// todo 80pro
-		Debug.notImplemented('AVM1BitmapData.getColorBoundsRect');
+		console.warn('[avm1/AVM1BitmapData] - getColorBoundsRect not implemented');
 		/*
 		var rect = this.adaptee.getColorBoundsRect(mask, color, findColor);
 		return new AVM1Rectangle(this.context, rect.x, rect.y, rect.width, rect.height);
@@ -261,11 +269,9 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 
 	hitTest(firstPoint: AVM1Object, firstAlphaThreshold: number, secondObject: AVM1Object,
 		secondBitmapPoint?: AVM1Object, secondAlphaThreshold?: number): boolean {
-		Debug.somewhatImplemented('AVM1BitmapData.hitTest');
-		const as3FirstPoint = toAS3Point(firstPoint);
-		firstAlphaThreshold = alToInt32(this.context, firstAlphaThreshold);
-		// todo 80pro
-		Debug.notImplemented('AVM1BitmapData.hitTest');
+		//const as3FirstPoint = toAS3Point(firstPoint);
+		//firstAlphaThreshold = alToInt32(this.context, firstAlphaThreshold);
+		console.warn('[avm1/AVM1BitmapData] - hitTest not implemented');
 		return false;
 		/*
 		// TODO: Check for Rectangle, Point, Bitmap, or BitmapData here. Or whatever AVM1 allows.
@@ -279,12 +285,11 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 				as3SecondBitmapPoint);
 		}
 		secondAlphaThreshold = alToInt32(this.context, secondAlphaThreshold);
-		return this.adaptee.hitTest(as3FirstPoint, firstAlphaThreshold, as3SecondObject,	as3SecondBitmapPoint, secondAlphaThreshold);
 		*/
 	}
 
 	merge(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
-		  redMult: number, greenMult: number, blueMult: number, alphaMult: number): void {
+		redMult: number, greenMult: number, blueMult: number, alphaMult: number): void {
 		const as3BitmapData = sourceBitmap.as3BitmapData;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
 		const as3DestPoint = toAS3Point(destPoint);
@@ -298,23 +303,35 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	noise(randomSeed: number, low?: number, high?: number, channelOptions?: number,
-		  grayScale?: boolean): void {
+		grayScale?: boolean): void {
 		randomSeed = alToInt32(this.context, randomSeed);
 		low = arguments.length < 2 ? 0 : alToInt32(this.context, low);
 		high = arguments.length < 3 ? 255 : alToInt32(this.context, high);
 		channelOptions = arguments.length < 4 ? 1 | 2 | 4 : alToInt32(this.context, channelOptions);
 		grayScale = arguments.length < 5 ? false : alToBoolean(this.context, grayScale);
 
-		// todo 80pro
-		Debug.notImplemented('AVM1BitmapData.noise');
-		//this.adaptee.noise(randomSeed, low, high, channelOptions, grayScale);
+		console.warn('[avm1/AVM1BitmapData] - noise not implemented');
 	}
 
-	paletteMap(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object, redArray?: AVM1Object, greenArray?: AVM1Object, blueArray?: AVM1Object, alphaArray?: AVM1Object): void {
-		Debug.notImplemented('AVM1BitmapData.paletteMap');
+	paletteMap(sourceBitmap: AVM1BitmapData,
+		sourceRect: AVM1Object,
+		destPoint: AVM1Object,
+		redArray?: AVM1Object,
+		greenArray?: AVM1Object,
+		blueArray?: AVM1Object,
+		alphaArray?: AVM1Object): void {
+		console.warn('[avm1/AVM1BitmapData] - paletteMap not implemented');
 	}
 
-	perlinNoise(baseX: number, baseY: number, numOctaves: number, randomSeed: number, stitch: boolean, fractalNoise: boolean, channelOptions?: number, grayScale?: boolean, offsets?: AVM1Object): void {
+	perlinNoise(baseX: number,
+		baseY: number,
+		numOctaves: number,
+		randomSeed: number,
+		stitch: boolean,
+		fractalNoise: boolean,
+		channelOptions?: number,
+		grayScale?: boolean,
+		offsets?: AVM1Object): void {
 		baseX = alCoerceNumber(this.context, baseX);
 		baseY = alCoerceNumber(this.context, baseY);
 		numOctaves = alCoerceNumber(this.context, numOctaves);
@@ -323,36 +340,31 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 		fractalNoise = alToBoolean(this.context, fractalNoise);
 		channelOptions = channelOptions === undefined ? 7 : alCoerceNumber(this.context, channelOptions);
 		grayScale = alToBoolean(this.context, grayScale);
-		const as3Offsets = isNullOrUndefined(offsets) ? null : AVM1ArrayNative.mapToJSArray(offsets, (item) => alCoerceNumber(this.context, item), this);
+		/*const as3Offsets = isNullOrUndefined(offsets) ?
+			null : AVM1ArrayNative.mapToJSArray(offsets, (item) => alCoerceNumber(this.context, item), this);*/
 
-		// todo 80pro
-		Debug.notImplemented('AVM1BitmapData.perlinNoise');
-		//this.as3BitmapData.perlinNoise(baseX, baseY, numOctaves, randomSeed, stitch, fractalNoise, channelOptions, grayScale, as3Offsets);
+		console.warn('[avm1/AVM1BitmapData] - perlinNoise not implemented');
 	}
 
 	pixelDissolve(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
-				  randomSeed?: number, numberOfPixels?: number, fillColor?: number): number {
-		const as3BitmapData = sourceBitmap.as3BitmapData;
+		randomSeed?: number, numberOfPixels?: number, fillColor?: number): number {
+		//const as3BitmapData = sourceBitmap.as3BitmapData;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
-		const as3DestPoint = toAS3Point(destPoint);
+		//const as3DestPoint = toAS3Point(destPoint);
 		randomSeed = arguments.length < 4 ? 0 : alToInt32(this.context, randomSeed);
 		numberOfPixels = arguments.length < 5 ?
 			as3SourceRect.width * as3SourceRect.height / 30 :
 			alToInt32(this.context, numberOfPixels);
 		fillColor = arguments.length < 6 ? 0 : alToInt32(this.context, fillColor);
 
-		// todo 80pro
-		Debug.notImplemented('AVM1BitmapData.pixelDissolve');
+		console.warn('[avm1/AVM1BitmapData] - pixelDissolve not implemented');
 		return 0;
-		//return this.as3BitmapData.pixelDissolve(as3BitmapData, as3SourceRect, as3DestPoint,	randomSeed, numberOfPixels, fillColor);
 	}
 
 	scroll(x: number, y: number): void {
 		x = alCoerceNumber(this.context, x);
 		y = alCoerceNumber(this.context, y);
-		// todo 80pro
-		Debug.notImplemented('AVM1BitmapData.scroll');
-		//this.adaptee.scroll(x, y);
+		console.warn('[avm1/AVM1BitmapData] - scroll not implemented');
 	}
 
 	setPixel(x: number, y: number, color: number): void {
@@ -370,19 +382,17 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	threshold(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
-			  operation: string, threshold: number, color?: number, mask?: number,
-			  copySource?: boolean): number {
-		const as3BitmapData = sourceBitmap.as3BitmapData;
-		const as3SourceRect = toAS3Rectangle(sourceRect);
-		const as3DestPoint = toAS3Point(destPoint);
+		operation: string, threshold: number, color?: number, mask?: number,
+		copySource?: boolean): number {
+		//const as3BitmapData = sourceBitmap.as3BitmapData;
+		//const as3SourceRect = toAS3Rectangle(sourceRect);
+		//const as3DestPoint = toAS3Point(destPoint);
 		operation = alCoerceString(this.context, operation);
 		threshold = alToInt32(this.context, threshold);
 		color = arguments.length < 6 ? 0 : alToInt32(this.context, color);
 		mask = arguments.length < 7 ? 0xFFFFFFFF : alToInt32(this.context, mask);
 		copySource = arguments.length < 8 ? false : alToBoolean(this.context, copySource);
-		// todo 80pro
-		Debug.notImplemented('AVM1BitmapData.threshold');
+		console.warn('[avm1/AVM1BitmapData] - scroll not implemented');
 		return 0;
-		//return this.adaptee.threshold(as3BitmapData, as3SourceRect, as3DestPoint, operation,	threshold, color, mask, copySource);
 	}
 }

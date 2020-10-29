@@ -20,7 +20,11 @@ export class ProgressEvent extends EventBase {
 		return new ProgressEvent(this.type, null, null, this._byteLoaded, this._bytesTotal);
 	}
 
-	constructor (type: string, bubbles: boolean = true, cancelable: boolean = false, byteLoaded: number = 0, bytesTotal: number = 0) {
+	constructor (type: string,
+		bubbles: boolean = true,
+		cancelable: boolean = false,
+		byteLoaded: number = 0,
+		bytesTotal: number = 0) {
 		super(type);
 
 		this._byteLoaded = byteLoaded;

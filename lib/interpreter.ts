@@ -315,10 +315,6 @@ function as2GetType(v): string {
 	return type;
 }
 
-function as2ToAddPrimitive(context: AVM1Context, value: any): any {
-	return alToPrimitive(context, value);
-}
-
 /**
  * Performs "less" comparison of two arugments.
  * @returns {boolean} Returns true if x is less than y, otherwise false

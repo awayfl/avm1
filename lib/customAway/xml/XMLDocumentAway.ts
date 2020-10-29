@@ -30,8 +30,11 @@ export class XMLDocumentAway extends XMLNode {
 	}
 
 	/**
-	 * Creates a new XMLDocument object. You must use the constructor to create an XMLDocument object before you call any of the methods of the XMLDocument class.
-	 * Note: Use the createElement() and createTextNode() methods to add elements and text nodes to an XML document tree.
+	 * Creates a new XMLDocument object.
+	 * You must use the constructor to create an XMLDocument object
+	 * before you call any of the methods of the XMLDocument class.
+	 * Note: Use the createElement() and createTextNode() methods
+	 * to add elements and text nodes to an XML document tree.
 	 * @param	source	The XML text parsed to create the new XMLDocument object.
 	 */
 	constructor(source: string = null) {
@@ -66,7 +69,8 @@ export class XMLDocumentAway extends XMLNode {
 	public idMap: any;
 
 	/**
-	 * When set to true, text nodes that contain only white space are discarded during the parsing process. Text nodes with leading or trailing white space are unaffected. The default setting is false.
+	 * When set to true, text nodes that contain only white space are discarded during the parsing process.
+	 * Text nodes with leading or trailing white space are unaffected. The default setting is false.
 	  */
 	public ignoreWhite: boolean;
 
@@ -98,7 +102,11 @@ export class XMLDocumentAway extends XMLNode {
 	}
 
 	/**
-	 * Creates a new XML text node with the specified text. The new node initially has no parent, and text nodes cannot have children or siblings. This method returns a reference to the XMLDocument object that represents the new text node. This method and the XMLDocument.createElement() method are the constructor methods for creating nodes for an XMLDocument object.
+	 * Creates a new XML text node with the specified text. The new node initially has no parent,
+	 * and text nodes cannot have children or siblings.
+	 * This method returns a reference to the XMLDocument object that represents the new text node.
+	 * This method and the XMLDocument.createElement() method are the constructor methods
+	 * for creating nodes for an XMLDocument object.
 	 * @param	text	The text used to create the new text node.
 	 * @return	An XMLNode object.
 	 */
@@ -109,7 +117,8 @@ export class XMLDocumentAway extends XMLNode {
 
 	/**
 	 * Parses the XML text specified in the value parameter
-	 * and populates the specified XMLDocument object with the resulting XML tree. Any existing trees in the XMLDocument object are discarded.
+	 * and populates the specified XMLDocument object with the resulting XML tree.
+	 * Any existing trees in the XMLDocument object are discarded.
 	 * @param	source	The XML text to be parsed and passed to the specified XMLDocument object.
 	 */
 	public parseXML (source: string) {

@@ -16,11 +16,11 @@
 
 import { getAVM1Object,wrapAVM1NativeClass } from './AVM1Utils';
 import { AVM1Context, AVM1ActionsData } from '../context';
-import { EventDispatcher, AudioManager } from '@awayjs/core';
+import { EventDispatcher } from '@awayjs/core';
 import { MovieClip } from '@awayjs/scene';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1EventHandler } from './AVM1EventHandler';
-import { AVM1ClipEvents, notImplemented, somewhatImplemented, warning, release, assert } from '@awayfl/swf-loader';
+import { AVM1ClipEvents, notImplemented } from '@awayfl/swf-loader';
 import { AVM1MovieClip } from './AVM1MovieClip';
 import { ClipEventMappings,EventsListForButton } from './AVM1EventHandler';
 
@@ -31,17 +31,6 @@ class AVM1ButtonAction {
 	actionsBlock: AVM1ActionsData;
 }
 
-enum StateTransitions {
-	IdleToOverUp =      0x001, // roll over
-	OverUpToIdle =      0x002, // roll out
-	OverUpToOverDown =  0x004, // press
-	OverDownToOverUp =  0x008, // release
-	OverDownToOutDown = 0x010, // drag out
-	OutDownToOverDown = 0x020, // drag over
-	OutDownToIdle =     0x040, // release outside
-	IdleToOverDown =    0x080, // ???
-	OverDownToIdle =    0x100  // ???
-}
 /**
  * Key codes below 32 aren't interpreted as char codes, but are mapped to specific buttons instead.
  * This array uses the key code as the index and KeyboardEvent.keyCode values matching the
@@ -136,7 +125,8 @@ export class AVM1Button extends AVM1MovieClip {
 		for (let i = 0; i < actionsLength; i++) {
 			action = actions[i];
 			if (!action.actionsBlock) {
-				action.actionsBlock = context.actionsDataFactory.createActionsData(action.actionsData, 's' + nativeButton.id + 'e' + i);
+				action.actionsBlock = context.actionsDataFactory.createActionsData(
+					action.actionsData, 's' + nativeButton.id + 'e' + i);
 			}
 			if (action.keyCode) {
 				//requiredListeners['keyDown'] = this._keyDownHandler.bind(this);
@@ -149,7 +139,10 @@ export class AVM1Button extends AVM1MovieClip {
 					if (action.stateTransitionFlags & parseInt(key)) {
 						foundValidAction = true;
 						//console.log("added event for name:",buttonActionsMap[key].eventName)
-						requiredListeners[buttonActionsMap[key].eventName] = { handler:buttonActionsMap[key], boundListener:boundListener };
+						requiredListeners[buttonActionsMap[key].eventName] = {
+							handler:buttonActionsMap[key],
+							boundListener:boundListener
+						};
 					}
 				}
 				if (!foundValidAction) {
@@ -241,7 +234,8 @@ export class AVM1Button extends AVM1MovieClip {
 	protected _runAction(action: AVM1ButtonAction) {
 		const avm1Context = this._avm1Context;// (<LoaderInfo>this.adaptee.loaderInfo)._avm1Context;
 		if (this.adaptee.parent) {
-			(<AVM1Context>avm1Context).executeActions(action.actionsBlock,	getAVM1Object(this.adaptee.parent, this.context));
+			(<AVM1Context>avm1Context).executeActions(action.actionsBlock,
+				getAVM1Object(this.adaptee.parent, this.context));
 		}
 	}
 

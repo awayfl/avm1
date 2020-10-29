@@ -29,7 +29,7 @@ import { AVM1Function } from '../runtime/AVM1Function';
 import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
 import { ClipEventMappings, AVM1EventProps, AVM1KeyCodeMap } from './AVM1EventHandler';
 
-export var DEPTH_OFFSET = 16384;
+export const DEPTH_OFFSET = 16384;
 
 export interface IHasAS3ObjectReference {
 	adaptee: any;//80pro ASObject;
@@ -93,7 +93,7 @@ export function getAwayObjectOrTemplate<T extends DisplayObjectContainer>(obj: A
 	return <T>obj._as3ObjectTemplate;
 }
 
-export var BlendModesMap = [undefined, 'normal', 'layer', 'multiply',
+export const BlendModesMap = [undefined, 'normal', 'layer', 'multiply',
 	'screen', 'lighten', 'darken', 'difference', 'add', 'subtract', 'invert',
 	'alpha', 'erase', 'overlay', 'hardlight'];
 
@@ -116,7 +116,8 @@ export function avm1HasEventProperty(context: AVM1Context, target: any, property
 	});
 }
 
-export function avm1BroadcastNativeEvent(context: AVM1Context, target: any, propertyName: string, args: any[] = null): void {
+export function avm1BroadcastNativeEvent(
+	context: AVM1Context, target: any, propertyName: string, args: any[] = null): void {
 	//console.log("avm1BroadcastNativeEvent", propertyName)
 	const handler: AVM1Function = target.alGet(propertyName);
 	if (handler instanceof AVM1Function) {
@@ -222,7 +223,8 @@ export function getAVM1Object<T extends AVM1Object> (awayObject: DisplayObject, 
 
 }
 
-export function wrapAVM1NativeMembers(context: AVM1Context, wrap: AVM1Object, obj: any, members: string[], prefixFunctions: boolean = false): void  {
+export function wrapAVM1NativeMembers(
+	context: AVM1Context, wrap: AVM1Object, obj: any, members: string[], prefixFunctions: boolean = false): void  {
 	function wrapFunction(fn) {
 		if (isNullOrUndefined(fn)) {
 			return undefined;
@@ -259,7 +261,7 @@ export function wrapAVM1NativeMembers(context: AVM1Context, wrap: AVM1Object, ob
 			const setterName = 'set' + memberName[0].toUpperCase() + memberName.slice(1, -1);
 			const setter = obj[setterName];
 			release || Debug.assert(getter || setter, 'define getter or setter');
-			var desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.ACCESSOR |
+			const desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.ACCESSOR |
 				AVM1PropertyFlags.DONT_DELETE |
 				AVM1PropertyFlags.DONT_ENUM,
 			null, wrapFunction(getter), wrapFunction(setter));
@@ -280,7 +282,7 @@ export function wrapAVM1NativeMembers(context: AVM1Context, wrap: AVM1Object, ob
 		if (typeof value === 'function') {
 			value = wrapFunction(value);
 		}
-		var desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA |
+		const desc = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA |
 			AVM1PropertyFlags.DONT_DELETE |
 			AVM1PropertyFlags.DONT_ENUM,
 		value);
@@ -288,8 +290,10 @@ export function wrapAVM1NativeMembers(context: AVM1Context, wrap: AVM1Object, ob
 	});
 }
 
-export function wrapAVM1NativeClass(context: AVM1Context, wrapAsFunction: boolean, cls: typeof AVM1Object, staticMembers: string[], members: string[], call?: Function, cstr?: Function): AVM1Object  {
-	var wrappedFn = wrapAsFunction ?
+export function wrapAVM1NativeClass(
+	context: AVM1Context, wrapAsFunction: boolean, cls: typeof AVM1Object,
+	staticMembers: string[], members: string[], call?: Function, cstr?: Function): AVM1Object  {
+	const wrappedFn = wrapAsFunction ?
 		new AVM1NativeFunction(context, call || function () { }, function () {
 			// Creating simple AVM1 object
 			const obj = new cls(context);
@@ -302,7 +306,7 @@ export function wrapAVM1NativeClass(context: AVM1Context, wrapAsFunction: boolea
 		}) :
 		new AVM1Object(context);
 	wrapAVM1NativeMembers(context, wrappedFn, cls, staticMembers, true);
-	var wrappedPrototype = new cls(context);
+	const wrappedPrototype = new cls(context);
 	wrappedPrototype.alPrototype = context.builtins.Object.alGetPrototypeProperty();
 	wrapAVM1NativeMembers(context, wrappedPrototype, cls.prototype, members, false);
 	alDefineObjectProperties(wrappedFn, {
@@ -319,9 +323,8 @@ export function wrapAVM1NativeClass(context: AVM1Context, wrapAsFunction: boolea
 	return wrappedFn;
 }
 
-export function initializeAVM1Object(awayObject: any,
-									 context: AVM1Context,
-									 placeObjectTag: any) {
+export function initializeAVM1Object(
+	awayObject: any, context: AVM1Context, placeObjectTag: any) {
 	const instanceAVM1 = <AVM1SymbolBase<DisplayObjectContainer>>getAVM1Object(awayObject, context);
 	release || Debug.assert(instanceAVM1);
 
@@ -345,7 +348,8 @@ export function initializeAVM1Object(awayObject: any,
 		swfEvent = events[j];
 		actionsData;
 		if (swfEvent.actionsBlock) {
-			actionsData = context.actionsDataFactory.createActionsData(swfEvent.actionsBlock,'s' + placeObjectTag.symbolId + 'd' + placeObjectTag.depth + 'e' + j);
+			actionsData = context.actionsDataFactory.createActionsData(
+				swfEvent.actionsBlock,'s' + placeObjectTag.symbolId + 'd' + placeObjectTag.depth + 'e' + j);
 			swfEvent.actionsBlock = null;
 			swfEvent.compiled = actionsData;
 		} else {
@@ -415,7 +419,6 @@ export function avm2AwayDepth(value: number): number {
 export function away2avmDepth(value: number): number {
 	return value - 1;
 }
-function clipEventHandler(actionsData: AVM1ActionsData,
-						  receiver: IAVM1SymbolBase) {
+function clipEventHandler(actionsData: AVM1ActionsData, receiver: IAVM1SymbolBase) {
 	return receiver.context.executeActions(actionsData, receiver);
 }

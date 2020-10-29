@@ -1,4 +1,3 @@
-
 import {
 	alCoerceString, alToBoolean, alToInteger, alToNumber,
 	AVM1PropertyFlags
@@ -8,8 +7,9 @@ import {
 	IAVM1SymbolBase, toTwipFloor, toTwipRound, away2avmDepth
 } from './AVM1Utils';
 import { AVM1Context, IAVM1EventPropertyObserver } from '../context';
-import { isNullOrUndefined, MapObject, notImplemented, somewhatImplemented, warning, release, assert } from '@awayfl/swf-loader';
-import { DisplayObjectContainer, IFilter } from '@awayjs/scene';
+import { isNullOrUndefined, MapObject, notImplemented,
+	somewhatImplemented, warning, release, assert } from '@awayfl/swf-loader';
+import { DisplayObjectContainer } from '@awayjs/scene';
 import { AVM1MovieClip } from './AVM1MovieClip';
 import { AVM1Rectangle, toAS3Rectangle } from './AVM1Rectangle';
 import { Box } from '@awayjs/core';
@@ -22,7 +22,8 @@ import { AVM1Stage } from './AVM1Stage';
 import { AVM1Transform } from './AVM1Transform';
 import { AVM1Function } from '../runtime/AVM1Function';
 
-export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object implements IAVM1SymbolBase, IAVM1EventPropertyObserver {
+export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
+	implements IAVM1SymbolBase, IAVM1EventPropertyObserver {
 	adaptee: T;
 	_as3ObjectTemplate: any;
 
@@ -227,7 +228,8 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		let cnt = this._onClipEventsListeners.length;
 		while (cnt > 0) {
 			cnt--;
-			this.removeEventListenerOnAdapter(this._onClipEventsListeners[cnt].event, this._onClipEventsListeners[cnt].callback);
+			this.removeEventListenerOnAdapter(
+				this._onClipEventsListeners[cnt].event, this._onClipEventsListeners[cnt].callback);
 		}
 
 		this._onClipEventsListeners = [];
@@ -245,7 +247,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public onEventPropertyModified(propertyName: string) {
-		var propertyName = this.context.normalizeName(propertyName);
+		propertyName = this.context.normalizeName(propertyName);
 		const event = this._eventsMap[propertyName];
 		this._updateEvent(event);
 	}
@@ -263,25 +265,27 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 
 	public setEnabledListener(value: any) {
 		if (value !== false && value !== 0) {
-			for (var key in this._eventsListeners) {
+			for (const key in this._eventsListeners) {
 				if (this._eventHandlers[key].allowDisable) {
 					this.addEventListenerOnAdapter(this._eventHandlers[key], <any> this._eventsListeners[key]);
 				}
 			}
-			for (var key in this._onClipEventsListeners) {
+			for (const key in this._onClipEventsListeners) {
 				if (this._onClipEventsListeners[key].event.allowDisable) {
-					this.addEventListenerOnAdapter(this._onClipEventsListeners[key].event, <any> this._onClipEventsListeners[key].callback);
+					this.addEventListenerOnAdapter(
+						this._onClipEventsListeners[key].event, <any> this._onClipEventsListeners[key].callback);
 				}
 			}
 		} else {
-			for (var key in this._eventsListeners) {
+			for (const key in this._eventsListeners) {
 				if (this._eventHandlers[key].allowDisable) {
 					this.removeEventListenerOnAdapter(this._eventHandlers[key], <any> this._eventsListeners[key]);
 				}
 			}
-			for (var key in this._onClipEventsListeners) {
+			for (const key in this._onClipEventsListeners) {
 				if (this._onClipEventsListeners[key].event.allowDisable) {
-					this.removeEventListenerOnAdapter(this._onClipEventsListeners[key].event, <any> this._onClipEventsListeners[key].callback);
+					this.removeEventListenerOnAdapter(
+						this._onClipEventsListeners[key].event, <any> this._onClipEventsListeners[key].callback);
 				}
 			}
 		}
@@ -345,7 +349,9 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_height() {
-		const box: Box = PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.view).getBoundsPicker(this.adaptee.partition).getBoxBounds(this.adaptee);
+		const box: Box = PickGroup.getInstance(
+			(<AVM1Stage> this.context.globals.Stage).avmStage.scene.view).getBoundsPicker(this.adaptee.partition)
+			.getBoxBounds(this.adaptee);
 		return (box == null) ? 0 : toTwipFloor(box.height);
 	}
 
@@ -357,7 +363,9 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		if (isNaN(value))
 			return;
 
-		PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.view).getBoundsPicker(this.adaptee.partition).height = value;
+		PickGroup.getInstance(
+			(<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
+			.getBoundsPicker(this.adaptee.partition).height = value;
 	}
 
 	public get_highquality(): number {
@@ -594,7 +602,9 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_width(): number {
-		const box: Box = PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.view).getBoundsPicker(this.adaptee.partition).getBoxBounds(this.adaptee);
+		const box: Box = PickGroup.getInstance(
+			(<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
+			.getBoundsPicker(this.adaptee.partition).getBoxBounds(this.adaptee);
 
 		return (box == null) ? 0 : toTwipRound(box.width);
 	}
@@ -607,7 +617,9 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		if (isNaN(value))
 			return;
 
-		PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.view).getBoundsPicker(this.adaptee.partition).width = value;
+		PickGroup.getInstance(
+			(<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
+			.getBoundsPicker(this.adaptee.partition).width = value;
 	}
 
 	public get_x(): number {

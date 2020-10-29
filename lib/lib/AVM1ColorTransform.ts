@@ -15,7 +15,7 @@
  */
 
 //module Shumway.AVM1.Lib {
-import { alCoerceNumber, alDefineObjectProperties, alToInt32 } from '../runtime';
+import { alCoerceNumber, alDefineObjectProperties } from '../runtime';
 import { AVM1Context } from '../context';
 import { ColorTransform, ColorUtils } from '@awayjs/core';
 import { AVM1Object } from '../runtime/AVM1Object';

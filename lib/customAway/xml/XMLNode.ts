@@ -76,7 +76,8 @@ export class XMLNode {
 	 * Level 1 recommendation:
 	 * http://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/level-one-core.html.
 	 * The following table lists the values:4CDATA_SECTION_NODEInteger valueDefined
-	 * constant1ELEMENT_NODE3TEXT_NODE5ENTITY_REFERENCE_NODE7PROCESSING_INSTRUCTION_NODE9DOCUMENT_NODE11DOCUMENT_FRAGMENT_NODEIn Flash Player, the built-in XMLNode class only supports XMLNodeType.ELEMENT_NODE and
+	 * constant1ELEMENT_NODE3TEXT_NODE5ENTITY_REFERENCE_NODE7PROCESSING_INSTRUCTION_NODE9DOCUMENT_NODE11
+	 * DOCUMENT_FRAGMENT_NODEIn Flash Player, the built-in XMLNode class only supports XMLNodeType.ELEMENT_NODE and
 	 * XMLNodeType.TEXT_NODE.
 	 */
 	public nodeType: number;
@@ -164,7 +165,8 @@ export class XMLNode {
 	 * xmlns="http://www.example.com/"). If there is a default namespace, the value of
 	 * the namespaceURI property is the value of the default namespace.
 	 * If there is no default namespace, the namespaceURI property for
-	 * that node is an empty string ("").You can use the getNamespaceForPrefix() method to identify the namespace associated with a
+	 * that node is an empty string ("").You can use the getNamespaceForPrefix()
+	 * method to identify the namespace associated with a
 	 * specific prefix. The namespaceURI property returns the prefix associated with the node name.
 	 */
 	public get namespaceURI (): string {
@@ -209,7 +211,8 @@ export class XMLNode {
 	 * all have a value of null. If the deep parameter is set to
 	 * false, or the my_xml node has no child nodes,
 	 * firstChild and lastChild are also null.
-	 * @param	deep	A Boolean value; if set to true, the children of the specified XML object will be recursively cloned.
+	 * @param	deep	A Boolean value; if set to true,
+	 * the children of the specified XML object will be recursively cloned.
 	 * @return	An XMLNode Object.
 	 */
 	public cloneNode (deep: boolean): XMLNode {
@@ -223,7 +226,8 @@ export class XMLNode {
 	 * necessary, and returns the namespace URI of the first xmlns declaration for the
 	 * given prefix.
 	 *
-	 *   If no namespace is defined for the specified prefix, the method returns null.If you specify an empty string ("") as the prefix and there is a
+	 *   If no namespace is defined for the specified prefix,
+	 * the method returns null.If you specify an empty string ("") as the prefix and there is a
 	 * default namespace defined for the node (as in xmlns="http://www.example.com/"),
 	 * the method returns that default namespace URI.
 	 * @param	prefix	The prefix for which the method returns the associated namespace.

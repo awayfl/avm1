@@ -714,7 +714,8 @@ enum AVM1ArraySortOnOptions {
 const sortArray = function(arr_in: any, comparefn?: AVM1Function): AVM1Object {
 	const arr = alEnsureType<AVM1ArrayNative>(arr_in, AVM1ArrayNative).value;
 	if (!alIsFunction(comparefn)) {
-		const doNumeric = typeof comparefn === 'number' && (comparefn & AVM1ArraySortOnOptions.NUMERIC || comparefn == -1);
+		const doNumeric = typeof comparefn === 'number'
+			&& (comparefn & AVM1ArraySortOnOptions.NUMERIC || comparefn == -1);
 		const doDescending = typeof comparefn === 'number' && (comparefn & AVM1ArraySortOnOptions.DESCENDING);
 		if (doNumeric) {
 			arr.sort(function(a,b) {
@@ -877,7 +878,7 @@ export class AVM1ArrayPrototype extends AVM1Object {
 		if (this instanceof AVM1ArrayNative) {
 			// Faster case for native array implementation
 			const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
-			for (var i = 0; i < items.length; i++) {
+			for (let i = 0; i < items.length; i++) {
 				if (items[i] instanceof AVM1ArrayNative) {
 					items[i] = alEnsureType<AVM1ArrayNative>(items[i], AVM1ArrayNative).value;
 				}
@@ -890,7 +891,7 @@ export class AVM1ArrayPrototype extends AVM1Object {
 		const a = [];
 		let e: any = this;
 		let isArrayObject = alIsArrayLike(this.context, this);
-		var i = 0;
+		let i = 0;
 		while (true) {
 			if (isArrayObject) {
 				alIterateArray(this.context, e, (value) => a.push(value));
@@ -1031,7 +1032,7 @@ export class AVM1ArrayPrototype extends AVM1Object {
 		if (deleteCount || typeof deleteCount === 'number')
 			deleteCount = alToInteger(this.context, deleteCount);
 		else
-		    deleteCount = length - start;
+			deleteCount = length - start;
 		if (this instanceof AVM1ArrayNative) {
 			// Faster case for native array implementation
 			const arr = alEnsureType<AVM1ArrayNative>(this, AVM1ArrayNative).value;
@@ -1039,26 +1040,26 @@ export class AVM1ArrayPrototype extends AVM1Object {
 				Array.prototype.splice.apply(arr, [start, deleteCount].concat(items)));
 		}
 		const a = [];
-		for (var i = 0; i < deleteCount; i++) {
+		for (let i = 0; i < deleteCount; i++) {
 			if (this.alHasProperty(start + i)) {
 				a[i] = this.alGet(start + i);
 			}
 		}
 		const delta = items.length - deleteCount;
 		if (delta < 0) {
-			for (var i = start - delta; i < length; i++) {
+			for (let i = start - delta; i < length; i++) {
 				if (this.alHasProperty(i)) {
 					this.alPut(i + delta, this.alGet(i));
 				} else {
 					this.alDeleteProperty(i + delta);
 				}
 			}
-			for (var i = delta; i < 0; i++) {
+			for (let i = delta; i < 0; i++) {
 				this.alDeleteProperty(length + i);
 			}
 		} else if (delta > 0) {
 			// TODO check overflow
-			for (var i = length - 1; i >= start + delta; i--) {
+			for (let i = length - 1; i >= start + delta; i--) {
 				if (this.alHasProperty(i)) {
 					this.alPut(i + delta, this.alGet(i));
 				} else {
@@ -1066,7 +1067,7 @@ export class AVM1ArrayPrototype extends AVM1Object {
 				}
 			}
 		}
-		for (var i = 0; i < items.length; i++) {
+		for (let i = 0; i < items.length; i++) {
 			this.alPut(start + i, items[i]);
 		}
 		this.alPut('length', length + delta);
@@ -1109,7 +1110,8 @@ export class AVM1ArrayPrototype extends AVM1Object {
 		// TODO revisit this code
 		const optionsVal: number = optionsList[0];
 		release || Debug.assertNotImplemented(!(optionsVal & AVM1ArraySortOnOptions.UNIQUESORT), 'UNIQUESORT');
-		release || Debug.assertNotImplemented(!(optionsVal & AVM1ArraySortOnOptions.RETURNINDEXEDARRAY), 'RETURNINDEXEDARRAY');
+		release || Debug.assertNotImplemented(
+			!(optionsVal & AVM1ArraySortOnOptions.RETURNINDEXEDARRAY), 'RETURNINDEXEDARRAY');
 
 		const comparer = (a, b) => {
 			while (a instanceof AVM1ArrayNative) {
@@ -1127,7 +1129,7 @@ export class AVM1ArrayPrototype extends AVM1Object {
 			for (let i = 0; i < fieldNamesList.length; i++) {
 				const aField = aObj.alGet(fieldNamesList[i]);
 				const bField = bObj.alGet(fieldNamesList[i]);
-				var result;
+				let result;
 				if (optionsList[i] & AVM1ArraySortOnOptions.NUMERIC) {
 					const aNum = alToNumber(context, aField);
 					const bNum = alToNumber(context, bField);
@@ -1164,7 +1166,7 @@ export class AVM1ArrayPrototype extends AVM1Object {
 		let length = alToInt32(this.context, this.alGet('length')) >>> 0;
 		const insertCount = items.length;
 		// TODO check overflow
-		for (var i = length - 1; i >= 0; i--) {
+		for (let i = length - 1; i >= 0; i--) {
 			if (this.alHasProperty(i)) {
 				this.alPut(i + insertCount, this.alGet(i));
 			} else {
@@ -1172,7 +1174,7 @@ export class AVM1ArrayPrototype extends AVM1Object {
 			}
 		}
 
-		for (var i = 0; i < items.length; i++) {
+		for (let i = 0; i < items.length; i++) {
 			this.alPut(i, items[i]);
 		}
 		length += insertCount;

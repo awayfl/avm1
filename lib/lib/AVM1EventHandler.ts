@@ -21,37 +21,40 @@ export class AVM1EventProps {
  * specific keys as the value.
  * @type {number[]}
  */
-export var AVM1KeyCodeMap = [-1, 37, 39, 36, 35, 45, 46, -1, 8, -1, -1, -1, -1, 13, 38, 40, 33, 34, 9, 27];
-export var ClipEventMappings = Object.create(null);
+export const AVM1KeyCodeMap = [-1, 37, 39, 36, 35, 45, 46, -1, 8, -1, -1, -1, -1, 13, 38, 40, 33, 34, 9, 27];
+export const ClipEventMappings = Object.create(null);
 
-ClipEventMappings[AVM1ClipEvents.Construct] = true;
-ClipEventMappings[AVM1ClipEvents.Initialize] = true;
+const cem = ClipEventMappings;
+const EH = AVM1EventHandler;
 
-ClipEventMappings[AVM1ClipEvents.KeyPress] = new AVM1EventHandler('onKey', KeyboardEvent.KEYDOWN, true, true, false, false);
+cem[AVM1ClipEvents.Construct] = true;
+cem[AVM1ClipEvents.Initialize] = true;
 
-ClipEventMappings[AVM1ClipEvents.Load] = new AVM1EventHandler('onLoad', 'load', false, false, false, false);
-ClipEventMappings[AVM1ClipEvents.Unload] = new AVM1EventHandler('onUnload', 'unload', false, false, false, false),
-ClipEventMappings[AVM1ClipEvents.Data] = new AVM1EventHandler('onData', 'data', false, false, false, false),
-ClipEventMappings[AVM1ClipEvents.EnterFrame] = new AVM1EventHandler('onEnterFrame', 'enterFrame', false, false, false, false),
-ClipEventMappings[AVM1ClipEvents.KeyDown] = new AVM1EventHandler('onKeyDown', KeyboardEvent.KEYDOWN, true, true, false, false);
-ClipEventMappings[AVM1ClipEvents.KeyUp] = new AVM1EventHandler('onKeyUp', KeyboardEvent.KEYUP, true, true, false, false);
+cem[AVM1ClipEvents.KeyPress] = new EH('onKey', KeyboardEvent.KEYDOWN, true, true, false, false);
 
-ClipEventMappings[AVM1ClipEvents.MouseMove] = new AVM1EventHandler('onMouseMove', MouseEvent.MOUSE_MOVE, true, true, true, false);
-ClipEventMappings[AVM1ClipEvents.MouseDown] = new AVM1EventHandler('onMouseDown', MouseEvent.MOUSE_DOWN, true, true, true, false);
-ClipEventMappings[AVM1ClipEvents.MouseUp] = new AVM1EventHandler('onMouseUp', MouseEvent.MOUSE_UP, true, true, true, false);
-ClipEventMappings[AVM1ClipEvents.Press] = new AVM1EventHandler('onPress', MouseEvent.MOUSE_DOWN, false, true, true, true);
-ClipEventMappings[AVM1ClipEvents.Release] = new AVM1EventHandler('onRelease', MouseEvent.MOUSE_UP, false, true, true, true);
-ClipEventMappings[AVM1ClipEvents.ReleaseOutside] = new AVM1EventHandler('onReleaseOutside', MouseEvent.MOUSE_UP_OUTSIDE, false, true, true, true);
-ClipEventMappings[AVM1ClipEvents.RollOver] = new AVM1EventHandler('onRollOver', MouseEvent.MOUSE_OVER, false, true, true, true);
-ClipEventMappings[AVM1ClipEvents.RollOut] = new AVM1EventHandler('onRollOut', MouseEvent.MOUSE_OUT, false, true, true, true);
-ClipEventMappings[AVM1ClipEvents.DragOver] = new AVM1EventHandler('onDragOver', MouseEvent.DRAG_OVER, false, true, true, true);
-ClipEventMappings[AVM1ClipEvents.DragOut] = new AVM1EventHandler('onDragOut', MouseEvent.DRAG_OUT, false, true, true, true);
+cem[AVM1ClipEvents.Load] = new EH('onLoad', 'load', false, false, false, false);
+cem[AVM1ClipEvents.Unload] = new EH('onUnload', 'unload', false, false, false, false),
+cem[AVM1ClipEvents.Data] = new EH('onData', 'data', false, false, false, false),
+cem[AVM1ClipEvents.EnterFrame] = new EH('onEnterFrame', 'enterFrame', false, false, false, false),
+cem[AVM1ClipEvents.KeyDown] = new EH('onKeyDown', KeyboardEvent.KEYDOWN, true, true, false, false);
+cem[AVM1ClipEvents.KeyUp] = new EH('onKeyUp', KeyboardEvent.KEYUP, true, true, false, false);
 
-const setFocusEventMapping: AVM1EventHandler = new AVM1EventHandler('onSetFocus', FocusEvent.FOCUS_IN, false, true, false, false);
-const unFocusEventMapping: AVM1EventHandler = new AVM1EventHandler('onKillFocus', FocusEvent.FOCUS_OUT, false, true, false, false);
-const onChangedEventMapping: AVM1EventHandler = new AVM1EventHandler('onChanged', TextfieldEvent.CHANGED, false, true, false, false);
+cem[AVM1ClipEvents.MouseMove] = new EH('onMouseMove', MouseEvent.MOUSE_MOVE, true, true, true, false);
+cem[AVM1ClipEvents.MouseDown] = new EH('onMouseDown', MouseEvent.MOUSE_DOWN, true, true, true, false);
+cem[AVM1ClipEvents.MouseUp] = new EH('onMouseUp', MouseEvent.MOUSE_UP, true, true, true, false);
+cem[AVM1ClipEvents.Press] = new EH('onPress', MouseEvent.MOUSE_DOWN, false, true, true, true);
+cem[AVM1ClipEvents.Release] = new EH('onRelease', MouseEvent.MOUSE_UP, false, true, true, true);
+cem[AVM1ClipEvents.ReleaseOutside] = new EH('onReleaseOutside', MouseEvent.MOUSE_UP_OUTSIDE, false, true, true, true);
+cem[AVM1ClipEvents.RollOver] = new EH('onRollOver', MouseEvent.MOUSE_OVER, false, true, true, true);
+cem[AVM1ClipEvents.RollOut] = new EH('onRollOut', MouseEvent.MOUSE_OUT, false, true, true, true);
+cem[AVM1ClipEvents.DragOver] = new EH('onDragOver', MouseEvent.DRAG_OVER, false, true, true, true);
+cem[AVM1ClipEvents.DragOut] = new EH('onDragOut', MouseEvent.DRAG_OUT, false, true, true, true);
 
-export var EventsListForMC: AVM1EventHandler[] = [
+const setFocusEventMapping = new EH('onSetFocus', FocusEvent.FOCUS_IN, false, true, false, false);
+const unFocusEventMapping = new EH('onKillFocus', FocusEvent.FOCUS_OUT, false, true, false, false);
+const onChangedEventMapping = new EH('onChanged', TextfieldEvent.CHANGED, false, true, false, false);
+
+export const EventsListForMC: AVM1EventHandler[] = [
 	ClipEventMappings[AVM1ClipEvents.Load],
 	ClipEventMappings[AVM1ClipEvents.Unload],
 	ClipEventMappings[AVM1ClipEvents.Data],
@@ -73,7 +76,7 @@ export var EventsListForMC: AVM1EventHandler[] = [
 	unFocusEventMapping,
 	onChangedEventMapping
 ];
-export var EventsListForButton: AVM1EventHandler[] = [
+export const EventsListForButton: AVM1EventHandler[] = [
 	ClipEventMappings[AVM1ClipEvents.Load],
 	ClipEventMappings[AVM1ClipEvents.Unload],
 	ClipEventMappings[AVM1ClipEvents.Data],

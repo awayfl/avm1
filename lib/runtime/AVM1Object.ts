@@ -1,5 +1,6 @@
-import { IDisplayObjectAdapter, DisplayObject, IFilter } from '@awayjs/scene';
-import { IAVM1Context, AVM1PropertyFlags, alToString, alIsName, IAVM1Callable, AVM1DefaultValueHint, alIsFunction } from '../runtime';
+import { IDisplayObjectAdapter, IFilter } from '@awayjs/scene';
+import { IAVM1Context, AVM1PropertyFlags, alToString, alIsName,
+	IAVM1Callable, AVM1DefaultValueHint, alIsFunction } from '../runtime';
 import { IAsset } from '@awayjs/core';
 import { AVM1Context } from '../context';
 import { release, Debug } from '@awayfl/swf-loader';
@@ -45,11 +46,11 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 
 	public updateFilters(newFilters: IFilter[]) {
-		let filter: IFilter;
+		/*let filter: IFilter;
 		for (let f = 0; f < newFilters.length; f++) {
 			filter = newFilters[f];
-			release || console.log('AVM1Object.update_filters not implemented');
-		}
+		}*/
+		console.warn('[AVM1Object] update_filters not implemented');
 	}
 
 	public isBlockedByScript(): boolean {
@@ -210,7 +211,7 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		const keys: string[] = [];
 		let desc;
 		if (!this.context.isPropertyCaseSensitive) {
-			for (var name in this._ownProperties) {
+			for (const name in this._ownProperties) {
 				desc = this._ownProperties[name];
 				release || Debug.assert('originalName' in desc);
 				if (!(desc.flags & AVM1PropertyFlags.DONT_ENUM)) {
@@ -218,7 +219,7 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 				}
 			}
 		} else {
-			for (var name in this._ownProperties) {
+			for (const name in this._ownProperties) {
 				desc = this._ownProperties[name];
 				if (!(desc.flags & AVM1PropertyFlags.DONT_ENUM)) {
 					keys.push(name);
@@ -246,9 +247,6 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 			return undefined;
 		}
 		if ((desc.flags & AVM1PropertyFlags.DATA)) {
-			//if(desc.value && desc.value.adaptee && desc.value.adaptee instanceof DisplayObject && !desc.value.adaptee.parent){
-			//   return undefined;
-			//}
 			// for xml nodes we need to return the nodeValue
 			if (desc.value && desc.value.nodeValue)
 				return desc.value.nodeValue;
@@ -289,10 +287,16 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		const originalName = p;
 		p = this.context.normalizeName(p);
 
-		//  stupid hack to make sure we can update references to objects in cases when the timeline changes the objects
-		//  if a new object is registered for the same name, we can use the "scriptRefsToChilds" to update all references to the old object with the new one
-		if (v && typeof v === 'object' && v.avmType === 'symbol' && p != 'this' && p != '_parent' && !v.dynamicallyCreated) {
-			if (v.adaptee && v.adaptee.parent && v.adaptee.parent.adapter && v.adaptee.parent.adapter.scriptRefsToChilds) {
+		// stupid hack to make sure we can update references to objects in cases when the timeline changes the objects
+		// if a new object is registered for the same name, we can use the "scriptRefsToChilds"
+		// to update all references to the old object with the new one
+		if (v && typeof v === 'object'
+			&& v.avmType === 'symbol'
+			&& p != 'this' && p != '_parent'
+			&& !v.dynamicallyCreated) {
+			if (v.adaptee && v.adaptee.parent
+				&& v.adaptee.parent.adapter
+				&& v.adaptee.parent.adapter.scriptRefsToChilds) {
 				v.adaptee.parent.adapter.scriptRefsToChilds[v.adaptee.name] = { obj:this, name:p };
 			}
 		}
@@ -315,7 +319,8 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 			}
 			return;
 		}
-		if (typeof v === 'undefined' && (p == '_x' || p == '_y' || p == '_xscale' || p == '_yscale' || p == '_width' || p == '_height')) {
+		if (typeof v === 'undefined'
+			&& (p == '_x' || p == '_y' || p == '_xscale' || p == '_yscale' || p == '_width' || p == '_height')) {
 			// certain props do not allow their value to be set to "undefined", so we exit here
 			// todo: there might be more props that do not allow "undefined"
 			return;
@@ -338,11 +343,11 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 			}
 			if (v && v.isTextVar) {
 				v = v.value;
-				var newDesc = new AVM1PropertyDescriptor(desc ? desc.flags : AVM1PropertyFlags.DATA, v);
+				const newDesc = new AVM1PropertyDescriptor(desc ? desc.flags : AVM1PropertyFlags.DATA, v);
 				(<any>newDesc).isTextVar = true;
 				this.alSetOwnProperty(originalName, newDesc);
 			} else {
-				var newDesc = new AVM1PropertyDescriptor(desc ? desc.flags : AVM1PropertyFlags.DATA, v);
+				const newDesc = new AVM1PropertyDescriptor(desc ? desc.flags : AVM1PropertyFlags.DATA, v);
 				this.alSetOwnProperty(originalName, newDesc);
 			}
 
@@ -392,27 +397,23 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 
 	public alDefaultValue(hint: AVM1DefaultValueHint = AVM1DefaultValueHint.NUMBER): any {
 		if (hint === AVM1DefaultValueHint.STRING) {
-			var toString = this.alGet(this.context.normalizeName('toString'));
+			const toString = this.alGet(this.context.normalizeName('toString'));
 			if (alIsFunction(toString)) {
-				var str = toString.alCall(this);
-				return str;
+				return toString.alCall(this);
 			}
-			var valueOf = this.alGet(this.context.normalizeName('valueOf'));
+			const valueOf = this.alGet(this.context.normalizeName('valueOf'));
 			if (alIsFunction(valueOf)) {
-				var val = valueOf.alCall(this);
-				return val;
+				return valueOf.alCall(this);
 			}
 		} else {
 			release || Debug.assert(hint === AVM1DefaultValueHint.NUMBER);
-			var valueOf = this.alGet(this.context.normalizeName('valueOf'));
+			const valueOf = this.alGet(this.context.normalizeName('valueOf'));
 			if (alIsFunction(valueOf)) {
-				var val = valueOf.alCall(this);
-				return val;
+				return valueOf.alCall(this);
 			}
-			var toString = this.alGet(this.context.normalizeName('toString'));
+			const toString = this.alGet(this.context.normalizeName('toString'));
 			if (alIsFunction(toString)) {
-				var str = toString.alCall(this);
-				return str;
+				return toString.alCall(this);
 			}
 		}
 		// TODO is this a default?
@@ -460,12 +461,12 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 			return keys;
 		} else {
 			const processed = Object.create(null);
-			var keyLength: number = ownKeys.length;
-			for (k = 0; k < keyLength; k++) {
+			const keyLength1: number = ownKeys.length;
+			for (k = 0; k < keyLength1; k++) {
 				processed[ownKeys[k]] = true;
 			}
-			var keyLength: number = otherKeys.length;
-			for (k = 0;  k < keyLength; k++) {
+			const keyLength2: number = otherKeys.length;
+			for (k = 0;  k < keyLength2; k++) {
 				processed[otherKeys[k]] = true;
 			}
 			return Object.getOwnPropertyNames(processed);

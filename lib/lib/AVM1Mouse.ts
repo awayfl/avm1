@@ -17,7 +17,6 @@
 import { alCallProperty } from '../runtime';
 import { AVM1Context } from '../context';
 import { wrapAVM1NativeClass } from './AVM1Utils';
-import { MouseEvent, MouseManager } from '@awayjs/scene';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Stage } from './AVM1Stage';
 import { AVM1Globals } from './AVM1Globals';

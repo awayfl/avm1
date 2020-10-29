@@ -58,6 +58,7 @@ export class AVM1ExternalInterface extends AVM1Object {
 			});*/
 			return true;
 		} catch (e) {
+			console.warn('[AVM1ExternalInterface] - error in addCallback', e);
 		}
 		return false;
 	}

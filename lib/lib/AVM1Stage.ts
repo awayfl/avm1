@@ -32,7 +32,9 @@ export class AVM1Stage extends AVM1Object {
 		return wrapped;
 	}
 
-	public static bindStage(context: AVM1Context, cls: AVM1Object, avmStage: AVMStage, avm1Handler: AVM1Handler, htmlElement: HTMLElement): void  {
+	public static bindStage(
+		context: AVM1Context, cls: AVM1Object, avmStage: AVMStage,
+		avm1Handler: AVM1Handler, htmlElement: HTMLElement): void  {
 		(<AVM1Stage>cls).avmStage = avmStage;
 		(<AVM1Stage>cls).avm1Handler = avm1Handler;
 		AVM1Stage.avmStage = avmStage;

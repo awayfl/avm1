@@ -22,7 +22,8 @@ import { getAVM1Object, wrapAVM1NativeClass, toTwipFloor, toTwipRound, away2avmD
 import { AVM1TextFormat } from './AVM1TextFormat';
 import { notImplemented } from '@awayfl/swf-loader';
 import { EventBase as Event } from '@awayjs/core';
-import { TextField, KeyboardEvent, TextFormat, TextfieldEvent, DisplayObject, DisplayObjectContainer, MouseManager } from '@awayjs/scene';
+import { TextField, KeyboardEvent, TextFormat,
+	TextfieldEvent, DisplayObject, DisplayObjectContainer } from '@awayjs/scene';
 import { AVM1Key } from './AVM1Key';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 import { AVM1Object } from '../runtime/AVM1Object';
@@ -31,13 +32,6 @@ import { AVM1Globals } from './AVM1Globals';
 import { alCallProperty, } from '../runtime';
 import { AVM1Stage } from './AVM1Stage';
 import { AVM1MovieClip } from './AVM1MovieClip';
-
-interface mapNumberToString{
-	[key: number]: string;
-}
-interface mapStringToNumber{
-	[key: string]: number;
-}
 
 export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	static createAVM1Class(context: AVM1Context): AVM1Object  {
@@ -68,7 +62,6 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 		|| !(<AVM1Stage> this.context.globals.Stage).avmStage.scene) {
 			return;
 		}
-		//console.log("dispatch keyEvent", (<AVM1Stage>this.context.globals.Stage)._awayAVMStage.scene.mouseManager.useSoftkeyboard)
 		if ((<AVM1Stage> this.context.globals.Stage).avmStage.scene.mouseManager.useSoftkeyboard) {
 			//console.log("dispatch keyEvent")
 			const staticState: typeof AVM1Key = this.context.getStaticState(AVM1Key);
@@ -76,7 +69,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 			staticState._keyStates[keyCode] = 1;
 			alCallProperty(AVM1Globals.instance.Key, 'broadcastMessage', ['onKeyDown']);
 
-			var newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYDOWN, '', keyCode);
+			let newEvent = new KeyboardEvent(KeyboardEvent.KEYDOWN, '', keyCode);
 			newEvent.isShift = isShift;
 			newEvent.isCTRL = isCTRL;
 			newEvent.isAlt = isAlt;
@@ -84,7 +77,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 			delete staticState._keyStates[keyCode];
 			alCallProperty(AVM1Globals.instance.Key, 'broadcastMessage', ['onKeyUp']);
 
-			var newEvent: KeyboardEvent = new KeyboardEvent(KeyboardEvent.KEYUP, '', keyCode);
+			newEvent = new KeyboardEvent(KeyboardEvent.KEYUP, '', keyCode);
 			newEvent.isShift = isShift;
 			newEvent.isCTRL = isCTRL;
 			newEvent.isAlt = isAlt;
@@ -185,18 +178,12 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 
 	public get_width(): number {
 		this.syncTextFieldValue();
-		//this.replicateWeirdFlashBehavior();
-		//var box:Box = PickGroup.getInstance((<AVM1Stage>this.context.globals.Stage)._awayAVMStage.view.renderer.view).getBoundsPicker(this.adaptee.partition).getBoxBounds(this.adaptee)
 		return toTwipRound(this.adaptee.width);
-		//return this._prevWidth;
 	}
 
 	public get_height(): number {
 		this.syncTextFieldValue();
-		//this.replicateWeirdFlashBehavior();
-		//var box:Box = PickGroup.getInstance((<AVM1Stage>this.context.globals.Stage)._awayAVMStage.view.renderer.view).getBoundsPicker(this.adaptee.partition).getBoxBounds(this.adaptee)
 		return toTwipRound(this.adaptee.height);
-		//return this._prevWidth;
 	}
 
 	public set_width(value: number) {
@@ -208,8 +195,6 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 			return;
 
 		this.adaptee.width = value;
-		//var box:Box = this.adaptee.getBoxBounds(this.adaptee);
-		//this._prevWidth=(box == null)? 0 : toTwipRound(box.width);
 	}
 
 	public set_height(value: number) {
@@ -221,13 +206,10 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 			return;
 
 		this.adaptee.height = value;
-		//var box:Box = this.adaptee.getBoxBounds(this.adaptee);
-		//this._prevWidth=(box == null)? 0 : toTwipRound(box.width);
 	}
 
 	public get_x(): number {
 		this.syncTextFieldValue();
-		//this.replicateWeirdFlashBehavior();
 		return toTwipFloor(this.adaptee.x + (this.adaptee.scaleX * this.adaptee.textOffsetX));
 	}
 
@@ -620,10 +602,11 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	public updateVarFromText(): void {
-		//warning("AVM1Textfield.updateVarFromText - '"+this._textVarHolder.toString()+this._textVarPropName+"' / '"+this.adaptee.text+"'");
-
-		if (this._textVarHolder) {// && !this.adaptee.html){
-			this.context.utils.setProperty(this._textVarHolder, this._textVarPropName, this.adaptee.html ? this.adaptee.htmlText : this.adaptee.text);
+		if (this._textVarHolder) {
+			this.context.utils.setProperty(
+				this._textVarHolder, this._textVarPropName, this.adaptee.html ?
+					this.adaptee.htmlText : this.adaptee.text
+			);
 			this._prevTextVarContent = this.adaptee.text;
 		}
 	}
@@ -640,7 +623,10 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 			if (hasPath) {
 				const targetPath = name.split(/[.:\/]/g);
 				this._textVarPropName = targetPath.pop();
-				if (targetPath[0] == '_root' || targetPath[0] == '_level0' || targetPath[0] == '_level' || targetPath[0] === '') {
+				if (targetPath[0] == '_root'
+					|| targetPath[0] == '_level0'
+					|| targetPath[0] == '_level'
+					|| targetPath[0] === '') {
 					let parent = instance.parent;
 					this._textVarHolder = null;
 					while (parent) {
@@ -713,8 +699,9 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 		// if the variable does not exist, fill it from textfield-content
 		if (!avm1ContextUtils.hasProperty(this._textVarHolder, this._textVarPropName)) {
 			// the textvar does not exists yet. we create it and fill it with text-content
+			let v;
 			if (instance.html) {
-				var v = {
+				v = {
 					isTextVar:true,
 					value:undefined
 				};
@@ -726,7 +713,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 				this._prevTextVarContent = instance.htmlText;
 				return;
 			}
-			var v = {
+			v = {
 				isTextVar:true,
 				value:undefined
 			};
@@ -758,7 +745,8 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 				this._prevTextVarContent = newTextVarContent;
 				return;
 			}
-			if (instance.htmlText !== newTextVarContent && (!(typeof newTextVarContent === 'undefined' && instance.htmlText === ''))) {
+			if (instance.htmlText !== newTextVarContent
+				&& (!(typeof newTextVarContent === 'undefined' && instance.htmlText === ''))) {
 				// makes sure text is set correctly in case the timeline has interferred.
 				instance.htmlText = (typeof newTextVarContent === 'undefined') ? '' : newTextVarContent;
 
@@ -770,7 +758,8 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 				this._prevTextVarContent = newTextVarContent;
 				return;
 			}
-			if (instance.text !== newTextVarContent && (!(typeof newTextVarContent === 'undefined' && instance.text === ''))) {
+			if (instance.text !== newTextVarContent
+				&& (!(typeof newTextVarContent === 'undefined' && instance.text === ''))) {
 				// makes sure text is set correctly in case the timeline has interferred.
 				instance.text = (typeof newTextVarContent === 'undefined') ? '' : newTextVarContent;
 

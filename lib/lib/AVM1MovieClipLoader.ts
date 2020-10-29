@@ -21,7 +21,6 @@ import { AVM1MovieClip } from './AVM1MovieClip';
 import { AVM1Broadcaster } from './AVM1Broadcaster';
 import { notImplemented } from '@awayfl/swf-loader';
 import { AVM1LoaderHelper } from './AVM1LoaderHelper';
-import { DisplayObject, MovieClip } from '@awayjs/scene';
 import { alCallProperty } from '../runtime';
 
 export class AVM1MovieClipLoader extends AVM1Object {

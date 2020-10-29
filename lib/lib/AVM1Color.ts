@@ -17,9 +17,8 @@
 //module Shumway.AVM1.Lib {
 import { AVM1Object } from '../runtime/AVM1Object';
 import { getAwayJSAdaptee, IAVM1SymbolBase, wrapAVM1NativeClass } from './AVM1Utils';
-import { AVM1ColorTransform, toAwayColorTransform, fromAVM1Object } from './AVM1ColorTransform';
-import { DisplayObject, HierarchicalProperties, MovieClip } from '@awayjs/scene';
-import { ColorTransform } from '@awayjs/core';
+import { AVM1ColorTransform, fromAVM1Object } from './AVM1ColorTransform';
+import { DisplayObject, HierarchicalProperties } from '@awayjs/scene';
 import { AVM1Context } from '../context';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 
@@ -64,7 +63,8 @@ export class AVM1Color extends AVM1Object {
 
 	public getTransform(): AVM1ColorTransform {
 		if (this._targetAwayObject) {
-			return AVM1ColorTransform.fromAwayColorTransform(this.context, this._targetAwayObject.transform.colorTransform);
+			return AVM1ColorTransform.fromAwayColorTransform(this.context,
+				this._targetAwayObject.transform.colorTransform);
 		}
 		return null;
 	}

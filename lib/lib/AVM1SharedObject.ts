@@ -16,7 +16,7 @@
 
 import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
 import {
-	alIsArray, AVM1PropertyFlags, alCoerceString, alDefineObjectProperties, alNewObject, alToBoolean
+	alIsArray, AVM1PropertyFlags, alCoerceString, alDefineObjectProperties, alNewObject
 } from '../runtime';
 import { wrapAVM1NativeClass } from './AVM1Utils';
 import { AVM1Context } from '../context';

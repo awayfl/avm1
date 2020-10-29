@@ -1,10 +1,10 @@
-import { IAVMHandler, AVMStage, PromiseWrapper, SWFParser, StageAlign, StageScaleMode } from '@awayfl/swf-loader';
+import { IAVMHandler, AVMStage, SWFParser, StageAlign, StageScaleMode } from '@awayfl/swf-loader';
 import { SWFFile } from '@awayfl/swf-loader';
 import { AVM1SceneGraphFactory } from './AVM1SceneGraphFactory';
-import { ISceneGraphFactory, MouseManager,MouseEvent, KeyboardEvent, MovieClip, FrameScriptManager, Sprite, DisplayObject } from '@awayjs/scene';
-import { AssetLibrary, AssetEvent, IAsset, EventBase } from '@awayjs/core';
+import { ISceneGraphFactory, MouseEvent, KeyboardEvent, MovieClip,
+	FrameScriptManager, DisplayObject } from '@awayjs/scene';
+import { AssetLibrary, IAsset, EventBase } from '@awayjs/core';
 import { AVMVERSION } from '@awayfl/swf-loader';
-import { PickGroup } from '@awayjs/view';
 import { AVM1ContextImpl } from './interpreter';
 import { SecurityDomain } from './SecurityDomain';
 import { AVM1Globals, TraceLevel } from './lib/AVM1Globals';
@@ -59,7 +59,8 @@ export class AVM1Handler implements IAVMHandler {
 		AssetLibrary.enableParser(SWFParser);
 
 		// field is readonly, and assigned only in this place
-		(<any> this._factory.avm1Context.globals.SWF_BASE_URL) = swfFile.url.substring(0, swfFile.url.lastIndexOf('/') + 1);
+		(<any> this._factory.avm1Context.globals.SWF_BASE_URL) =
+			swfFile.url.substring(0, swfFile.url.lastIndexOf('/') + 1);
 
 		this.clearAllAVM1Listener();
 		this._avmStage.addEventListener(MouseEvent.MOUSE_DOWN, (evt)=>this.onMouseEvent(evt));
@@ -100,7 +101,6 @@ export class AVM1Handler implements IAVMHandler {
 		FrameScriptManager.execute_queue();
 
 		let i: number = 0;
-		let c: number;
 		let child: DisplayObject;
 		let len: number = this._avmStage.numChildren;
 
@@ -163,24 +163,26 @@ export class AVM1Handler implements IAVMHandler {
 		len = this._collectedDispatcher.length;
 		for (i = 0; i < len; i++) {
 			if (this.avm1Listener[event.type] && this.avm1Listener[event.type][this._collectedDispatcher[i].id]) {
-				for (let e: number = 0; e < this.avm1Listener[event.type][this._collectedDispatcher[i].id].length; e++) {
-					if (typeof this.avm1Listener[event.type][this._collectedDispatcher[i].id][e].keyCode !== 'number' ||
-						this.avm1Listener[event.type][this._collectedDispatcher[i].id][e].keyCode == event.keyCode)
-						this.avm1Listener[event.type][this._collectedDispatcher[i].id][e].callback();
+				const listeners = this.avm1Listener[event.type][this._collectedDispatcher[i].id];
+				for (let e: number = 0; e < listeners.length; e++) {
+					if (typeof listeners[e].keyCode !== 'number' || listeners[e].keyCode == event.keyCode)
+						listeners[e].callback();
 				}
 			}
 		}
 		FrameScriptManager.execute_queue();
 	}
 
-	public addAVM1EventListener(asset: IAsset, type: string, callback: (event: EventBase) => void, eventProps: AVM1EventProps) {
+	public addAVM1EventListener(asset: IAsset, type: string,
+		callback: (event: EventBase) => void, eventProps: AVM1EventProps) {
 		if (!this.avm1Listener[type])
 			this.avm1Listener[type] = {};
 		if (!this.avm1Listener[type][asset.id])
 			this.avm1Listener[type][asset.id] = [];
-		this.avm1Listener[type][asset.id].push({ type: type, callback: callback });
+		const listeners = this.avm1Listener[type][asset.id];
+		listeners.push({ type: type, callback: callback });
 		if (eventProps && typeof eventProps.keyCode === 'number') {
-			this.avm1Listener[type][asset.id][this.avm1Listener[type][asset.id].length - 1].keyCode = eventProps.keyCode;
+			listeners[listeners.length - 1].keyCode = eventProps.keyCode;
 
 		}
 	}
@@ -230,11 +232,14 @@ export class AVM1Handler implements IAVMHandler {
 		len = this._collectedDispatcher.length;
 		let dispatcherLen: number;
 		for (i = 0; i < len; i++) {
-			if (this.avm1Listener[mouseEvent.type] && this.avm1Listener[mouseEvent.type][this._collectedDispatcher[i].id]) {
-				dispatcherLen = this.avm1Listener[mouseEvent.type][this._collectedDispatcher[i].id].length;
+			const listenersMouseType = this.avm1Listener[mouseEvent.type];
+			if (listenersMouseType && listenersMouseType[this._collectedDispatcher[i].id]) {
+
+				dispatcherLen = listenersMouseType[this._collectedDispatcher[i].id].length;
 				for (let e: number = 0; e < dispatcherLen; e++) {
-					if (this.avm1Listener[mouseEvent.type][this._collectedDispatcher[i].id] && this.avm1Listener[mouseEvent.type][this._collectedDispatcher[i].id][e])
-						this.avm1Listener[mouseEvent.type][this._collectedDispatcher[i].id][e].callback();
+					const listeners = listenersMouseType[this._collectedDispatcher[i].id];
+					if (listeners && listeners[e])
+						listeners[e].callback();
 				}
 			}
 		}
@@ -250,7 +255,10 @@ export class AVM1Handler implements IAVMHandler {
 
 		if (asset.isAsset(MovieClip)) {
 			if (addScene && (<MovieClip>asset).isAVMScene) {
-				const scene = <AVM1MovieClip>getAVM1Object((<MovieClip>asset).clone(), <AVM1ContextImpl> this._factory.avm1Context);
+				const scene = <AVM1MovieClip>getAVM1Object(
+					(<MovieClip>asset).clone(),
+					<AVM1ContextImpl> this._factory.avm1Context
+				);
 				//scene.adaptee.reset();
 				this._factory.avm1Context.globals._addRoot(0, <MovieClip>scene.adaptee);
 
