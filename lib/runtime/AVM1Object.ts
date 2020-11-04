@@ -448,7 +448,7 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 			let canonicalKey;
 			for (k = 0; k < keyLists.length; k++) {
 				keyList = keyLists[k];
-				for (let i = keyList.length; i--;) {
+				for (let i = 0; i < keyList.length; i++) {
 					key = keyList[i];
 					canonicalKey = context.normalizeName(key);
 					if (canonicalKeysMap[canonicalKey]) {
