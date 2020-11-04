@@ -78,7 +78,6 @@ export class AVM1Globals extends AVM1Object {
 
 	public static swfStartTime = Date.now();
 
-
 	public static _registeredCustomClasses: any={};
 	public static _registeredCustomClassInstances: any={};
 	public static randomProvider: RandomSeed;
