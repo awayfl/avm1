@@ -1660,38 +1660,44 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		AVM1Stage.avmStage.removeEventListener('mouseMove3d', this.dragListenerDelegate);
 	}
 
+	/**
+	 * @param child1 first child that should be swapped
+	 * @param child2 second child that should be swapped (optionally)
+	 * @param depth1 new depth for first child
+	 * @param depth2 new depth for second child (optionally)
+	 */
 	public swapChildrenToDepth(child1: AVM1MovieClip, child2: AVM1MovieClip, depth1: number, depth2: number): void {
 
 		console.warn('[AVM1MovieClip] - swapChildrenToDepth not implemented');
-		/*delete this.adaptee._sessionID_childs[child1.adaptee._sessionID];
-		this._depth_childs[depth1]=child1.adaptee;
-		child1.adaptee._avmDepthID=depth1;
-		child1.adaptee._sessionID=-1;
+		/*
+		delete this.adaptee._sessionID_childs[child1.adaptee._sessionID];
+		this._depth_childs[depth1] = child1.adaptee;
+		child1.adaptee._avmDepthID = depth1;
+		child1.adaptee._sessionID = -1;
 		child1.adaptee._setParent(null);
 		child1.adaptee._setParent(this.adaptee);
-		child1.hasSwappedDepth=true;
+		child1.hasSwappedDepth = true;
 
-		let originalIdx1=this.getDepthIndexInternal(depth2);
-		if(child2){
-			let originalIdx2=this.getDepthIndexInternal(depth1);
-			const children=this.adaptee._children;
+		const originalIdx1 = this.getDepthIndexInternal(depth2);
+		if (child2) {
+			const originalIdx2 = this.getDepthIndexInternal(depth1);
+			const children = this.adaptee._children;
 			[children[originalIdx1], children[originalIdx2]] = [children[originalIdx2], children[originalIdx1]];
 			delete this.adaptee._sessionID_childs[child2.adaptee._sessionID];
-			this._depth_childs[depth2]=child2.adaptee;
-			child2.adaptee._avmDepthID=depth1;
-			child2.adaptee._sessionID=-1;
+			this._depth_childs[depth2] = child2.adaptee;
+			child2.adaptee._avmDepthID = depth2;
+			child2.adaptee._sessionID = -1;
 			child2.adaptee._setParent(null);
 			child2.adaptee._setParent(this.adaptee);
-			child2.hasSwappedDepth=true;
-		}
-		else{
+			child2.hasSwappedDepth = true;
+		} else {
 			delete this._depth_childs[depth2];
 		}
 
 		if (this.adaptee.name && parent) {
 			// we need to check if child registration must be updated
 			this.getLatestObjectForName(child1.adaptee.name.toLowerCase());
-			if(child2){
+			if (child2) {
 				this.getLatestObjectForName(child2.adaptee.name.toLowerCase());
 			}
 		}*/
@@ -1699,7 +1705,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public swapDepths(target: any): void {
+		console.warn('[AVM1MovieClip] - swapChildrenToDepth not implemented');
 		//return;
+		/*
 		// if this is the scene, or if no parent exists, we do not want to do anything
 		if (this.adaptee.isAVMScene || !this.get_parent()) {
 			return;
@@ -1717,18 +1725,19 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		if (typeof target === 'number') {
 			if (this.adaptee._avmDepthID == target)
 				return;
-			targetChild = parent._depth_childs[target];
+			target = avm2AwayDepth(target);
+			targetChild = parent._depth_childs[target].adapter;
 			//console.log("swap to number", this.adaptee.name, target);
-			//parent.swapChildToDepth(this.adaptee, avm2AwayDepth(target));
 		} else if (target.adaptee) {
 			const targetParent = target.get_parent();
 			if (targetParent != parent)
 				return;
 			targetChild = target;
-			target = targetChild._avmDepthID;
+			target = targetChild.adaptee._avmDepthID;
 			//console.log("swap to children", this.adaptee.name, target.adaptee.name);
 		}
 		parent.swapChildrenToDepth(this, targetChild, target, this.adaptee._avmDepthID);
+		*/
 
 	}
 
