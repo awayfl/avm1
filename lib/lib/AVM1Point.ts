@@ -74,6 +74,10 @@ export class AVM1PointFunction extends AVM1Function {
 		});
 	}
 
+	public alCall(thisArg: any, args?: any[]): any {
+		return this.alConstruct(args);
+	}
+
 	alConstruct(args?: any[]): AVM1Object {
 		if (args && args.length > 0) {
 			return new AVM1Point(this.context, args[0], args[1]);
