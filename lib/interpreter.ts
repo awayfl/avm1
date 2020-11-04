@@ -11,7 +11,7 @@ import {
 } from './parser';
 import { ActionsDataCompiler } from './baseline';
 import {
-	alCoerceString, alDefineObjectProperties, alForEachProperty, alIsFunction, alIsName, alNewObject, alToBoolean,
+	alCoerceString, alDefineObjectProperties, alForEachProperty, alInstanceOf, alIsArray, alIsFunction, alIsName, alNewObject, alToBoolean,
 	alToInt32,
 	alToNumber, alToObject, alToPrimitive, alToString, AVM1EvalFunction, AVM1NativeFunction,
 	AVM1PropertyFlags,
@@ -546,28 +546,21 @@ function as2Enumerate(obj, fn: (name) => void, thisArg): void {
 	if (typeof obj === 'boolean' || typeof obj === 'string' || typeof obj === 'number') {
 		return;
 	}
-	const processed = Object.create(null); // TODO remove/refactor
-	const props: any[] = [];
 	alForEachProperty(obj, function (name) {
 		if (typeof name == 'string' && name.indexOf('_internal_TF') != -1)
 			return;
-		if (processed[name]) {
-			return; // skipping already reported properties
-		}
-		// if(obj.adaptee && obj.adaptee.isAsset(TextField) && obj.adaptee.isStatic)
-		//     return;
-		props[props.length] = name;
-		processed[name] = true;
+		const avmObj = obj.alGet(name);
+		if (avmObj?.adaptee?.isAsset(TextField) && avmObj.adaptee.isStatic)
+			return;
+		fn.call(thisArg, name);
 	}, thisArg);
+	/*
 	let i = props.length;
 	let avmObj = null;
 	while (i > 0) {
 		i--;
-		avmObj = obj.alGet(props[i]);
-		if (typeof avmObj === 'undefined' || (avmObj.adaptee?.isAsset(TextField) && avmObj.adaptee.isStatic))
-			continue;
 		fn.call(thisArg, props[i]);
-	}
+	}*/
 }
 
 function avm1FindSuperPropertyOwner(context: AVM1Context, frame: AVM1CallFrame, propertyName: string): AVM1Object {
