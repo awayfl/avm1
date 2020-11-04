@@ -2577,24 +2577,19 @@ function avm1_0x47_ActionAdd2(ectx: ExecutionContext, a?: any, b?: any) {
 
 	} else {
 		if (!ectx.isSwfVersion7) {
-			if (ta === 'undefined')
+			if (a === null || ta === 'undefined')
 				a = 0;
 
-			if (tb === 'undefined')
+			if (b === null || tb === 'undefined')
 				b = 0;
 		}
 
-		// infinity + x = infinity
-		// -infinity + x = -infinity
-		// infinity + x = infinity
-		// infinity + infinity = infinity
-		// -infinity + infinity = NaN
-		// infinity + NaN = NaN
-		// -infinity + NaN = NaN
-		// NaN + infinity = NaN
-
-		if (!isFinite(a) || !isFinite(b)) {
-			if (isNaN(a) || isNaN(b))
+		if ((b == null) || (a == null)) {
+			stack.push(NaN);
+		} else if (!isFinite(a) || !isFinite(b)) {
+			if (a === -Infinity && b === -Infinity)
+				stack.push(-Infinity);
+			else if (isNaN(a) || isNaN(b))
 				stack.push(NaN);
 			else if (a === b)
 				stack.push(Infinity);
@@ -2623,9 +2618,15 @@ function avm1_0x48_ActionLess2(ectx: ExecutionContext) {
 function avm1_0x3F_ActionModulo(ectx: ExecutionContext) {
 	const stack = ectx.stack;
 
-	let a = alToNumber(ectx.context, stack.pop());
-	let b = alToNumber(ectx.context, stack.pop());
+	let a = stack.pop();
+	let b = stack.pop();
 
+	if (typeof a === 'string' || typeof b === 'string') {
+		stack.push(NaN);
+		return;
+	}
+	a = alToNumber(ectx.context, a);
+	b = alToNumber(ectx.context, b);
 	if (!ectx.isSwfVersion7) {
 		if (typeof a === 'undefined')
 			a = 0;
@@ -2633,20 +2634,6 @@ function avm1_0x3F_ActionModulo(ectx: ExecutionContext) {
 		if (typeof b === 'undefined')
 			b = 0;
 	}
-	// 0 % 0 = NaN
-	// x % NaN = NaN
-	// NaN % x = NaN
-	// x % Infinity = x
-	// x % -Initnity = x
-	// Infinity % NaN = NaN
-	// -Infinity % NaN = NaN
-	// NaN % Infinity = NaN
-	// NaN % -Infinity = NaN
-	// Infinity % Infinity = NaN
-	// Infinity % -Initnity = NaN
-	// -Infinity % -Initnity = NaN
-	// -Infinity % Initnity = NaN
-
 	if (!isFinite(a) || !isFinite(b) || (a == 0 && b == 0)) {
 		if (isNaN(a) || isNaN(b) || (!isFinite(a) && !isFinite(b)))
 			stack.push(NaN);
