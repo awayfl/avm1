@@ -2118,7 +2118,11 @@ function avm1_0x30_ActionRandomNumber(ectx: ExecutionContext) {
 function avm1_0x3D_ActionCallFunction(ectx: ExecutionContext) {
 	const stack = ectx.stack;
 
-	const functionName = stack.pop();
+	let functionName = stack.pop();
+
+	if (alIsArray(ectx.context, functionName))
+		functionName = functionName.value.join('.');
+
 	let args = avm1ReadFunctionArgs(stack);
 
 	const sp = stack.length;
