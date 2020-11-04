@@ -1529,19 +1529,10 @@ function avm1_0x0A_ActionAdd(ectx: ExecutionContext) {
 			b = 0;
 	}
 
-	//todo: this is copied from avm1_0x47_ActionAdd2 and might not be exact FP behavior:
-
-	// infinity + x = infinity
-	// -infinity + x = -infinity
-	// infinity + x = infinity
-	// infinity + infinity = infinity
-	// -infinity + infinity = NaN
-	// infinity + NaN = NaN
-	// -infinity + NaN = NaN
-	// NaN + infinity = NaN
-
 	if (!isFinite(a) || !isFinite(b)) {
-		if (isNaN(a) || isNaN(b))
+		if (a === -Infinity && b === -Infinity)
+			stack.push(-Infinity);
+		else if (isNaN(a) || isNaN(b))
 			stack.push(NaN);
 		else if (a === b)
 			stack.push(Infinity);
@@ -1551,6 +1542,8 @@ function avm1_0x0A_ActionAdd(ectx: ExecutionContext) {
 			stack.push(a);
 		else if (!isFinite(b))
 			stack.push(b);
+	} else if (b == null) {
+		stack.push(NaN);
 	} else {
 		stack.push(a + b);
 	}
@@ -1559,37 +1552,35 @@ function avm1_0x0A_ActionAdd(ectx: ExecutionContext) {
 function avm1_0x0B_ActionSubtract(ectx: ExecutionContext) {
 	const stack = ectx.stack;
 
-	let a = alToNumber(ectx.context, stack.pop());
-	let b = alToNumber(ectx.context, stack.pop());
-
-	if (!ectx.isSwfVersion7) {
-		if (typeof a === 'undefined')
-			a = 0;
-
-		if (typeof b === 'undefined')
-			b = 0;
+	let a = stack.pop();
+	let b = stack.pop();
+	if (typeof a === 'string' || typeof b === 'string') {
+		stack.push(NaN);
+		return;
 	}
 
-	// x - NaN = NaN
-	// NaN - x = NaN
-	// infinity - NaN = NaN
-	// -infinity - NaN = NaN
-	// NaN - infinity = NaN
-	// infinity - infinity = NaN
+	a = alToNumber(ectx.context, a);
+	b = alToNumber(ectx.context, b);
 
-	// x - infinity = -infinity
-	// infinity - x = infinity
-	// -infinity - x = -infinity
-	// -infinity - infinity = -infinity
+	if (!ectx.isSwfVersion7) {
+		if (a === null || typeof a === 'undefined')
+			a = 0;
+
+		if (b === null || typeof b === 'undefined')
+			b = 0;
+	}
 
 	if (!isFinite(a) || !isFinite(b)) {
 		if (isNaN(a) || isNaN(b))
 			stack.push(NaN);
 		else if (a === b)
 			stack.push(NaN);
-		else if (!isFinite(a))
-			stack.push(-Infinity);
-		else if (!isFinite(b))
+		else if (!isFinite(a)) {
+			if (a === -Infinity)
+				stack.push(Infinity);
+			else
+				stack.push(-Infinity);
+		} else if (!isFinite(b))
 			stack.push(b);
 	} else {
 		stack.push(b - a);
@@ -1599,24 +1590,25 @@ function avm1_0x0B_ActionSubtract(ectx: ExecutionContext) {
 function avm1_0x0C_ActionMultiply(ectx: ExecutionContext) {
 	const stack = ectx.stack;
 
-	let a = alToNumber(ectx.context, stack.pop());
-	let b = alToNumber(ectx.context, stack.pop());
+	let a = stack.pop();
+	if (a === '\n')
+		a = NaN;
+	else
+		a = alToNumber(ectx.context, a);
+
+	let b = stack.pop();
+	if (b === '\n')
+		b = NaN;
+	else
+		b = alToNumber(ectx.context, b);
 
 	if (!ectx.isSwfVersion7) {
-		if (typeof a === 'undefined')
+		if (a == null || typeof a === 'undefined')
 			a = 0;
 
-		if (typeof b === 'undefined')
+		if (b == null || typeof b === 'undefined')
 			b = 0;
 	}
-
-	// infinity * x = infinity
-	// -infinity * x = -infinity
-	// infinity * infinity = infinity
-	// -infinity * -infinity = infinity
-	// infinity * -infinity = -infinity
-	// infinity * NaN = NaN
-	// -infinity * NaN = NaN
 
 	if (!isFinite(a) || !isFinite(b)) {
 		if (isNaN(a) || isNaN(b))
@@ -1625,10 +1617,35 @@ function avm1_0x0C_ActionMultiply(ectx: ExecutionContext) {
 			stack.push(Infinity);
 		else if (!isFinite(a) && !isFinite(b))
 			stack.push(-Infinity);
-		else if (!isFinite(a))
-			stack.push(a);
-		else if (!isFinite(b))
-			stack.push(b);
+		else if (!isFinite(a)) {
+			if (b == 0)
+				stack.push(NaN);
+			else if (a >= 0) {
+				if (b >= 0)
+					stack.push(Infinity);
+				else
+					stack.push(-Infinity);
+			} else {
+				if (b >= 0)
+					stack.push(-Infinity);
+				else
+					stack.push(Infinity);
+			}
+		} else if (!isFinite(b)) {
+			if (a == 0)
+				stack.push(NaN);
+			else if (b >= 0) {
+				if (a >= 0)
+					stack.push(Infinity);
+				else
+					stack.push(-Infinity);
+			} else {
+				if (a >= 0)
+					stack.push(-Infinity);
+				else
+					stack.push(Infinity);
+			}
+		}
 	} else {
 		stack.push(a * b);
 	}
@@ -1636,40 +1653,39 @@ function avm1_0x0C_ActionMultiply(ectx: ExecutionContext) {
 
 function avm1_0x0D_ActionDivide(ectx: ExecutionContext) {
 	const stack = ectx.stack;
-	const isSwfVersion5 = ectx.isSwfVersion5;
 
-	let a = alToNumber(ectx.context, stack.pop());
-	let b = alToNumber(ectx.context, stack.pop());
-
+	let a = stack.pop();
+	let b = stack.pop();
+	let type_a = typeof a;
+	let type_b = typeof b;
 	if (!ectx.isSwfVersion7) {
-		if (typeof a === 'undefined')
+		// for SWF version < 7:
+		// undefined and null get converted to 0
+		if (a === null || type_a === 'undefined') {
 			a = 0;
-
-		if (typeof b === 'undefined')
+			type_a = 'number';
+		}
+		if (b === null || type_b === 'undefined') {
 			b = 0;
+			type_b = 'number';
+		}
 	}
+	if (type_a === 'object' || type_b === 'object'
+		|| type_a === 'string' || type_b === 'string'
+		|| type_a === 'undefined' || type_b === 'undefined'
+		|| isNaN(a) || isNaN(b)) {
+		stack.push(NaN);
+		return;
+	}
+	if (type_a === 'boolean') {
+		a = +a;
+	} else
+		a = alToNumber(ectx.context, a);
 
-	// 0 / 0 = NaN
-	// x / 0 = Infinity
-	// -x / 0 = -Infinity
-	// 0 / x = 0
-	// 0 / -x = -0
-	// infinity / 0 = Infinity
-	// -infinity / 0 = -Infinity
-	// 0 / infinity = 0
-	// 0 / -infinity = 0
-	// infinity / x = Infinity
-	// -infinity / x = -Infinity
-	// x / infinity = 0
-	// x / -infinity = 0
-	// infinity / NaN = NaN
-	// -infinity / NaN = NaN
-	// NaN / infinity = NaN
-	// NaN / -infinity = NaN
-	// infinity / infinity = NaN
-	// -infinity / infinity = NaN
-	// -infinity / -infinity = NaN
-	// infinity / -infinity = NaN
+	if (type_b === 'boolean') {
+		b = +b;
+	} else
+		b = alToNumber(ectx.context, b);
 
 	if (!isFinite(a) || !isFinite(b) || (a == 0 && b == 0)) {
 		if ((a == 0 && b == 0) || (!isFinite(a) && !isFinite(b)))
@@ -1678,12 +1694,24 @@ function avm1_0x0D_ActionDivide(ectx: ExecutionContext) {
 			stack.push(b);
 		else if (b == 0)
 			stack.push(0);
-		else if (!isFinite(b))
-			stack.push(b);
-		else if (!isFinite(a))
-			stack.push(0);
+		else if (!isFinite(b)) {
+			if (b >= 0) {
+				if (a >= 0)
+					stack.push(Infinity);
+				else
+					stack.push(-Infinity);
+			} else {
+				if (a >= 0)
+					stack.push(-Infinity);
+				else
+					stack.push(Infinity);
+			}
+		} else if (!isFinite(a)) {
+			if (isNaN(a)) stack.push(a);
+			else stack.push(0);
+		}
 	} else if (a == 0) {
-		stack.push(isSwfVersion5 ? '#ERROR#' : (b > 0) ? Infinity : -Infinity);
+		stack.push((b > 0) ? Infinity : -Infinity);
 	} else {
 		stack.push(b / a);
 	}
