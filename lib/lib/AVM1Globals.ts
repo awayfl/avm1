@@ -78,6 +78,7 @@ export class AVM1Globals extends AVM1Object {
 
 	public static swfStartTime = Date.now();
 
+
 	public static _registeredCustomClasses: any={};
 	public static _registeredCustomClassInstances: any={};
 	public static randomProvider: RandomSeed;
@@ -122,13 +123,13 @@ export class AVM1Globals extends AVM1Object {
 	public static createGlobalsObject(context: AVM1Context): AVM1Globals {
 		const globals = new AVM1Globals(context);
 		wrapAVM1NativeMembers(context, globals, globals,
-			['flash', 'ASSetPropFlags', 'BitmapData' ,'clearInterval', 'clearTimeout','ExternalInterface',
+			['flash', 'ASnative', 'ASSetPropFlags', 'BitmapData' ,'clearInterval', 'clearTimeout','ExternalInterface',
 				'escape', 'unescape', 'setInterval', 'setTimeout', 'showRedrawRegions',
 				'trace', 'updateAfterEvent','myName',
 				'NaN', 'Infinity', 'isFinite', 'isNaN', 'parseFloat', 'parseInt', 'undefined',
 				'Object', 'Function','Array', 'Number', 'Math', 'Boolean', 'Date', 'Selection', 'String', 'Error',
 				'MovieClip', 'AsBroadcaster', 'System', 'Stage', 'Button',
-				'TextField', 'Color', 'Key', 'Mouse', 'MovieClipLoader', 'XML', 'XMLNode', 'LoadVars',
+				'TextField', 'Color', 'Key', 'Mouse', 'MovieClipLoader', 'newline', 'XML', 'XMLNode', 'LoadVars',
 				'Sound', 'SharedObject', 'ContextMenu', 'ContextMenuItem', 'TextFormat'], false);
 		//'myManager', 'SoundManager'], false);
 		AVM1Globals.instance = globals;
@@ -145,7 +146,13 @@ export class AVM1Globals extends AVM1Object {
 
 		this._initializeFlashObject(context);
 
+		this.middleMouseButtonFunction = new AVM1Function(context);
+		this.middleMouseButtonFunction.alCall = (thisArg: any, args?: any[])=>{
+			return false; // only return ture if middle mouse button was pressed
+		};
 	}
+
+	public middleMouseButtonFunction: AVM1Function;
 
 	public flash: AVM1Object;
 
@@ -183,6 +190,14 @@ export class AVM1Globals extends AVM1Object {
 			AVM1Stage.avmStage.removeChild(this.registeredLevels[level]);
 			delete this.registeredLevels[level];
 		}
+	}
+
+	public ASnative(classID, id) {
+		if (classID === 800 && id === 2) {
+			return this.middleMouseButtonFunction;
+		}
+		console.log('ASnatives', classID, id);
+		return null;
 	}
 
 	public ASSetPropFlags(obj: any, children: any, flags: any, allowFalse: any): any {
@@ -354,6 +369,8 @@ export class AVM1Globals extends AVM1Object {
 	public isFinite(n: number): boolean {
 		return isFinite(alToNumber(this.context, n));
 	}
+
+	public newline: string = '\n';
 
 	public isNaN(n: any): boolean {
 		if (n === ' ') {
