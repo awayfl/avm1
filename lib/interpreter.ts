@@ -1547,10 +1547,6 @@ function avm1_0x0B_ActionSubtract(ectx: ExecutionContext) {
 
 	let a = stack.pop();
 	let b = stack.pop();
-	if (typeof a === 'string' || typeof b === 'string') {
-		stack.push(NaN);
-		return;
-	}
 
 	a = alToNumber(ectx.context, a);
 	b = alToNumber(ectx.context, b);
