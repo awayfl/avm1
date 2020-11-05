@@ -347,19 +347,20 @@ export class ActionsDataCompiler {
 							break;
 						}
 					}
+					if (j >= 0) {
+						const topOpp = items[j];
 
-					const topOpp = items[j];
+						// chain
+						const topArgs = topOpp.action.args;
+						if (topOpp.action.actionCode === ActionCode.ActionGetMember && topArgs?.length) {
+							topOpp.flags.killed = true;
+							item.flags.optimised = true;
 
-					// chain
-					const topArgs = topOpp.action.args;
-					if (topOpp.action.actionCode === ActionCode.ActionGetMember && topArgs?.length) {
-						topOpp.flags.killed = true;
-						item.flags.optimised = true;
-
-						// prepend arguments from top, drop first, because it pop
-						selfArgs.shift();
-						for (let i = topArgs.length - 1; i >= 0; i--) {
-							selfArgs.unshift(topArgs[i]);
+							// prepend arguments from top, drop first, because it pop
+							selfArgs.shift();
+							for (let i = topArgs.length - 1; i >= 0; i--) {
+								selfArgs.unshift(topArgs[i]);
+							}
 						}
 					}
 				}
