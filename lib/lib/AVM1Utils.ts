@@ -153,7 +153,7 @@ export function avm1BroadcastEvent(context: AVM1Context, target: any, propertyNa
 			}
 			handlerOnListener = listener.alGet(propertyName);
 			if (handlerOnListener instanceof AVM1Function) {
-				handlerOnListener.alCall(target, args);
+				handlerOnListener.alCall(listener, args);
 			}
 		});
 	}

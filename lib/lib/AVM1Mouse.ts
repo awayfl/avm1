@@ -21,6 +21,7 @@ import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Stage } from './AVM1Stage';
 import { AVM1Globals } from './AVM1Globals';
 import { AVMStage } from '@awayfl/swf-loader';
+import { MouseEvent } from '@awayjs/scene';
 
 export class AVM1Mouse extends AVM1Object {
 	public static createAVM1Class(context: AVM1Context): AVM1Object {
@@ -32,17 +33,20 @@ export class AVM1Mouse extends AVM1Object {
 	public static mouseMoveDelegate: any=null;
 	public static mouseOutDelegate: any=null;
 	public static mouseUpDelegate: any=null;
+	public static mouseMiddleDownDelegate: any=null;
+	public static mouseMiddleUpDelegate: any=null;
+	public static mouseMiddleDownClicked: boolean=false;
 
 	public static bindStage(context: AVM1Context, cls: AVM1Object, avmStage: AVMStage, htmlElement: HTMLElement): void {
 
 		if (AVM1Mouse.mouseDownDelegate)
-			avmStage.removeEventListener('mouseDown', AVM1Mouse.mouseDownDelegate);
+			avmStage.removeEventListener(MouseEvent.MOUSE_DOWN, AVM1Mouse.mouseDownDelegate);
 		if (AVM1Mouse.mouseMoveDelegate)
-			avmStage.removeEventListener('mouseMove', AVM1Mouse.mouseMoveDelegate);
+			avmStage.removeEventListener(MouseEvent.MOUSE_MOVE, AVM1Mouse.mouseMoveDelegate);
 		if (AVM1Mouse.mouseOutDelegate)
-			avmStage.removeEventListener('mouseOut', AVM1Mouse.mouseOutDelegate);
+			avmStage.removeEventListener(MouseEvent.MOUSE_OUT, AVM1Mouse.mouseOutDelegate);
 		if (AVM1Mouse.mouseUpDelegate)
-			avmStage.removeEventListener('mouseUp', AVM1Mouse.mouseUpDelegate);
+			avmStage.removeEventListener(MouseEvent.MOUSE_UP, AVM1Mouse.mouseUpDelegate);
 
 		AVM1Mouse.mouseDownDelegate = (e)=>{
 			alCallProperty(cls, 'broadcastMessage', ['onMouseDown']);
@@ -56,10 +60,10 @@ export class AVM1Mouse extends AVM1Object {
 		AVM1Mouse.mouseUpDelegate = (e)=>{
 			alCallProperty(cls, 'broadcastMessage', ['onMouseUp']);
 		};
-		avmStage.addEventListener('mouseDown', AVM1Mouse.mouseDownDelegate);
-		avmStage.addEventListener('mouseMove', AVM1Mouse.mouseMoveDelegate);
-		avmStage.addEventListener('mouseOut', AVM1Mouse.mouseOutDelegate);
-		avmStage.addEventListener('mouseUp', AVM1Mouse.mouseUpDelegate);
+		avmStage.addEventListener(MouseEvent.MOUSE_DOWN, AVM1Mouse.mouseDownDelegate);
+		avmStage.addEventListener(MouseEvent.MOUSE_MOVE, AVM1Mouse.mouseMoveDelegate);
+		avmStage.addEventListener(MouseEvent.MOUSE_OUT, AVM1Mouse.mouseOutDelegate);
+		avmStage.addEventListener(MouseEvent.MOUSE_UP, AVM1Mouse.mouseUpDelegate);
 	}
 
 	public static hide() {
