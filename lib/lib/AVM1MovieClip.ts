@@ -56,7 +56,8 @@ interface IVirtualSceneGraphItem {
 	sessionID: number,
 	depth: number,
 	addedOnTargetFrame: boolean,
-	symbolID?: number
+	symbolID?: number,
+	child?: any
 }
 
 export const enum LookupChildOptions {
@@ -82,8 +83,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	private _depth_childs: NumberMap<DisplayObject>;
 	private _nextHighestDepth: number = 0;
-
-	private _depth_sessionIDs: Object;
 
 	public static currentMCAssetNameSpace: string = '';
 	public static currentDraggedMC: AVM1MovieClip = null;
@@ -194,7 +193,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		delete this.adaptee._sessionID_childs[child._sessionID];
 		delete this._depth_childs[child._avmDepthID];
-		delete this._depth_sessionIDs[child._avmDepthID];
 
 		child._sessionID = -1;
 		child._avmDepthID = -16384;
@@ -244,7 +242,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		this._depth_childs[depth] = child;
 		if (fromTimeline) {
 			this.adaptee._sessionID_childs[child._sessionID] = child;
-			this._depth_sessionIDs[depth] = child._sessionID;
 		}
 
 		return getAVM1Object(child, <AVM1Context> this._avm1Context);
@@ -287,14 +284,16 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		let len = this.adaptee._children.length;
 		for (let i = 0; i < len; i++) {
 			const child = this.adaptee._children[i];
-			if (jump_forward) {
+			if (jump_forward || child._sessionID == -1) {
 				virtualSceneGraphMap[child._avmDepthID] = {
 					sessionID:child._sessionID,
 					addedOnTargetFrame:false,
-					depth:child._avmDepthID
+					depth:child._avmDepthID,
+					child: child
 				};
 			}
-			existingSessionIDs[child._sessionID] = child;
+			if (child._sessionID >= 0)
+				existingSessionIDs[child._sessionID] = child;
 		}
 
 		// step2: apply add/remove commands into virtual-scenegraph
@@ -370,7 +369,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		const newChildsOnTargetFrame: DisplayObject[] = [];
 
 		this._depth_childs = {};
-		this._depth_sessionIDs = {};
 		this.adaptee._sessionID_childs = {};
 
 		// step4: compare virtual scenegraph against current children
@@ -382,7 +380,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		len = newChildren.length = virtualSceneGraph.length;
 		for (let i = 0; i < len; i++) {
 			vsItem = virtualSceneGraph[i];
-			if (existingSessionIDs[vsItem.sessionID]) {
+			if (vsItem.sessionID == -1 && vsItem.child) {
+				newChildren[i] = vsItem.child;
+			} else if (existingSessionIDs[vsItem.sessionID]) {
 				//	the same sessionID already is child of the mc
 				const existingChild = existingSessionIDs[vsItem.sessionID];
 				const depth = vsItem.depth;
@@ -390,7 +390,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				//	set existing child to correct depth:
 				existingChild._avmDepthID = depth;
 				this._depth_childs[depth] = existingChild;
-				this._depth_sessionIDs[depth] = existingChild._sessionID = vsItem.sessionID;
+				existingChild._sessionID = vsItem.sessionID;
 				this.adaptee._sessionID_childs[vsItem.sessionID] = existingChild;
 				newChildren[i] = existingChild;
 				//console.log("vsItem.exists", vsItem);
@@ -424,7 +424,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				const depth = newChild._avmDepthID = vsItem.depth;
 
 				this._depth_childs[depth] = newChild;
-				this._depth_sessionIDs[depth] = newChild._sessionID = vsItem.sessionID;
+				newChild._sessionID = vsItem.sessionID;
 				this.adaptee._sessionID_childs[vsItem.sessionID] = newChild;
 
 				newChildren[i] = newChild;
@@ -816,7 +816,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	public initAVM1SymbolInstance(context: AVM1Context, awayObject: any) {//MovieClip
 		this._childrenByName = Object.create(null);
 		this._depth_childs = Object.create(null);
-		this._depth_sessionIDs = Object.create(null);
 		super.initAVM1SymbolInstance(context, awayObject);
 		this.dragListenerDelegate = (event) => this.dragListener(event);
 		this.stopDragDelegate = (event) => this.stopDrag(event);
@@ -1668,19 +1667,24 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	 */
 	public swapChildrenToDepth(child1: AVM1MovieClip, child2: AVM1MovieClip, depth1: number, depth2: number): void {
 
-		console.warn('[AVM1MovieClip] - swapChildrenToDepth not implemented');
-		/*
+		if (child2 && this._depth_childs[depth1]) {
+			// if no child2 was passed, check if there exists a child at depth1
+			// depth1 is the target depth for child1, so if it is occupied we want to swap the two children
+			// if its not occupied, we can just set the new depth for child1, order childs by depth and be done with it
+			child2 = <AVM1MovieClip> this._depth_childs[depth1].adapter;
+		}
+
 		delete this.adaptee._sessionID_childs[child1.adaptee._sessionID];
-		this._depth_childs[depth1] = child1.adaptee;
 		child1.adaptee._avmDepthID = depth1;
 		child1.adaptee._sessionID = -1;
 		child1.adaptee._setParent(null);
 		child1.adaptee._setParent(this.adaptee);
 		child1.hasSwappedDepth = true;
+		this._depth_childs[depth1] = child1.adaptee;
 
-		const originalIdx1 = this.getDepthIndexInternal(depth2);
+		const originalIdx1 = this.adaptee._children.indexOf(child1.adaptee);
 		if (child2) {
-			const originalIdx2 = this.getDepthIndexInternal(depth1);
+			const originalIdx2 = this.adaptee._children.indexOf(child2.adaptee);
 			const children = this.adaptee._children;
 			[children[originalIdx1], children[originalIdx2]] = [children[originalIdx2], children[originalIdx1]];
 			delete this.adaptee._sessionID_childs[child2.adaptee._sessionID];
@@ -1692,6 +1696,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			child2.hasSwappedDepth = true;
 		} else {
 			delete this._depth_childs[depth2];
+			this.adaptee._children.sort(sortByDepth);
 		}
 
 		if (this.adaptee.name && parent) {
@@ -1700,14 +1705,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			if (child2) {
 				this.getLatestObjectForName(child2.adaptee.name.toLowerCase());
 			}
-		}*/
+		}
 
 	}
 
 	public swapDepths(target: any): void {
-		console.warn('[AVM1MovieClip] - swapChildrenToDepth not implemented');
-		//return;
-		/*
+
 		// if this is the scene, or if no parent exists, we do not want to do anything
 		if (this.adaptee.isAVMScene || !this.get_parent()) {
 			return;
@@ -1723,10 +1726,11 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return;
 		}
 		if (typeof target === 'number') {
+			target = avm2AwayDepth(target);
 			if (this.adaptee._avmDepthID == target)
 				return;
-			target = avm2AwayDepth(target);
-			targetChild = parent._depth_childs[target].adapter;
+			targetChild = parent._depth_childs[target];
+			if (targetChild) targetChild = targetChild.adapter;
 			//console.log("swap to number", this.adaptee.name, target);
 		} else if (target.adaptee) {
 			const targetParent = target.get_parent();
@@ -1737,8 +1741,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			//console.log("swap to children", this.adaptee.name, target.adaptee.name);
 		}
 		parent.swapChildrenToDepth(this, targetChild, target, this.adaptee._avmDepthID);
-		*/
-
 	}
 
 	public getTabChildren(): boolean {
