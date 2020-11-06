@@ -17,10 +17,25 @@
 import { shumwayOptions, Option, OptionSet } from '@awayfl/swf-loader';
 
 const avm1Options = shumwayOptions.register(new OptionSet('AVM1'));
-export var avm1TraceEnabled = avm1Options.register(new Option('t1', 'traceAvm1', 'boolean', false, 'trace AVM1 execution'));
-export var avm1ErrorsEnabled = avm1Options.register(new Option('e1', 'errorsAvm1', 'boolean', false, 'fail on AVM1 warnings and errors'));
-export var avm1WarningsEnabled = avm1Options.register(new Option('w1', 'warningsAvm1', 'boolean', true, 'Emit messages for AVM1 warnings and errors'));
-export var avm1TimeoutDisabled = avm1Options.register(new Option('ha1', 'nohangAvm1', 'boolean', false, 'disable fail on AVM1 hang'));
-export var avm1CompilerEnabled = avm1Options.register(new Option('ca1', 'compileAvm1', 'boolean', true, 'compiles AVM1 code'));
-export var avm1DebuggerEnabled = avm1Options.register(new Option('da1', 'debugAvm1', 'boolean', false, 'allows AVM1 code debugging'));
-export var avm1WellknownActionsCompilationsEnabled = avm1Options.register(new Option('cw1', 'wellknownAvm1', 'boolean', true, 'Replaces well-known actions patterns instead of compilation'));
+export const avm1TraceEnabled =
+	avm1Options.register(new Option('t1', 'traceAvm1', 'boolean', false, 'trace AVM1 execution'));
+
+export const avm1ErrorsEnabled =
+	avm1Options.register(new Option('e1', 'errorsAvm1', 'boolean', false, 'fail on AVM1 warnings and errors'));
+
+export const avm1WarningsEnabled =
+	avm1Options.register(new Option(
+		'w1', 'warningsAvm1', 'boolean', true, 'Emit messages for AVM1 warnings and errors'));
+
+export const avm1TimeoutDisabled =
+	avm1Options.register(new Option('ha1', 'nohangAvm1', 'boolean', false, 'disable fail on AVM1 hang'));
+
+export const avm1CompilerEnabled =
+	avm1Options.register(new Option('ca1', 'compileAvm1', 'boolean', true, 'compiles AVM1 code'));
+
+export const avm1DebuggerEnabled =
+	avm1Options.register(new Option('da1', 'debugAvm1', 'boolean', false, 'allows AVM1 code debugging'));
+
+export const avm1WellknownActionsCompilationsEnabled =
+	avm1Options.register(new Option(
+		'cw1', 'wellknownAvm1', 'boolean', true, 'Replaces well-known actions patterns instead of compilation'));
