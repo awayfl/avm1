@@ -50,7 +50,7 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		for (let f = 0; f < newFilters.length; f++) {
 			filter = newFilters[f];
 		}*/
-		console.warn('[AVM1Object] update_filters not implemented');
+		// console.warn('[AVM1Object] update_filters not implemented');
 	}
 
 	public isBlockedByScript(): boolean {
