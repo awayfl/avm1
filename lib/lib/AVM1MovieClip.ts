@@ -731,8 +731,13 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			if (this.context.swfVersion < 8)
 				name = name.toLowerCase();
 
-			// todo: make sure this is correct for all cases
-			this.alDeleteOwnProperty(name);
+			// unregister al-property, only if it is of type AVM1Symbolbase
+			// this makes sure that objects from timeline unregister,
+			// but other property-types are left alone
+			const ownDesc = this.alGetOwnProperty(name);
+			if (ownDesc && ((<any>ownDesc).value instanceof AVM1SymbolBase)) {
+				this.alDeleteOwnProperty(name);
+			}
 
 			if (this._childrenByName[name] && this._childrenByName[name].adaptee.id == child.id) {
 
