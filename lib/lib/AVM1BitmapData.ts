@@ -18,15 +18,13 @@ import { alCoerceNumber, alCoerceString, alToBoolean, alToInt32, alToNumber, alT
 import { AVM1Context } from '../context';
 import { AVM1Rectangle, toAS3Rectangle } from './AVM1Rectangle';
 import { toAS3Point } from './AVM1Point';
-import { Debug, isNullOrUndefined } from '@awayfl/swf-loader';
-import { AVM1ArrayNative } from '../natives';
 import { BlendModesMap, IHasAS3ObjectReference, wrapAVM1NativeClass } from './AVM1Utils';
 // import {convertToAS3Filter} from "./AVM1Filters";
 import { toAwayColorTransform, AVM1ColorTransform } from './AVM1ColorTransform';
 import { toAS3Matrix } from './AVM1Matrix';
 //import {BitmapImage2D as BitmapData} from "@awayjs/stage";
 import { SceneImage2D as BitmapData } from '@awayjs/scene';
-import { AssetLibrary, IAsset } from '@awayjs/core';
+import { AssetLibrary, IAsset, IAssetAdapter } from '@awayjs/core';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Stage } from './AVM1Stage';
 import { BitmapImage2D } from '@awayjs/stage';
@@ -79,8 +77,19 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 
 	static loadBitmap(context: AVM1Context, symbolId: string): AVM1BitmapData {
 		symbolId = alToString(context, symbolId);
-		//var symbol = context.getAsset(symbolId);
-		const symbol = AssetLibrary.getAsset(symbolId);
+
+		/**
+		 * @todo FIXME, remove asset hack
+		 */
+		const bundle = AssetLibrary.getBundle();
+		const nss = Object.keys((<any> bundle)._assetDictionary);
+
+		let symbol: IAssetAdapter;
+		for (const ns of nss) {
+			symbol = bundle.getAsset(symbolId, ns);
+			if (symbol) break;
+		}
+
 		// REDUX verify
 		if (symbol && (<IAsset><any>symbol).isAsset(BitmapImage2D)) {
 			const bitmapData = new AVM1BitmapData(context);
