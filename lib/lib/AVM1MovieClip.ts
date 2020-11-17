@@ -972,10 +972,19 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public beginBitmapFill(bmp: AVM1BitmapData, matrix: AVM1Object = null,
 		repeat: boolean = false, smoothing: boolean = false): void {
+
+		// invalid op
+		/*
 		if (!alInstanceOf(this.context, bmp, this.context.globals.BitmapData)) {
 			return; // skipping operation if first parameter is not a BitmapData.
-		}
+		}*/
+
+		// nullable cast, return null if can't convert to as3 bitmap
 		const bmpNative = toAS3BitmapData(bmp);
+		if (!bmpNative) {
+			return;
+		}
+
 		const matrixNative = isNullOrUndefined(matrix) ? null : toAS3Matrix(matrix);
 		repeat = alToBoolean(this.context, repeat);
 		smoothing = alToBoolean(this.context, smoothing);
