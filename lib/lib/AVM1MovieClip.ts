@@ -15,28 +15,64 @@
  */
 
 import {
-	getAwayJSAdaptee, getAwayObjectOrTemplate,
+	getAwayJSAdaptee,
+	getAwayObjectOrTemplate,
 	getAVM1Object,
 	hasAwayJSAdaptee,
-	IAVM1SymbolBase, initializeAVM1Object,
-	wrapAVM1NativeClass, toTwipFloor, avm2AwayDepth, away2avmDepth
+	IAVM1SymbolBase,
+	initializeAVM1Object,
+	wrapAVM1NativeClass,
+	toTwipFloor,
+	avm2AwayDepth,
+	away2avmDepth,
 } from './AVM1Utils';
 import {
-	alCoerceString, alForEachProperty, alInstanceOf, alIsName, alNewObject, alToBoolean, alToInt32,
+	alCoerceString,
+	alForEachProperty,
+	alIsName,
+	alNewObject,
+	alToBoolean,
+	alToInt32,
 	alToNumber,
-	alToString, AVM1PropertyFlags, alIsArray
+	alToString,
+	AVM1PropertyFlags,
+	alIsArray,
 } from '../runtime';
 import { AVM1Context } from '../context';
-import { isNullOrUndefined, release, assert, Debug, somewhatImplemented, warning } from '@awayfl/swf-loader';
+import {
+	isNullOrUndefined,
+	release,
+	assert,
+	Debug,
+	somewhatImplemented,
+	warning,
+} from '@awayfl/swf-loader';
 import { AVM1BitmapData, toAS3BitmapData } from './AVM1BitmapData';
 import { toAS3Matrix } from './AVM1Matrix';
 import { AVM1ArrayNative } from '../natives';
 import { copyAS3PointTo, toAS3Point } from './AVM1Point';
 import { MovieClipProperties } from '../interpreter/MovieClipProperties';
-import { IMovieClipAdapter, DisplayObject, MovieClip, TextField, Billboard,
-	TextFormat, MouseManager, FrameScriptManager, Timeline, IDisplayObjectAdapter,
-	DisplayObjectContainer, IFrameScript } from '@awayjs/scene';
-import { AssetLibrary, Matrix3D, Point, WaveAudio, Rectangle } from '@awayjs/core';
+import {
+	IMovieClipAdapter,
+	DisplayObject,
+	MovieClip,
+	TextField,
+	Billboard,
+	TextFormat,
+	MouseManager,
+	FrameScriptManager,
+	Timeline,
+	IDisplayObjectAdapter,
+	DisplayObjectContainer,
+	IFrameScript,
+} from '@awayjs/scene';
+import {
+	AssetLibrary,
+	Matrix3D,
+	Point,
+	WaveAudio,
+	Rectangle,
+} from '@awayjs/core';
 import { AVM1TextField } from './AVM1TextField';
 import { Graphics, LineScaleMode, GradientType } from '@awayjs/graphics';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
@@ -972,12 +1008,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public beginBitmapFill(bmp: AVM1BitmapData, matrix: AVM1Object = null,
 		repeat: boolean = true, smoothing: boolean = false): void {
-
-		// invalid op
-		/*
-		if (!alInstanceOf(this.context, bmp, this.context.globals.BitmapData)) {
-			return; // skipping operation if first parameter is not a BitmapData.
-		}*/
 
 		// nullable cast, return null if can't convert to as3 bitmap
 		const bmpNative = toAS3BitmapData(bmp);
