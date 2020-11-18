@@ -393,15 +393,31 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	threshold(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
 		operation: string, threshold: number, color?: number, mask?: number,
 		copySource?: boolean): number {
-		//const as3BitmapData = sourceBitmap.as3BitmapData;
-		//const as3SourceRect = toAS3Rectangle(sourceRect);
-		//const as3DestPoint = toAS3Point(destPoint);
+
+		const thisAsBitmap = this.as3BitmapData;
+		const as3BitmapData = sourceBitmap.as3BitmapData;
+
+		if (!as3BitmapData) {
+			return;
+		}
+
+		const as3SourceRect = toAS3Rectangle(sourceRect);
+		const as3DestPoint = toAS3Point(destPoint);
+
 		operation = alCoerceString(this.context, operation);
-		threshold = alToInt32(this.context, threshold);
+		threshold = alToInt32(this.context, threshold) >>> 0;
 		color = arguments.length < 6 ? 0 : alToInt32(this.context, color);
 		mask = arguments.length < 7 ? 0xFFFFFFFF : alToInt32(this.context, mask);
 		copySource = arguments.length < 8 ? false : alToBoolean(this.context, copySource);
-		console.warn('[avm1/AVM1BitmapData] - scroll not implemented');
+
+		// if 0, treshold is bugged
+		color = color === 0 ? 0x00010101 : color;
+
+		thisAsBitmap.threshold(
+			as3BitmapData, as3SourceRect, as3DestPoint,
+			operation, threshold, 0x00ff00ff, mask, copySource);
+
+		//console.warn('[avm1/AVM1BitmapData] - scroll not implemented');
 		return 0;
 	}
 }
