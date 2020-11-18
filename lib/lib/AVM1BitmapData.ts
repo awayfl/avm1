@@ -261,16 +261,18 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	getColorBoundsRect(mask: number, color: number, findColor?: boolean): AVM1Object {
-		mask = alToInt32(this.context, mask);
-		color = alToInt32(this.context, color);
+		mask = alToInt32(this.context, mask) >>> 0;
+		color = alToInt32(this.context, color) >>> 0;
 		findColor = alToBoolean(this.context, findColor);
 		// todo 80pro
-		console.warn('[avm1/AVM1BitmapData] - getColorBoundsRect not implemented');
-		/*
-		var rect = this.adaptee.getColorBoundsRect(mask, color, findColor);
-		return new AVM1Rectangle(this.context, rect.x, rect.y, rect.width, rect.height);
-		*/
-		return null;
+		//console.warn('[avm1/AVM1BitmapData] - getColorBoundsRect not implemented');
+
+		const rect = this.as3BitmapData?.getColorBoundsRect(mask, color, findColor);
+
+		return rect
+			? new AVM1Rectangle(this.context, rect.x, rect.y, rect.width, rect.height)
+			: null;
+		//return null;
 	}
 
 	getPixel(x: number, y: number): number {
