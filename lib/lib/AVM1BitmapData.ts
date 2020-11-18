@@ -106,6 +106,8 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 			bitmap.adaptee = awayObject;
 			return bitmap;
 		}*/
+
+		console.warn('[AVM1 BitmapData] Missing bitmap:', symbolId);
 		return null;
 	}
 
@@ -182,15 +184,18 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 			console.warn('[AVM1BitmapData::copyPixels] Empty source!');
 			return;
 		}
-		console.warn('[avm1/AVM1BitmapData] - copyPixels not implemented');
-		/*
+		//console.warn('[avm1/AVM1BitmapData] - copyPixels not implemented');
+
+		const thisAs3 = this.as3BitmapData;
 		const as3BitmapData = sourceBitmap.as3BitmapData;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
 		const as3DestPoint = toAS3Point(destPoint);
 		const as3AlphaData = alphaBitmap ? alphaBitmap.as3BitmapData : null;
 		const as3AlphaPoint = alphaPoint ? toAS3Point(alphaPoint) : null;
 		mergeAlpha = alToBoolean(this.context, mergeAlpha);
-		*/
+
+		thisAs3.copyPixels(
+			as3BitmapData, as3SourceRect, as3DestPoint, as3AlphaData, as3AlphaPoint, mergeAlpha);
 	}
 
 	dispose(): void {
