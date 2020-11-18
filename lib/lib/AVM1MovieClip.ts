@@ -971,7 +971,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public beginBitmapFill(bmp: AVM1BitmapData, matrix: AVM1Object = null,
-		repeat: boolean = false, smoothing: boolean = false): void {
+		repeat: boolean = true, smoothing: boolean = false): void {
 
 		// invalid op
 		/*
