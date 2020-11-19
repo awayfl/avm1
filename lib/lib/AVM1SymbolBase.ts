@@ -262,15 +262,17 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
                     this.addEventListenerOnAdapter(this._eventHandlers[key], <any>this._eventsListeners[key]);
 				}
 			}
-			for (var key in this._onClipEventsListeners) {
-				if(!this._onClipEventsListeners[key]){
-					throw("AVM1SymbolBase.setEnabledListener - can not find "+key+" on this._onClipEventsListeners value="+value);
+			var cnt= this._onClipEventsListeners.length;
+			while(cnt>0){
+				cnt--;
+				if(!this._onClipEventsListeners[cnt]){
+					throw("AVM1SymbolBase.setEnabledListener - can not find "+cnt+" on this._onClipEventsListeners value="+value);
 				}
-				if(!this._onClipEventsListeners[key].event){
-					throw("AVM1SymbolBase.setEnabledListener - can not find event for "+key+" on this._onClipEventsListeners value="+value);
+				if(!this._onClipEventsListeners[cnt].event){
+					throw("AVM1SymbolBase.setEnabledListener - can not find event for "+cnt+" on this._onClipEventsListeners value="+value);
 				}
-				if(this._onClipEventsListeners[key].event.allowDisable){
-                    this.addEventListenerOnAdapter(this._onClipEventsListeners[key].event, <any>this._onClipEventsListeners[key].callback);
+				if(this._onClipEventsListeners[cnt].event.allowDisable){
+                    this.addEventListenerOnAdapter(this._onClipEventsListeners[cnt].event, <any>this._onClipEventsListeners[cnt].callback);
 				}
 			}
 		}
@@ -283,15 +285,17 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
                     this.removeEventListenerOnAdapter(this._eventHandlers[key], <any>this._eventsListeners[key]);
 				}
 			}
-			for (var key in this._onClipEventsListeners) {
-				if(!this._onClipEventsListeners[key]){
-					throw("AVM1SymbolBase.setEnabledListener - can not find "+key+" on this._onClipEventsListeners value="+value);
+			var cnt= this._onClipEventsListeners.length;
+			while(cnt>0){
+				cnt--;
+				if(!this._onClipEventsListeners[cnt]){
+					throw("AVM1SymbolBase.setEnabledListener - can not find "+cnt+" on this._onClipEventsListeners value="+value);
 				}
-				if(!this._onClipEventsListeners[key].event){
-					throw("AVM1SymbolBase.setEnabledListener - can not find event for "+key+" on this._onClipEventsListeners value="+value);
+				if(!this._onClipEventsListeners[cnt].event){
+					throw("AVM1SymbolBase.setEnabledListener - can not find event for "+cnt+" on this._onClipEventsListeners value="+value);
 				}
-				if(this._onClipEventsListeners[key].event.allowDisable){
-                    this.removeEventListenerOnAdapter(this._onClipEventsListeners[key].event, <any>this._onClipEventsListeners[key].callback);
+				if(this._onClipEventsListeners[cnt].event.allowDisable){
+                    this.removeEventListenerOnAdapter(this._onClipEventsListeners[cnt].event, <any>this._onClipEventsListeners[cnt].callback);
 				}
 			}
 		}
