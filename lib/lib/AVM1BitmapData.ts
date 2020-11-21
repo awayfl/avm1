@@ -24,7 +24,7 @@ import { toAwayColorTransform, AVM1ColorTransform } from './AVM1ColorTransform';
 import { toAS3Matrix } from './AVM1Matrix';
 //import {BitmapImage2D as BitmapData} from "@awayjs/stage";
 import { SceneImage2D as BitmapData } from '@awayjs/scene';
-import { AssetLibrary, IAsset, IAssetAdapter } from '@awayjs/core';
+import { AssetLibrary, IAsset, IAssetAdapter, Point } from '@awayjs/core';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Stage } from './AVM1Stage';
 import { BitmapImage2D } from '@awayjs/stage';
@@ -378,9 +378,15 @@ export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	scroll(x: number, y: number): void {
-		x = alCoerceNumber(this.context, x);
-		y = alCoerceNumber(this.context, y);
-		console.warn('[avm1/AVM1BitmapData] - scroll not implemented');
+		x = alCoerceNumber(this.context, x) | 0;
+		y = alCoerceNumber(this.context, y) | 0;
+
+		if (!x && !y) return;
+
+		const as3this = this.as3BitmapData;
+
+		as3this.copyPixels(as3this, as3this.rect, new Point(x, y), null, null, false);
+		//console.warn('[avm1/AVM1BitmapData] - scroll not implemented');
 	}
 
 	setPixel(x: number, y: number, color: number): void {
