@@ -1268,7 +1268,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return undefined;
 		}
 		return convertAS3RectangeToBounds(
-			this._pickGroup.getBoundsPicker(this.adaptee.partition).getBoxBounds(obj, true), this.context);
+			this._pickGroup.getBoundsPicker(this.adaptee.partition)
+				.getBoxBounds(obj.parent || AVM1Stage.avmStage.scene.root, true),
+			this.context
+		);
 	}
 
 	public getBytesLoaded(): number {
@@ -1324,7 +1327,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return undefined;
 		}
 		return convertAS3RectangeToBounds(
-			this._pickGroup.getBoundsPicker(this.adaptee.partition).getBoxBounds(obj), this.context);
+			this._pickGroup.getBoundsPicker(this.adaptee.partition)
+				.getBoxBounds(obj.parent || AVM1Stage.avmStage.scene.root),
+			this.context
+		);
 	}
 
 	public getSWFVersion(): number {

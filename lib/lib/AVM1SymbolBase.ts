@@ -349,9 +349,9 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_height() {
-		const box: Box = PickGroup.getInstance(
-			(<AVM1Stage> this.context.globals.Stage).avmStage.scene.view).getBoundsPicker(this.adaptee.partition)
-			.getBoxBounds(this.adaptee);
+		const box: Box = PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
+								.getBoundsPicker(this.adaptee.partition)
+								.getBoxBounds(this.adaptee.parent || AVM1Stage.avmStage.scene.root);
 		return (box == null) ? 0 : toTwipFloor(box.height);
 	}
 
@@ -602,9 +602,9 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_width(): number {
-		const box: Box = PickGroup.getInstance(
-			(<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
-			.getBoundsPicker(this.adaptee.partition).getBoxBounds(this.adaptee);
+		const box: Box = PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
+								.getBoundsPicker(this.adaptee.partition)
+								.getBoxBounds(this.adaptee.parent || AVM1Stage.avmStage.scene.root);
 
 		return (box == null) ? 0 : toTwipRound(box.width);
 	}
