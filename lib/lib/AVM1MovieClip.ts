@@ -1269,7 +1269,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		return convertAS3RectangeToBounds(
 			this._pickGroup.getBoundsPicker(this.adaptee.partition)
-				.getBoxBounds(obj.parent || AVM1Stage.avmStage.scene.root, true),
+				.getBoxBounds(obj, true),
 			this.context
 		);
 	}
@@ -1328,7 +1328,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		return convertAS3RectangeToBounds(
 			this._pickGroup.getBoundsPicker(this.adaptee.partition)
-				.getBoxBounds(obj.parent || AVM1Stage.avmStage.scene.root),
+				.getBoxBounds(obj),
 			this.context
 		);
 	}
