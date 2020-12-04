@@ -260,7 +260,7 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 		} else {
 			measureTextField.wordWrap = false;
 		}
-		measureTextField.defaultTextFormat = this.adaptee;
+		measureTextField.textFormat = this.adaptee;
 		measureTextField.text = text;
 		const result: AVM1Object = alNewObject(this.context);
 		const textWidth = measureTextField.textWidth;
