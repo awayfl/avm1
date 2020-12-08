@@ -306,7 +306,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	}
 
 	public getNewTextFormat() {
-		return AVM1TextFormat.createFromNative(this.context, this.adaptee.defaultTextFormat);
+		return AVM1TextFormat.createFromNative(this.context, this.adaptee.textFormat);
 	}
 
 	public getTextFormat(beginIndex: number = -1, endIndex: number = -1) {
