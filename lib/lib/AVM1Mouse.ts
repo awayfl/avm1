@@ -40,7 +40,7 @@ export class AVM1Mouse extends AVM1Object {
 
 	public static bindStage(context: AVM1Context, cls: AVM1Object, avmStage: AVMStage, htmlElement: HTMLElement): void {
 
-		const stage:Stage = avmStage.view.stage;
+		const stage: Stage = avmStage.view.stage;
 
 		if (AVM1Mouse.mouseDownDelegate)
 			stage.removeEventListener(MouseEvent.MOUSE_DOWN, AVM1Mouse.mouseDownDelegate);

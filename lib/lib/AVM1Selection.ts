@@ -57,7 +57,7 @@ export class AVM1Selection extends AVM1Object {
 
 		if (objectinFocus && objectinFocus.isAsset(TextField))
 			return (<TextField>objectinFocus).selectionEndIndex;
-	
+
 		return -1;
 	}
 

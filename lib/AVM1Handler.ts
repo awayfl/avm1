@@ -64,7 +64,7 @@ export class AVM1Handler implements IAVMHandler {
 
 		this.clearAllAVM1Listener();
 
-		const stage:Stage = this._avmStage.view.stage;
+		const stage: Stage = this._avmStage.view.stage;
 		stage.addEventListener(MouseEvent.MOUSE_DOWN, (evt)=>this.onMouseEvent(evt));
 		stage.addEventListener(MouseEvent.MOUSE_UP, (evt)=>this.onMouseEvent(evt));
 		stage.addEventListener(MouseEvent.MOUSE_MOVE, (evt)=>this.onMouseEvent(evt));
