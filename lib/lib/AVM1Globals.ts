@@ -176,7 +176,7 @@ export class AVM1Globals extends AVM1Object {
 		if (this.registeredLevels[level])
 			return this.registeredLevels[level];
 		getAVM1Object(root, this.context).adaptee;
-		AVM1Stage.avmStage.addChildAt(root, level);
+		AVM1Stage.avmStage.root.addChildAt(root, level);
 		if (root.adapter != root) {
 			(<IDisplayObjectAdapter>root.adapter).initAdapter();
 		}
@@ -186,7 +186,7 @@ export class AVM1Globals extends AVM1Object {
 
 	public _removeRoot(level: number): void {
 		if (this.registeredLevels[level]) {
-			AVM1Stage.avmStage.removeChild(this.registeredLevels[level]);
+			AVM1Stage.avmStage.root.removeChild(this.registeredLevels[level]);
 			delete this.registeredLevels[level];
 		}
 	}
@@ -866,7 +866,7 @@ export class AVM1NativeActions {
 
 	public stopAllSounds() {
 		AudioManager.stopAllSounds();
-		this._stopSoundsOnObjectsRecursivly(AVM1Stage.avmStage);
+		this._stopSoundsOnObjectsRecursivly(AVM1Stage.avmStage.root);
 	}
 
 	public stopDrag() {

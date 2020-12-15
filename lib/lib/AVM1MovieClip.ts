@@ -65,6 +65,7 @@ import {
 	IDisplayObjectAdapter,
 	DisplayObjectContainer,
 	IFrameScript,
+	MouseEvent,
 } from '@awayjs/scene';
 import {
 	AssetLibrary,
@@ -84,7 +85,7 @@ import { AVM1EventHandler } from './AVM1EventHandler';
 import { AVM1LoaderHelper } from './AVM1LoaderHelper';
 import { EventsListForMC } from './AVM1EventHandler';
 import { AVM1InterpretedFunction } from '../interpreter';
-import { PickGroup } from '@awayjs/view';
+import { PickEntity, PickGroup } from '@awayjs/view';
 
 import { MethodMaterial } from '@awayjs/materials';
 import { AVM1Function } from '../runtime/AVM1Function';
@@ -559,7 +560,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	private get _pickGroup() {
 		return PickGroup
-			.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.renderer.view);
+			.getInstance(AVM1Stage.avmStage.view);
 	}
 
 	public clone() {
@@ -1636,8 +1637,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		if (!this.isDragging) {
 			this.isDragging = true;
 			this.startDragPoint = this.adaptee.parent.transform.globalToLocal(
-				new Point((<AVM1Stage> this.context.globals.Stage).avmStage.mouseX,
-					(<AVM1Stage> this.context.globals.Stage).avmStage.mouseY));
+				new Point(AVM1Stage.avmStage.view.stage.screenX,
+					AVM1Stage.avmStage.view.stage.screenY));
 			if (lock) {
 				this.adaptee.x = this.startDragPoint.x;
 				this.adaptee.y = this.startDragPoint.y;
@@ -1646,10 +1647,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				this.checkBounds();
 			this.startDragMCPosition.x = this.adaptee.x;
 			this.startDragMCPosition.y = this.adaptee.y;
-			AVM1Stage.avmStage.addEventListener('mouseMove3d', this.dragListenerDelegate);
-			AVM1Stage.avmStage.scene.mousePicker.dragEntity = this.adaptee;
-			MouseManager.getInstance(AVM1Stage.avmStage.scene.renderer.renderGroup.pickGroup)
-				.startDragObject(this.adaptee);
+			AVM1Stage.avmStage.view.stage.addEventListener(MouseEvent.MOUSE_MOVE, this.dragListenerDelegate);
+			AVM1Stage.avmStage.mousePicker.dragEntity = this.adaptee;
+			AVM1Stage.avmStage.mouseManager.startDragObject(
+				this.adaptee.getAbstraction<PickEntity>(AVM1Stage.avmStage.mousePicker.pickGroup).pickingCollision);
 
 		}
 	}
@@ -1664,8 +1665,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		//console.log("drag", e);
 		if (this.adaptee.parent) {
 
-			const stage = (<AVM1Stage> this.context.globals.Stage).avmStage;
-			const tmpPoint = this.adaptee.parent.transform.globalToLocal(new Point(stage.mouseX, stage.mouseY));
+			const stage = AVM1Stage.avmStage.view.stage;
+			const tmpPoint = this.adaptee.parent.transform.globalToLocal(new Point(stage.screenX, stage.screenY));
 
 			this.adaptee.x = this.startDragMCPosition.x + (tmpPoint.x - this.startDragPoint.x);
 			this.adaptee.y = this.startDragMCPosition.y + (tmpPoint.y - this.startDragPoint.y);
@@ -1704,9 +1705,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		this.isDragging = false;
 		AVM1MovieClip.currentDraggedMC = null;
-		AVM1Stage.avmStage.scene.mousePicker.dragEntity = null;
-		MouseManager.getInstance(AVM1Stage.avmStage.scene.renderer.renderGroup.pickGroup).stopDragObject();
-		AVM1Stage.avmStage.removeEventListener('mouseMove3d', this.dragListenerDelegate);
+		AVM1Stage.avmStage.mousePicker.dragEntity = null;
+		AVM1Stage.avmStage.mouseManager.stopDragObject();
+		AVM1Stage.avmStage.removeEventListener(MouseEvent.MOUSE_MOVE, this.dragListenerDelegate);
 	}
 
 	/**

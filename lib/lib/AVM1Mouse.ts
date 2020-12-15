@@ -22,6 +22,7 @@ import { AVM1Stage } from './AVM1Stage';
 import { AVM1Globals } from './AVM1Globals';
 import { AVMStage } from '@awayfl/swf-loader';
 import { MouseEvent } from '@awayjs/scene';
+import { Stage } from '@awayjs/stage';
 
 export class AVM1Mouse extends AVM1Object {
 	public static createAVM1Class(context: AVM1Context): AVM1Object {
@@ -39,14 +40,16 @@ export class AVM1Mouse extends AVM1Object {
 
 	public static bindStage(context: AVM1Context, cls: AVM1Object, avmStage: AVMStage, htmlElement: HTMLElement): void {
 
+		const stage:Stage = avmStage.view.stage;
+
 		if (AVM1Mouse.mouseDownDelegate)
-			avmStage.removeEventListener(MouseEvent.MOUSE_DOWN, AVM1Mouse.mouseDownDelegate);
+			stage.removeEventListener(MouseEvent.MOUSE_DOWN, AVM1Mouse.mouseDownDelegate);
 		if (AVM1Mouse.mouseMoveDelegate)
-			avmStage.removeEventListener(MouseEvent.MOUSE_MOVE, AVM1Mouse.mouseMoveDelegate);
+			stage.removeEventListener(MouseEvent.MOUSE_MOVE, AVM1Mouse.mouseMoveDelegate);
 		if (AVM1Mouse.mouseOutDelegate)
-			avmStage.removeEventListener(MouseEvent.MOUSE_OUT, AVM1Mouse.mouseOutDelegate);
+			stage.removeEventListener(MouseEvent.MOUSE_OUT, AVM1Mouse.mouseOutDelegate);
 		if (AVM1Mouse.mouseUpDelegate)
-			avmStage.removeEventListener(MouseEvent.MOUSE_UP, AVM1Mouse.mouseUpDelegate);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, AVM1Mouse.mouseUpDelegate);
 
 		AVM1Mouse.mouseDownDelegate = (e)=>{
 			alCallProperty(cls, 'broadcastMessage', ['onMouseDown']);
@@ -60,17 +63,17 @@ export class AVM1Mouse extends AVM1Object {
 		AVM1Mouse.mouseUpDelegate = (e)=>{
 			alCallProperty(cls, 'broadcastMessage', ['onMouseUp']);
 		};
-		avmStage.addEventListener(MouseEvent.MOUSE_DOWN, AVM1Mouse.mouseDownDelegate);
-		avmStage.addEventListener(MouseEvent.MOUSE_MOVE, AVM1Mouse.mouseMoveDelegate);
-		avmStage.addEventListener(MouseEvent.MOUSE_OUT, AVM1Mouse.mouseOutDelegate);
-		avmStage.addEventListener(MouseEvent.MOUSE_UP, AVM1Mouse.mouseUpDelegate);
+		stage.addEventListener(MouseEvent.MOUSE_DOWN, AVM1Mouse.mouseDownDelegate);
+		stage.addEventListener(MouseEvent.MOUSE_MOVE, AVM1Mouse.mouseMoveDelegate);
+		stage.addEventListener(MouseEvent.MOUSE_OUT, AVM1Mouse.mouseOutDelegate);
+		stage.addEventListener(MouseEvent.MOUSE_UP, AVM1Mouse.mouseUpDelegate);
 	}
 
 	public static hide() {
-		(<AVM1Stage>AVM1Globals.instance.Stage).avmStage.scene.mouseManager.showCursor = false;
+		(<AVM1Stage>AVM1Globals.instance.Stage).avmStage.mouseManager.showCursor = false;
 	}
 
 	public static show() {
-		(<AVM1Stage>AVM1Globals.instance.Stage).avmStage.scene.mouseManager.showCursor = true;
+		(<AVM1Stage>AVM1Globals.instance.Stage).avmStage.mouseManager.showCursor = true;
 	}
 }

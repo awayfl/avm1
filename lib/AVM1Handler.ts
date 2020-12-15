@@ -11,6 +11,7 @@ import { AVM1Globals, TraceLevel } from './lib/AVM1Globals';
 import { AVM1MovieClip } from './lib/AVM1MovieClip';
 import { AVM1EventProps } from './lib/AVM1EventHandler';
 import { getAVM1Object } from './lib/AVM1Utils';
+import { Stage } from '@awayjs/stage';
 
 export class AVM1Handler implements IAVMHandler {
 	public avmVersion: string = AVMVERSION.AVM1;
@@ -42,8 +43,7 @@ export class AVM1Handler implements IAVMHandler {
 		//	AVM1 doesnt use veent bubbling, but has those onMouseDown / onMouseUp events that listen on stage,
 		//	no matter what object they are assigned to.
 		//	todo verify this is AVM1 only
-		this._avmStage.scene.mouseManager._stage = this._avmStage;
-		this._avmStage.scene.mouseManager.eventBubbling = false;
+		this._avmStage.mouseManager.eventBubbling = false;
 
 		this._factory = new AVM1SceneGraphFactory(new AVM1ContextImpl(swfFile.swfVersion));
 		this._factory.avm1Context.sec = new SecurityDomain();
@@ -63,11 +63,13 @@ export class AVM1Handler implements IAVMHandler {
 			swfFile.url.substring(0, swfFile.url.lastIndexOf('/') + 1);
 
 		this.clearAllAVM1Listener();
-		this._avmStage.addEventListener(MouseEvent.MOUSE_DOWN, (evt)=>this.onMouseEvent(evt));
-		this._avmStage.addEventListener(MouseEvent.MOUSE_UP, (evt)=>this.onMouseEvent(evt));
-		this._avmStage.addEventListener(MouseEvent.MOUSE_MOVE, (evt)=>this.onMouseEvent(evt));
-		this._avmStage.addEventListener(KeyboardEvent.KEYDOWN, (evt)=>this.onKeyEvent(evt));
-		this._avmStage.addEventListener(KeyboardEvent.KEYUP, (evt)=>this.onKeyEvent(evt));
+
+		const stage:Stage = this._avmStage.view.stage;
+		stage.addEventListener(MouseEvent.MOUSE_DOWN, (evt)=>this.onMouseEvent(evt));
+		stage.addEventListener(MouseEvent.MOUSE_UP, (evt)=>this.onMouseEvent(evt));
+		stage.addEventListener(MouseEvent.MOUSE_MOVE, (evt)=>this.onMouseEvent(evt));
+		stage.addEventListener(KeyboardEvent.KEYDOWN, (evt)=>this.onKeyEvent(evt));
+		stage.addEventListener(KeyboardEvent.KEYUP, (evt)=>this.onKeyEvent(evt));
 
 		if (this._avmStage.avmTestHandler) {
 			(<any> this._factory.avm1Context).actions.originalTrace = (<any> this._factory.avm1Context).actions.trace;
@@ -96,34 +98,26 @@ export class AVM1Handler implements IAVMHandler {
 
 	public enterFrame(dt: number) {
 		// todo: do we need this ?
-		this._avmStage.scene.renderer.stage.clear();
+		this._avmStage.view.stage.clear();
 
 		FrameScriptManager.execute_queue();
 
-		let i: number = 0;
+		this._avmStage.root.advanceFrame();
+
+		FrameScriptManager.execute_queue();
+
+		let i: number;
 		let child: DisplayObject;
-		let len: number = this._avmStage.numChildren;
-
-		for (i = 0; i < len; i++) {
-			child = this._avmStage.getChildAt(i);
-			// each child in here should be a swf-scene
-			if (child.isAsset(MovieClip)) {
-				(<MovieClip>child).advanceFrame();
-			}
-
-		}
-		FrameScriptManager.execute_queue();
 
 		const enterFramesChilds = [];
-		len = this._avmStage.numChildren;
+
 		// now dispatch the onEnterFrame
-		for (i = 0; i < len; i++) {
-			child = this._avmStage.getChildAt(i);
+		for (i = 0; i < this._avmStage.root.numChildren; i++) {
+			child = this._avmStage.root.getChildAt(i);
 			this.executeEnterFrame(child, enterFramesChilds);
 		}
 
-		len = enterFramesChilds.length;
-		for (i = 0; i < len; i++) {
+		for (i = 0; i < enterFramesChilds.length; i++) {
 			(<MovieClip>enterFramesChilds[i]).dispatchEvent(this.enterEvent);
 		}
 		FrameScriptManager.execute_queue();
@@ -131,9 +125,8 @@ export class AVM1Handler implements IAVMHandler {
 		FrameScriptManager.execute_intervals(dt);
 		FrameScriptManager.execute_queue();
 
-		len = this._avmStage.numChildren;
-		for (i = 0; i < len; i++) {
-			child = this._avmStage.getChildAt(i);
+		for (i = 0; i < this._avmStage.root.numChildren; i++) {
+			child = this._avmStage.root.getChildAt(i);
 			if (child.isAsset(MovieClip)) {
 				(<MovieClip>child).dispatchExitFrame(this.exitEvent);
 			}
@@ -151,17 +144,15 @@ export class AVM1Handler implements IAVMHandler {
 		this._collectedDispatcher.length = 0;
 		let i: number = 0;
 		let child: DisplayObject;
-		let len: number = this._avmStage.numChildren;
 
-		for (i = 0; i < len; i++) {
-			child = this._avmStage.getChildAt(i);
+		for (i = 0; i < this._avmStage.root.numChildren; i++) {
+			child = this._avmStage.root.getChildAt(i);
 			if (child.isAsset(MovieClip)) {
 				this.collectMousEvents(child);
 			}
 		}
 
-		len = this._collectedDispatcher.length;
-		for (i = 0; i < len; i++) {
+		for (i = 0; i < this._collectedDispatcher.length; i++) {
 			if (this.avm1Listener[event.type] && this.avm1Listener[event.type][this._collectedDispatcher[i].id]) {
 				const listeners = this.avm1Listener[event.type][this._collectedDispatcher[i].id];
 				for (let e: number = 0; e < listeners.length; e++) {
@@ -220,10 +211,10 @@ export class AVM1Handler implements IAVMHandler {
 		this._collectedDispatcher.length = 0;
 		let i: number = 0;
 		let child: DisplayObject;
-		let len: number = this._avmStage.numChildren;
+		let len: number = this._avmStage.root.numChildren;
 
 		for (i = 0; i < len; i++) {
-			child = this._avmStage.getChildAt(i);
+			child = this._avmStage.root.getChildAt(i);
 			if (child.isAsset(MovieClip)) {
 				this.collectMousEvents(child);
 			}

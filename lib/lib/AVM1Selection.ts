@@ -42,40 +42,40 @@ export class AVM1Selection extends AVM1Object {
 	}
 
 	getBeginIndex(): number {
-		const objectinFocus: DisplayObject = <DisplayObject>MouseManager.getInstance(
-			PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.renderer.view)
-		).getFocus();
-		if (objectinFocus && objectinFocus.isAsset(TextField)) {
+		const objectinFocus: DisplayObject = <DisplayObject> (<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager
+			.getFocus();
+
+		if (objectinFocus && objectinFocus.isAsset(TextField))
 			return (<TextField>objectinFocus).selectionBeginIndex;
-		}
+
 		return -1;
 	}
 
 	getEndIndex(): number {
-		const objectinFocus: DisplayObject = <DisplayObject>MouseManager.getInstance(
-			PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
-		).getFocus();
-		if (objectinFocus && objectinFocus.isAsset(TextField)) {
+		const objectinFocus: DisplayObject = <DisplayObject> (<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager
+			.getFocus();
+
+		if (objectinFocus && objectinFocus.isAsset(TextField))
 			return (<TextField>objectinFocus).selectionEndIndex;
-		}
+	
 		return -1;
 	}
 
 	getCaretIndex(): number {
-		const objectinFocus: DisplayObject = <DisplayObject>MouseManager.getInstance(
-			PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
-		).getFocus();
-		if (objectinFocus && objectinFocus.isAsset(TextField)) {
+		const objectinFocus: DisplayObject = <DisplayObject> (<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager
+			.getFocus();
+
+		if (objectinFocus && objectinFocus.isAsset(TextField))
 			return (<TextField>objectinFocus).selectionBeginIndex;
-		}
+
 		return -1;
 	}
 
 	// 	Returns a string specifying the target path of the object that has focus.
 	getFocus(): string {
-		let objectinFocus: DisplayObject = <DisplayObject>MouseManager.getInstance(
-			PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
-		).getFocus();
+		let objectinFocus: DisplayObject = <DisplayObject> (<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager
+			.getFocus();
+
 		if (objectinFocus) {
 			const names: string[] = [];
 			while (objectinFocus) {
@@ -116,27 +116,24 @@ export class AVM1Selection extends AVM1Object {
 		if (typeof newFocus === 'string') {
 			focusObj = this.context.resolveTarget(newFocus);
 			if (focusObj && focusObj.adaptee) {
-				MouseManager.getInstance(PickGroup.getInstance(
-					(<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
-				).setFocus(focusObj.adaptee);
+				(<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager
+					.setFocus(focusObj.adaptee);
 				return;
 			}
 			focusObj = this.context.resolveTarget(newFocus + '_internal_TF');
 			if (focusObj && focusObj.adaptee) {
-				MouseManager.getInstance(PickGroup.getInstance(
-					(<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
-				).setFocus(focusObj.adaptee);
+				(<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager
+					.setFocus(focusObj.adaptee);
 				return;
 			}
 			console.warn('AVM1Selection.setFocus - no object found for string ' + newFocus);
 			return;
 		}
 		focusObj = this.context.resolveTarget(newFocus);
-		if (focusObj && focusObj.adaptee)
-			MouseManager.getInstance(PickGroup.getInstance(
-				(<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
-			).setFocus(focusObj.adaptee);
-		else {
+		if (focusObj && focusObj.adaptee) {
+			(<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager
+				.setFocus(focusObj.adaptee);
+		} else {
 			console.warn('AVM1Selection.setFocus - no object found \'' + newFocus.toString() + '\'');
 		}
 		return true;
@@ -145,9 +142,8 @@ export class AVM1Selection extends AVM1Object {
 	// Sets the selection span of the currently focused text field.
 
 	setSelection(beginIndex: number, endIndex: number) {
-		const objectinFocus: DisplayObject = <DisplayObject>MouseManager.getInstance(
-			PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.scene.view)
-		).getFocus();
+		const objectinFocus: DisplayObject = <DisplayObject> (<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager
+			.getFocus();
 		if (objectinFocus && objectinFocus.isAsset(TextField)) {
 			(<TextField>objectinFocus).setSelection(beginIndex, endIndex);
 		}

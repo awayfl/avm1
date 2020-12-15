@@ -58,11 +58,10 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 	public dispatchKeyEvent(keyCode, isShift, isCTRL, isAlt) {
 		// this is called from the adaptee whenever a text-input occurs
 		if (!(<AVM1Stage> this.context.globals.Stage)
-		|| !(<AVM1Stage> this.context.globals.Stage).avmStage
-		|| !(<AVM1Stage> this.context.globals.Stage).avmStage.scene) {
+		|| !(<AVM1Stage> this.context.globals.Stage).avmStage) {
 			return;
 		}
-		if ((<AVM1Stage> this.context.globals.Stage).avmStage.scene.mouseManager.useSoftkeyboard) {
+		if ((<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager.useSoftkeyboard) {
 			//console.log("dispatch keyEvent")
 			const staticState: typeof AVM1Key = this.context.getStaticState(AVM1Key);
 			staticState._lastKeyCode = keyCode;
@@ -433,8 +432,8 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 			value = false;
 		}
 		value = alToBoolean(this.context, value);
-		if (!value && (<AVM1Stage> this.context.globals.Stage).avmStage.scene.mouseManager.getFocus() == this.adaptee) {
-			(<AVM1Stage> this.context.globals.Stage).avmStage.scene.mouseManager.setFocus(null);
+		if (!value && (<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager.getFocus() == this.adaptee) {
+			(<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager.setFocus(null);
 		}
 		this.adaptee.selectable = value;
 	}
