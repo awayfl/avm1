@@ -455,9 +455,11 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				}
 			} else {
 				const newChild = <DisplayObject>timeline.getChildInstance(vsItem.symbolID, vsItem.sessionID);
-				if (this.adaptee.isSlice9ScaledMC && newChildren[i].assetType == '[asset Sprite]') {
+
+				if (this.adaptee.isSlice9ScaledMC && newChild.assetType == '[asset Sprite]') {
 					newChild.isSlice9ScaledSprite = true;
 				}
+
 				const depth = newChild._avmDepthID = vsItem.depth;
 
 				this._depth_childs[depth] = newChild;
