@@ -119,7 +119,8 @@ function convertAS3RectangeToBounds(as3Rectange: any, context): AVM1Object {
 export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieClipAdapter {
 
 	private _depth_childs: NumberMap<DisplayObject>;
-	private _nextHighestDepth: number = 0;
+	// should be a 0, but it return a -1 when there are not childrens
+	private _nextHighestDepth: number = 1;
 
 	public static currentMCAssetNameSpace: string = '';
 	public static currentDraggedMC: AVM1MovieClip = null;
@@ -518,6 +519,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			const avm1parent: AVM1MovieClip = <AVM1MovieClip> this.adaptee.parent.adapter;
 			avm1parent.removeChildAtDepth(this.adaptee._avmDepthID);
 		}
+
+		// drop prototype
+		this.alPut('__proto__', null);
 	}
 
 	protected _mouseButtonListenerCount: number;
@@ -971,7 +975,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		depth = alToNumber(this.context, depth);
 
-		let oldAVMMC;
+		let oldAVMMC: any;
 		if (name)
 			oldAVMMC = this._childrenByName[name.toLowerCase()];
 
@@ -989,8 +993,14 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		avmMc.dynamicallyCreated = true;
 
-		if (name)
+		if (name) {
 			this.registerScriptObject(mc, true);
+		}
+
+		const cCtor = avmMc.executeConstructor;
+		avmMc.executeConstructor = null;
+		cCtor && cCtor();
+
 		return avmMc;
 	}
 

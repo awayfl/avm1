@@ -232,7 +232,7 @@ export class AVM1Context implements IAVM1Context {
 		observers.forEach((observer: IAVM1EventPropertyObserver) => observer.onEventPropertyModified(propertyName));
 	}
 
-	public addAsset(className: string, symbolId: number, symbolProps): void {
+	public addAsset(className: string, symbolId: number, symbolProps: any): void {
 		//console.log("addAsset", className, symbolId, symbolProps);
 		release || Debug.assert(typeof className === 'string' && !isNaN(symbolId));
 		this.assets[className.toLowerCase()] = symbolId;
