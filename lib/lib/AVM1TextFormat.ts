@@ -158,7 +158,8 @@ export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference
 	}
 
 	public setFont(value: string): void {
-		this.adaptee.font_name = alToString(this.context, value);
+		// in awayjs "font" is a AwayJS-Font, but if we pass it a string it will stil get the font
+		this.adaptee.font = <any>alToString(this.context, value);
 	}
 
 	public getIndent(): any {
