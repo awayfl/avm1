@@ -199,7 +199,15 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public removeAllTimelineChilds(): void {
-		//(<MovieClip>this.adaptee).removeAllTimelineChilds();
+		const len = this.adaptee._children.length;
+		const newChilds = [];
+		for (let i = 0; i < len; i++) {
+			const child = this.adaptee._children[i];
+			if (child._avmDepthID >= 0) {
+				newChilds[newChilds.length] = child;
+			}
+		}
+		this.adaptee._children = newChilds;
 	}
 
 	public getTimelineChildAtSessionID(sessionID: number): DisplayObject {
