@@ -54,8 +54,10 @@ export class AVM1Transform extends AVM1Object {
 	}
 
 	public getConcatenatedMatrix(): AVM1Matrix {
+		console.log('[AVM1Transform] concatenatedMatrix not implemented');
 		const transform = this._targetAwayObject.transform;
-		return AVM1Matrix.fromAS3Matrix(this.context, <Matrix>transform.concatenatedMatrix);
+		return null;
+		//return AVM1Matrix.fromAS3Matrix(this.context, <Matrix>transform.concatenatedMatrix);
 	}
 
 	public getColorTransform(): AVM1ColorTransform {

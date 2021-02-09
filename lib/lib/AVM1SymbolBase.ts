@@ -8,7 +8,7 @@ import {
 } from './AVM1Utils';
 import { AVM1Context, IAVM1EventPropertyObserver } from '../context';
 import { isNullOrUndefined, MapObject, notImplemented,
-	somewhatImplemented, warning, release, assert } from '@awayfl/swf-loader';
+	somewhatImplemented, warning, release, assert, AVMStage } from '@awayfl/swf-loader';
 import { DisplayObjectContainer } from '@awayjs/scene';
 import { AVM1MovieClip } from './AVM1MovieClip';
 import { AVM1Rectangle, toAS3Rectangle } from './AVM1Rectangle';
@@ -17,7 +17,7 @@ import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
 import { AVM1EventHandler } from './AVM1EventHandler';
 import { AVM1Color } from './AVM1Color';
-import { PickGroup } from '@awayjs/view';
+import { BasicPartition, PickGroup } from '@awayjs/view';
 import { AVM1Stage } from './AVM1Stage';
 import { AVM1Transform } from './AVM1Transform';
 import { AVM1Function } from '../runtime/AVM1Function';
@@ -65,6 +65,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 
 		release || assert(awayObject);
 		this.adaptee = awayObject;
+		this.adaptee.partitionClass = BasicPartition;
 		const name = awayObject.name;
 		const parent = this.get_parent();
 		if (name && parent) {
@@ -349,9 +350,10 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_height() {
-		const box: Box = PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.view)
-			.getBoundsPicker(this.adaptee.partition)
-			.getBoxBounds(this.adaptee.parent || AVM1Stage.avmStage.root);
+		const box: Box = AVM1Stage.avmStage.pickGroup
+			.getBoundsPicker(AVM1Stage.avmStage.pool.getNode(this.adaptee).partition)
+			.getBoxBounds(AVM1Stage.avmStage.pool.getNode(this.adaptee.parent)
+				|| AVM1Stage.avmStage.pool.getNode(AVM1Stage.avmStage.root));
 		return (box == null) ? 0 : toTwipFloor(box.height);
 	}
 
@@ -363,9 +365,8 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		if (isNaN(value))
 			return;
 
-		PickGroup.getInstance(
-			(<AVM1Stage> this.context.globals.Stage).avmStage.view)
-			.getBoundsPicker(this.adaptee.partition).height = value;
+		AVM1Stage.avmStage.pickGroup
+			.getBoundsPicker(AVM1Stage.avmStage.pool.getNode(this.adaptee).partition).height = value;
 	}
 
 	public get_highquality(): number {
@@ -602,9 +603,10 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_width(): number {
-		const box: Box = PickGroup.getInstance((<AVM1Stage> this.context.globals.Stage).avmStage.view)
-			.getBoundsPicker(this.adaptee.partition)
-			.getBoxBounds(this.adaptee.parent || AVM1Stage.avmStage.root);
+		const box: Box = AVM1Stage.avmStage.pickGroup
+			.getBoundsPicker(AVM1Stage.avmStage.pool.getNode(this.adaptee).partition)
+			.getBoxBounds(AVM1Stage.avmStage.pool.getNode(this.adaptee.parent)
+				|| AVM1Stage.avmStage.pool.getNode(AVM1Stage.avmStage.root));
 
 		return (box == null) ? 0 : toTwipRound(box.width);
 	}
@@ -617,9 +619,8 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		if (isNaN(value))
 			return;
 
-		PickGroup.getInstance(
-			(<AVM1Stage> this.context.globals.Stage).avmStage.view)
-			.getBoundsPicker(this.adaptee.partition).width = value;
+		AVM1Stage.avmStage.pickGroup
+			.getBoundsPicker(AVM1Stage.avmStage.pool.getNode(this.adaptee).partition).width = value;
 	}
 
 	public get_x(): number {
@@ -636,7 +637,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_xmouse(): number {
-		return toTwipFloor((<AVM1Stage> this.context.globals.Stage).avmStage.getLocalMouseX(this.adaptee));
+		return toTwipFloor(AVM1Stage.avmStage.getLocalMouseX(AVM1Stage.avmStage.pool.getNode(this.adaptee)));
 	}
 
 	public get_xscale(): number {
@@ -666,7 +667,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_ymouse(): number {
-		return toTwipFloor((<AVM1Stage> this.context.globals.Stage).avmStage.getLocalMouseY(this.adaptee));
+		return toTwipFloor(AVM1Stage.avmStage.getLocalMouseY(AVM1Stage.avmStage.pool.getNode(this.adaptee)));
 	}
 
 	public get_yscale(): number {
