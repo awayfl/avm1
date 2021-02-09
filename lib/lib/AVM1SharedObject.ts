@@ -141,17 +141,20 @@ export class AVM1SharedObject extends AVM1Object {
 
 		this._storage_name = name;
 
-		if (typeof (Storage) !== 'undefined') {
-			const jsData = JSON.parse(getSharedObjectStorage().getItem(name));
-			if (jsData) {
-				this._data = this.getAVM1Value(jsData);
+		const rawData = getSharedObjectStorage().getItem(name);
+
+		if (rawData) {
+			try {
+				this._data = this.getAVM1Value(JSON.parse(rawData));
 				return;
+			} catch (e) {
+				console.warn('[AVM1 SharedObject]','Invalid data:', rawData);
 			}
 		}
 
 		this._data = alNewObject(this.context);
 
-		console.log('no shared object found');
+		console.warn('[AVM1 SharedObject]','No shared object found');
 		return null;//context.sec.flash.external.ExternalInterface.axClass.available;
 	}
 
@@ -244,7 +247,7 @@ export class AVM1SharedObject extends AVM1Object {
 		console.log('unknown datatype');
 	}
 
-	public flush(minDiskSpace?: number): string | boolean {
+	public flush(_minDiskSpace?: number): string | boolean {
 		if (this._flushPending) {
 			clearTimeout(this._flushPending);
 			this._flushPending = null;
