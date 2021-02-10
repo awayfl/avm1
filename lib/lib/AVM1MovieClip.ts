@@ -1310,7 +1310,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return undefined;
 		}
 		return convertAS3RectangeToBounds(
-			AVM1Stage.avmStage.pickGroup.getBoundsPicker(AVM1Stage.avmStage.pool.getNode(this.adaptee).partition)
+			AVM1Stage.avmStage.pickGroup.getBoundsPicker(this.node.partition)
 				.getBoxBounds(AVM1Stage.avmStage.pool.getNode(obj), true, true),
 			this.context
 		);
@@ -1369,7 +1369,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return undefined;
 		}
 		return convertAS3RectangeToBounds(
-			AVM1Stage.avmStage.pickGroup.getBoundsPicker(AVM1Stage.avmStage.pool.getNode(this.adaptee).partition)
+			AVM1Stage.avmStage.pickGroup.getBoundsPicker(this.node.partition)
 				.getBoxBounds(AVM1Stage.avmStage.pool.getNode(obj), false, true),
 			this.context
 		);
@@ -1398,7 +1398,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		if (!pt)
 			return;
 		const tmp = toAS3Point(pt);
-		AVM1Stage.avmStage.pool.getNode(this.adaptee).globalToLocal(tmp, tmp);
+		this.node.globalToLocal(tmp, tmp);
 		copyAS3PointTo(tmp, pt);
 	}
 
@@ -1507,7 +1507,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			}
 
 			return AVM1Stage.avmStage.pickGroup
-				.getBoundsPicker(AVM1Stage.avmStage.pool.getNode(this.adaptee).partition)
+				.getBoundsPicker(this.node.partition)
 				.hitTestObject(
 					AVM1Stage.avmStage.pickGroup.getBoundsPicker(AVM1Stage.avmStage.pool.getNode(<DisplayObject>getAwayJSAdaptee(target)).partition));
 		}
@@ -1527,7 +1527,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		shapeFlag = alToBoolean(this.context, shapeFlag);
 
-		return AVM1Stage.avmStage.pickGroup.getBoundsPicker(AVM1Stage.avmStage.pool.getNode(this.adaptee).partition).hitTestPoint(x, y, shapeFlag);
+		return AVM1Stage.avmStage.pickGroup.getBoundsPicker(this.node.partition).hitTestPoint(x, y, shapeFlag);
 	}
 
 	public lineGradientStyle(fillType: GradientType, colors: AVM1Object, alphas: AVM1Object,
@@ -1596,7 +1596,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return;
 		}
 		const tmp = toAS3Point(pt);
-		AVM1Stage.avmStage.pool.getNode(this.adaptee).localToGlobal(tmp, tmp);
+		this.node.localToGlobal(tmp, tmp);
 		copyAS3PointTo(tmp, pt);
 	}
 
@@ -1689,12 +1689,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			this.startDragMCPosition.x = this.adaptee.x;
 			this.startDragMCPosition.y = this.adaptee.y;
 
-			const dragEntity = AVM1Stage.avmStage.pool.getNode(this.adaptee);
+			const dragNode = this.node;
 			AVM1Stage.avmStage.view.stage.addEventListener(MouseEvent.MOUSE_MOVE, this.dragListenerDelegate);
-			AVM1Stage.avmStage.mousePicker.dragEntity = dragEntity;
+			AVM1Stage.avmStage.mousePicker.dragNode = dragNode;
 			AVM1Stage.avmStage.mouseManager.startDragObject(
 				this.adaptee
-					.getAbstraction<EntityNode>(dragEntity.partition)
+					.getAbstraction<EntityNode>(dragNode.partition)
 					.getAbstraction<PickEntity>(AVM1Stage.avmStage.mousePicker.pickGroup)
 					.pickingCollision);
 
@@ -1752,7 +1752,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 		this.isDragging = false;
 		AVM1MovieClip.currentDraggedMC = null;
-		AVM1Stage.avmStage.mousePicker.dragEntity = null;
+		AVM1Stage.avmStage.mousePicker.dragNode = null;
 		AVM1Stage.avmStage.mouseManager.stopDragObject();
 		AVM1Stage.avmStage.removeEventListener(MouseEvent.MOUSE_MOVE, this.dragListenerDelegate);
 	}
