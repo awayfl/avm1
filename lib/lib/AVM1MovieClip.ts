@@ -489,7 +489,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 
 		for (let i = this.adaptee.numChildren - 1; i >= 0; i--)
-			if (newChildren.indexOf(this.adaptee._children[i]) < 0)
+			if (newChildren.indexOf(this.adaptee.getChildAt(i)) < 0)
 				this.adaptee.removeChildAt(i);
 
 		for (let i = 0; i < newChildren.length; i++)
@@ -646,7 +646,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		i = this.adaptee.numChildren;
 		while (i > 0) {
 			i--;
-			child = this.adaptee._children[i];
+			child = this.adaptee.getChildAt(i);
 			if (child.isAsset(MovieClip) && child.adapter != child) {
 				(<IMovieClipAdapter>child.adapter).freeFromScript();
 			}
@@ -800,12 +800,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				//	and if so, register it instead
 				//	if multiple childs match the name, get the one with highest depth
 				//	attention: at this point the child that we unregister right now is still child of the mc
-				const allChilds = this.adaptee._children;
-				const allChildsLen = allChilds.length;
 				let tmpChild = null;
 				let newChild = null;
-				for (let i = 0; i < allChildsLen; i++) {
-					tmpChild = allChilds[i];
+				for (let i = 0; i < this.adaptee.numChildren; i++) {
+					tmpChild = this.adaptee.getChildAt(i);
 					if (tmpChild != child && tmpChild.name && tmpChild.name.toLowerCase() == name) {
 
 						if (!newChild || newChild._avmDepthID > tmpChild._avmDepthID) {
@@ -837,12 +835,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			// there exists a avm1 var for this name. Object registration should fail
 			return;
 		}
-		const allChilds = this.adaptee._children;
-		const allChildsLen = allChilds.length;
 		let tmpChild = null;
 		let newChild = null;
-		for (let i = 0; i < allChildsLen; i++) {
-			tmpChild = allChilds[i];
+		for (let i = 0; i < this.adaptee.numChildren; i++) {
+			tmpChild = this.adaptee.getChildAt(i);
 			if (tmpChild.name && tmpChild.name.toLowerCase() == name) {
 
 				if (!newChild || newChild._avmDepthID > tmpChild._avmDepthID) {
@@ -1759,11 +1755,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		child1.hasSwappedDepth = true;
 		this._depth_childs[depth1] = child1.adaptee;
 
-		const originalIdx1 = this.adaptee.getChildIndex(child1.adaptee);
 		if (child2) {
-			const originalIdx2 = this.adaptee.getChildIndex(child2.adaptee);
-			const children = this.adaptee._children;
-			[children[originalIdx1], children[originalIdx2]] = [children[originalIdx2], children[originalIdx1]];
 			delete this.adaptee._sessionID_childs[child2.adaptee._sessionID];
 			this._depth_childs[depth2] = child2.adaptee;
 			child2.adaptee._avmDepthID = depth2;
@@ -1948,7 +1940,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		let name: string = null;
 		let normalizedName: string = null;
 		for (i = 0; i < numChilds; i++) {
-			child = as3MovieClip._children[i];
+			child = as3MovieClip.getChildAt(i);
 			name = child.name;
 			normalizedName = name; // TODO something like this._unescapeProperty(this._escapeProperty(name));
 			processed[normalizedName] = true;
