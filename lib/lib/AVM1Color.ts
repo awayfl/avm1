@@ -31,7 +31,7 @@ export class AVM1Color extends AVM1Object {
 			null, AVM1Color.prototype.avm1Constructor);
 	}
 
-	private _target: AVM1SymbolBase<DisplayObject>;
+	private _target: AVM1SymbolBase<DisplayObjectContainer>;
 	private _targetAwayObject: DisplayObject;
 
 	public avm1Constructor(target_mc) {

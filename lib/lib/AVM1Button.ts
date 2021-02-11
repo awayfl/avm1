@@ -115,18 +115,17 @@ export class AVM1Button extends AVM1MovieClip {
 	public initAVM1SymbolInstance(context: AVM1Context, awayObject: MovieClip) {
 		super.initAVM1SymbolInstance(context, awayObject);
 
-		const nativeButton = this.adaptee;
-		const requiredListeners = this._requiredListeners = Object.create(null);
-		const actions = this._actions = nativeButton.timeline.avm1ButtonActions;
-		let action = null;
+		this._requiredListeners = Object.create(null);
+		this._actions = this.adaptee.timeline.avm1ButtonActions;
+		let action:AVM1ButtonAction = null;
 		let boundListener = null;
 		let foundValidAction: boolean = false;
-		const actionsLength: number = actions.length;
+		const actionsLength: number = this._actions.length;
 		for (let i = 0; i < actionsLength; i++) {
-			action = actions[i];
+			action = this._actions[i];
 			if (!action.actionsBlock) {
 				action.actionsBlock = context.actionsDataFactory.createActionsData(
-					action.actionsData, 's' + nativeButton.id + 'e' + i);
+					action.actionsData, 's' + this.adaptee.id + 'e' + i);
 			}
 			if (action.keyCode) {
 				//requiredListeners['keyDown'] = this._keyDownHandler.bind(this);
@@ -139,7 +138,7 @@ export class AVM1Button extends AVM1MovieClip {
 					if (action.stateTransitionFlags & parseInt(key)) {
 						foundValidAction = true;
 						//console.log("added event for name:",buttonActionsMap[key].eventName)
-						requiredListeners[buttonActionsMap[key].eventName] = {
+						this._requiredListeners[buttonActionsMap[key].eventName] = {
 							handler:buttonActionsMap[key],
 							boundListener:boundListener
 						};

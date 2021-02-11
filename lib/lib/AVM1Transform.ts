@@ -32,7 +32,7 @@ export class AVM1Transform extends AVM1Object {
 			null, AVM1Transform.prototype.avm1Constructor);
 	}
 
-	private _target: AVM1SymbolBase<DisplayObject>;
+	private _target: AVM1SymbolBase<DisplayObjectContainer>;
 	private _targetAwayObject: DisplayObject;
 
 	get as3Transform(): Transform {

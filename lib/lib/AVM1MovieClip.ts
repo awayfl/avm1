@@ -198,15 +198,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public removeAllTimelineChilds(): void {
-		const len = this.adaptee._children.length;
-		const newChilds = [];
-		for (let i = 0; i < len; i++) {
-			const child = this.adaptee._children[i];
-			if (child._avmDepthID >= 0) {
-				newChilds[newChilds.length] = child;
-			}
+		for (let i = this.adaptee.numChildren - 1; i >= 0; i--) {
+			const child = this.adaptee.getChildAt(i);
+
+			if (child._avmDepthID < 0)
+				this.adaptee.removeChildAt(i);
 		}
-		this.adaptee._children = newChilds;
 	}
 
 	public getTimelineChildAtSessionID(sessionID: number): DisplayObject {
@@ -333,9 +330,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		// collect existing children into a virtual-scenegraph
 		// if we jump forward, we collect all children
 		// if we jump back, we only collect children with depth > 0 (usually added via script)
-		let len = this.adaptee._children.length;
+		let len = this.adaptee.numChildren;
 		for (let i = 0; i < len; i++) {
-			const child = this.adaptee._children[i];
+			const child = this.adaptee.getChildAt(i);
 			if (jump_forward || child._sessionID == -1) {
 				virtualSceneGraphMap[child._avmDepthID] = {
 					sessionID:child._sessionID,
@@ -489,8 +486,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				}
 			}
 		}
-		len = this.adaptee._children.length;
-		for (let i = this.adaptee._children.length - 1; i >= 0; i--) {
+
+		for (let i = this.adaptee.numChildren - 1; i >= 0; i--) {
 			if (newChildren.indexOf(this.adaptee._children[i]) < 0)
 				this.adaptee.removeChildAt(i);
 		}
@@ -1103,7 +1100,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		newName && this._addChildName(child, newName);
 	}
 
-	_removeChildName(child: AVM1SymbolBase<DisplayObject>, name: string) {
+	_removeChildName(child: AVM1SymbolBase<DisplayObjectContainer>, name: string) {
 		release || assert(name);
 		if (!this.context.isPropertyCaseSensitive) {
 			name = name.toLowerCase();
@@ -1121,7 +1118,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 	}
 
-	_addChildName(child: AVM1SymbolBase<DisplayObject>, name: string) {
+	_addChildName(child: AVM1SymbolBase<DisplayObjectContainer>, name: string) {
 		release || assert(name);
 		if (!this.context.isPropertyCaseSensitive) {
 			name = name.toLowerCase();
@@ -1288,7 +1285,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		return 0;//this.adaptee.framesLoaded;
 	}
 
-	public getBounds(bounds:AVM1SymbolBase<DisplayObject>): AVM1Object {
+	public getBounds(bounds:AVM1SymbolBase<DisplayObjectContainer>): AVM1Object {
 
 		if (!bounds)
 			return undefined;
@@ -1347,7 +1344,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		return away2avmDepth(this._nextHighestDepth);
 	}
 
-	public getRect(bounds:AVM1SymbolBase<DisplayObject>): AVM1Object {
+	public getRect(bounds:AVM1SymbolBase<DisplayObjectContainer>): AVM1Object {
 
 		if (!bounds || !bounds.node)
 			return undefined;
@@ -1463,7 +1460,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		return this._hitArea;
 	}
 
-	public setHitArea(value:AVM1SymbolBase<DisplayObject>) {
+	public setHitArea(value:AVM1SymbolBase<DisplayObjectContainer>) {
 		// The hitArea getter always returns exactly the value set here, so we have to store that.
 		this._hitArea = value;
 		let obj = value ? value.node : null;
@@ -1476,12 +1473,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	// Alternative method signature: hitTest(target: AVM1Object): boolean
-	public hitTest(object: AVM1SymbolBase<DisplayObject>): boolean;
+	public hitTest(object: AVM1SymbolBase<DisplayObjectContainer>): boolean;
 	public hitTest(object: number, y: number, shapeFlag: boolean): boolean
-	public hitTest(x: number | AVM1SymbolBase<DisplayObject>, y?: number, shapeFlag?: boolean): boolean {
+	public hitTest(x: number | AVM1SymbolBase<DisplayObjectContainer>, y?: number, shapeFlag?: boolean): boolean {
 		if (arguments.length < 2) {
 
-			let target: AVM1SymbolBase<DisplayObject> = x as AVM1SymbolBase<DisplayObject>;
+			let target: AVM1SymbolBase<DisplayObjectContainer> = x as AVM1SymbolBase<DisplayObjectContainer>;
 
 			if (typeof target === 'string')
 				target = this.context.resolveTarget(target);
@@ -1620,7 +1617,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		console.warn('[AVM1MovieClip] prevScene not implemented');
 	}
 
-	public setMask(mask: AVM1SymbolBase<DisplayObject>) {
+	public setMask(mask: AVM1SymbolBase<DisplayObjectContainer>) {
 		if (mask == null) {
 			// Cancel a mask.
 			this.adaptee.mask = null;
@@ -1938,7 +1935,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 
 		const as3MovieClip = this.adaptee;
-		if (as3MovieClip._children.length === 0) {
+		if (as3MovieClip.numChildren === 0) {
 			return keys; // no children
 		}
 
@@ -1948,7 +1945,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		for (i = 0; i < keysLength; i++) {
 			processed[keys[i]] = true;
 		}
-		const numChilds: number = as3MovieClip._children.length;
+		const numChilds: number = as3MovieClip.numChildren;
 		let child = null;
 		let name: string = null;
 		let normalizedName: string = null;
