@@ -724,7 +724,7 @@ export class AVM1NativeActions {
 		this._loadVariables(nativeTarget, url, method);
 	}
 
-	_loadVariables(nativeTarget: AVM1SymbolBase<DisplayObject>, url: string, method: string): void {
+	_loadVariables(nativeTarget: AVM1SymbolBase<DisplayObjectContainer>, url: string, method: string): void {
 		const context = this.context;
 		const request = new URLRequest(url);
 		if (method) {
@@ -858,9 +858,9 @@ export class AVM1NativeActions {
 	private _stopSoundsOnObjectsRecursivly(obj: DisplayObjectContainer) {
 		if (!obj._children)
 			return;
-		for (let i = 0; i < obj._children.length; i++) {
+		for (let i = 0; i < obj.numChildren; i++) {
 			if (obj._children[i].isAsset(MovieClip)) {
-				(<MovieClip>obj._children[i]).stopSounds();
+				(<MovieClip>obj.getChildAt(i)).stopSounds();
 			} else
 				this._stopSoundsOnObjectsRecursivly(<DisplayObjectContainer>obj._children[i]);
 		}
