@@ -31,17 +31,6 @@ import { ClipEventMappings, AVM1EventProps, AVM1KeyCodeMap } from './AVM1EventHa
 
 export const DEPTH_OFFSET = 16384;
 
-export interface IHasAS3ObjectReference {
-	adaptee: any;//80pro ASObject;
-}
-
-export interface IAVM1SymbolBase extends IHasAS3ObjectReference{
-	context: AVM1Context;
-	initAVM1SymbolInstance(context: AVM1Context, awayObject: DisplayObject);
-	updateAllEvents();
-	getDepth(): number;
-}
-
 /**
  * Checks if an object contains a reference to a native AS3 object.
  * Returns false for MovieClip instances or instances of constructors with
@@ -51,14 +40,6 @@ export interface IAVM1SymbolBase extends IHasAS3ObjectReference{
  */
 export function hasAwayJSAdaptee(obj: any): boolean {
 	return !!obj.adaptee;
-}
-
-/**
- * Returns obj's reference to a native AS3 object. If the reference
- * does not exist, returns undefined.
- */
-export function getAwayJSAdaptee(obj: IHasAS3ObjectReference): any {//80pro} ASObject {
-	return obj.adaptee;
 }
 
 /**
@@ -419,6 +400,6 @@ export function avm2AwayDepth(value: number): number {
 export function away2avmDepth(value: number): number {
 	return value - 1;
 }
-function clipEventHandler(actionsData: AVM1ActionsData, receiver: IAVM1SymbolBase) {
+function clipEventHandler(actionsData: AVM1ActionsData, receiver: AVM1SymbolBase<DisplayObjectContainer>) {
 	return receiver.context.executeActions(actionsData, receiver);
 }

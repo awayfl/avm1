@@ -21,12 +21,12 @@ import {
 	AVM1PropertyFlags
 } from '../runtime';
 import { AVM1Context } from '../context';
-import { IHasAS3ObjectReference, wrapAVM1NativeClass } from './AVM1Utils';
+import { wrapAVM1NativeClass } from './AVM1Utils';
 import { TextField, TextFormat } from '@awayjs/scene';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { notImplemented } from '@awayfl/swf-loader';
 
-export class AVM1TextFormat extends AVM1Object implements IHasAS3ObjectReference {
+export class AVM1TextFormat extends AVM1Object {
 	static createAVM1Class(context: AVM1Context): AVM1Object {
 		const members = ['align#', 'blockIndent#', 'bold#', 'bullet#', 'color#', 'font#',
 			'getTextExtent', 'indent#', 'italic#', 'kerning#', 'leading#',

@@ -18,7 +18,7 @@ import { alCoerceNumber, alCoerceString, alToBoolean, alToInt32, alToNumber, alT
 import { AVM1Context } from '../context';
 import { AVM1Rectangle, toAS3Rectangle } from './AVM1Rectangle';
 import { toAS3Point } from './AVM1Point';
-import { BlendModesMap, IHasAS3ObjectReference, wrapAVM1NativeClass } from './AVM1Utils';
+import { BlendModesMap, wrapAVM1NativeClass } from './AVM1Utils';
 // import {convertToAS3Filter} from "./AVM1Filters";
 import { toAwayColorTransform, AVM1ColorTransform } from './AVM1ColorTransform';
 import { toAS3Matrix } from './AVM1Matrix';
@@ -37,7 +37,7 @@ export function toAS3BitmapData(as2Object: AVM1BitmapData): BitmapData {
 	return as2Object.as3BitmapData;
 }
 
-export class AVM1BitmapData extends AVM1Object implements IHasAS3ObjectReference {
+export class AVM1BitmapData extends AVM1Object {
 	static createAVM1Class(context: AVM1Context): AVM1Object {
 		return wrapAVM1NativeClass(context, true, AVM1BitmapData,
 			['loadBitmap'],

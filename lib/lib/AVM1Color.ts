@@ -16,9 +16,9 @@
 
 //module Shumway.AVM1.Lib {
 import { AVM1Object } from '../runtime/AVM1Object';
-import { getAwayJSAdaptee, IAVM1SymbolBase, wrapAVM1NativeClass } from './AVM1Utils';
+import { wrapAVM1NativeClass } from './AVM1Utils';
 import { AVM1ColorTransform, fromAVM1Object } from './AVM1ColorTransform';
-import { DisplayObject } from '@awayjs/scene';
+import { DisplayObject, DisplayObjectContainer } from '@awayjs/scene';
 import { AVM1Context } from '../context';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 import { HierarchicalProperty } from '@awayjs/view';
@@ -31,7 +31,7 @@ export class AVM1Color extends AVM1Object {
 			null, AVM1Color.prototype.avm1Constructor);
 	}
 
-	private _target: IAVM1SymbolBase;
+	private _target: AVM1SymbolBase<DisplayObject>;
 	private _targetAwayObject: DisplayObject;
 
 	public avm1Constructor(target_mc) {
@@ -39,7 +39,7 @@ export class AVM1Color extends AVM1Object {
 			this._target = this.context.resolveTarget(target_mc);
 			if (this._target && this._target.adaptee && !this._target.adaptee.isAVMScene) {
 				(<any> this._target).avmColor = this;
-				this._targetAwayObject = <DisplayObject>getAwayJSAdaptee(this._target);
+				this._targetAwayObject = this._target.adaptee;
 			}
 		}
 	}
@@ -49,7 +49,7 @@ export class AVM1Color extends AVM1Object {
 			this._target = target_mc;
 			(<any> this._target).avmColor = this;
 			(<any> this._target)._ctBlockedByScript = true;
-			this._targetAwayObject = <DisplayObject>getAwayJSAdaptee(this._target);
+			this._targetAwayObject = this._target.adaptee;
 		} else {
 			this._target = null;
 		}
