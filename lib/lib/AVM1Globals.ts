@@ -856,13 +856,13 @@ export class AVM1NativeActions {
 	}
 
 	private _stopSoundsOnObjectsRecursivly(obj: DisplayObjectContainer) {
-		if (!obj._children)
+		if (!obj.numChildren)
 			return;
 		for (let i = 0; i < obj.numChildren; i++) {
-			if (obj._children[i].isAsset(MovieClip)) {
+			if (obj.getChildAt(i).isAsset(MovieClip)) {
 				(<MovieClip>obj.getChildAt(i)).stopSounds();
 			} else
-				this._stopSoundsOnObjectsRecursivly(<DisplayObjectContainer>obj._children[i]);
+				this._stopSoundsOnObjectsRecursivly(<DisplayObjectContainer>obj.getChildAt(i));
 		}
 	}
 

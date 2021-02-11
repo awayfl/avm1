@@ -226,7 +226,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return -1;
 		}
 
-		return this.adaptee._children.indexOf(child);
+		return this.adaptee.getChildIndex(this._depth_childs[depth]);
 	}
 
 	public getIndexFromDepth(depth: number) : number
@@ -242,7 +242,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public removeChildAtDepth(depth: number) {
 		const idx: number = this.getDepthIndexInternal(depth);
-		if (idx >= 0)
+
+		if (idx != -1)
 			this.removeChildAt(idx);
 	}
 
@@ -499,16 +500,13 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			}
 		}
 
-		for (let i = this.adaptee.numChildren - 1; i >= 0; i--) {
+		for (let i = this.adaptee.numChildren - 1; i >= 0; i--)
 			if (newChildren.indexOf(this.adaptee._children[i]) < 0)
 				this.adaptee.removeChildAt(i);
-		}
 
-		for (let i = 0; i < newChildren.length; i++) {
-			if (this.adaptee._children.indexOf(newChildren[i]) < 0) {
+		for (let i = 0; i < newChildren.length; i++)
+			if (!this.adaptee.contains(newChildren[i]))
 				this.adaptee.addChildAt(newChildren[i], i);
-			}
-		}
 
 		this.adaptee.preventScript = true;
 		this.finalizeChildren(newChilds);
@@ -1775,9 +1773,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		child1.hasSwappedDepth = true;
 		this._depth_childs[depth1] = child1.adaptee;
 
-		const originalIdx1 = this.adaptee._children.indexOf(child1.adaptee);
+		const originalIdx1 = this.adaptee.getChildIndex(child1.adaptee);
 		if (child2) {
-			const originalIdx2 = this.adaptee._children.indexOf(child2.adaptee);
+			const originalIdx2 = this.adaptee.getChildIndex(child2.adaptee);
 			const children = this.adaptee._children;
 			[children[originalIdx1], children[originalIdx2]] = [children[originalIdx2], children[originalIdx1]];
 			delete this.adaptee._sessionID_childs[child2.adaptee._sessionID];
