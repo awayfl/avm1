@@ -4,12 +4,12 @@ import {
 } from '../runtime';
 import {
 	avm1BroadcastNativeEvent, avm1HasEventProperty, getAVM1Object,
-	IAVM1SymbolBase, toTwipFloor, toTwipRound, away2avmDepth
+	toTwipFloor, toTwipRound, away2avmDepth
 } from './AVM1Utils';
 import { AVM1Context, IAVM1EventPropertyObserver } from '../context';
 import { isNullOrUndefined, MapObject, notImplemented,
 	somewhatImplemented, warning, release, assert, AVMStage } from '@awayfl/swf-loader';
-import { DisplayObjectContainer } from '@awayjs/scene';
+import { DisplayObject, DisplayObjectContainer } from '@awayjs/scene';
 import { AVM1MovieClip } from './AVM1MovieClip';
 import { AVM1Rectangle, toAS3Rectangle } from './AVM1Rectangle';
 import { Box } from '@awayjs/core';
@@ -23,7 +23,7 @@ import { AVM1Transform } from './AVM1Transform';
 import { AVM1Function } from '../runtime/AVM1Function';
 
 export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
-	implements IAVM1SymbolBase, IAVM1EventPropertyObserver {
+	implements IAVM1EventPropertyObserver {
 	adaptee: T;
 	node: ContainerNode;
 	_as3ObjectTemplate: any;
@@ -424,9 +424,9 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_parent(): AVM1MovieClip {
-		const parent = getAVM1Object(this.adaptee.parent, this.context);
+		const parent = getAVM1Object<AVM1MovieClip>(this.adaptee.parent, this.context);
 		// In AVM1, the _parent property is `undefined`, not `null` if the element has no parent.
-		return <AVM1MovieClip>parent || undefined;
+		return parent || undefined;
 	}
 
 	public set_parent(value: AVM1MovieClip) {
@@ -463,7 +463,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_root(): AVM1MovieClip {
-		let awayObject: DisplayObjectContainer = this.adaptee;
+		let awayObject: DisplayObject = this.adaptee;
 		let avmObject = null;
 		while (awayObject && !awayObject.isAVMScene) {
 			avmObject = <AVM1MovieClip>getAVM1Object(awayObject, this.context);
@@ -542,7 +542,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_target(): string {
-		let awayObject: DisplayObjectContainer = this.adaptee;
+		let awayObject: DisplayObject = this.adaptee;
 		if (awayObject === awayObject.root) {
 			return '/';
 		}
@@ -690,7 +690,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public toString() {
-		let mc: DisplayObjectContainer = this.adaptee;
+		let mc: DisplayObject = this.adaptee;
 		const names: string[] = [];
 		while (mc) {
 			if (mc.isAVMScene) {

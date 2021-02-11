@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { avm1BroadcastEvent, hasAwayJSAdaptee, IAVM1SymbolBase, wrapAVM1NativeClass } from './AVM1Utils';
+import { avm1BroadcastEvent, hasAwayJSAdaptee, wrapAVM1NativeClass } from './AVM1Utils';
 import { AVM1Context } from '../context';
 import { AVM1NativeFunction, AVM1PropertyFlags } from '../runtime';
 import { AVM1ArrayNative } from '../natives';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
+import { AVM1SymbolBase } from './AVM1SymbolBase';
+import { DisplayObjectContainer } from '@awayjs/scene';
 
-function _updateAllSymbolEvents(symbolInstance: IAVM1SymbolBase) {
+function _updateAllSymbolEvents(symbolInstance: AVM1SymbolBase<DisplayObjectContainer>) {
 	if (!hasAwayJSAdaptee(symbolInstance)) {
 		return;
 	}

@@ -15,11 +15,9 @@
  */
 
 import {
-	getAwayJSAdaptee,
 	getAwayObjectOrTemplate,
 	getAVM1Object,
 	hasAwayJSAdaptee,
-	IAVM1SymbolBase,
 	initializeAVM1Object,
 	wrapAVM1NativeClass,
 	toTwipFloor,
@@ -1119,7 +1117,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		newName && this._addChildName(child, newName);
 	}
 
-	_removeChildName(child: IAVM1SymbolBase, name: string) {
+	_removeChildName(child: AVM1SymbolBase<DisplayObject>, name: string) {
 		release || assert(name);
 		if (!this.context.isPropertyCaseSensitive) {
 			name = name.toLowerCase();
@@ -1137,7 +1135,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 	}
 
-	_addChildName(child: IAVM1SymbolBase, name: string) {
+	_addChildName(child: AVM1SymbolBase<DisplayObject>, name: string) {
 		release || assert(name);
 		if (!this.context.isPropertyCaseSensitive) {
 			name = name.toLowerCase();
@@ -1304,14 +1302,14 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		return 0;//this.adaptee.framesLoaded;
 	}
 
-	public getBounds(bounds): AVM1Object {
-		const obj = <DisplayObject>getAwayJSAdaptee(bounds);
-		if (!obj) {
+	public getBounds(bounds:AVM1SymbolBase<DisplayObject>): AVM1Object {
+
+		if (!bounds)
 			return undefined;
-		}
+
 		return convertAS3RectangeToBounds(
 			AVM1Stage.avmStage.pickGroup.getBoundsPicker(this.node.partition)
-				.getBoxBounds(AVM1Stage.avmStage.pool.getNode(obj), true, true),
+				.getBoxBounds(bounds.node, true, true),
 			this.context
 		);
 	}
@@ -1363,14 +1361,14 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		return away2avmDepth(this._nextHighestDepth);
 	}
 
-	public getRect(bounds): AVM1Object {
-		const obj = <DisplayObject>getAwayJSAdaptee(bounds);
-		if (!obj) {
+	public getRect(bounds:AVM1SymbolBase<DisplayObject>): AVM1Object {
+
+		if (!bounds || !bounds.node)
 			return undefined;
-		}
+
 		return convertAS3RectangeToBounds(
 			AVM1Stage.avmStage.pickGroup.getBoundsPicker(this.node.partition)
-				.getBoxBounds(AVM1Stage.avmStage.pool.getNode(obj), false, true),
+				.getBoxBounds(bounds.node, false, true),
 			this.context
 		);
 	}
@@ -1479,10 +1477,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		return this._hitArea;
 	}
 
-	public setHitArea(value) {
+	public setHitArea(value:AVM1SymbolBase<DisplayObject>) {
 		// The hitArea getter always returns exactly the value set here, so we have to store that.
 		this._hitArea = value;
-		let obj = value ? <DisplayObject>getAwayJSAdaptee(value) : null;
+		let obj = value ? value.node : null;
 		if (obj && !obj.isAsset(MovieClip))
 			obj = null;
 
@@ -1492,24 +1490,23 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	// Alternative method signature: hitTest(target: AVM1Object): boolean
-	public hitTest(object: AVM1Object): boolean;
+	public hitTest(object: AVM1SymbolBase<DisplayObject>): boolean;
 	public hitTest(object: number, y: number, shapeFlag: boolean): boolean
-	public hitTest(x: number | AVM1Object, y?: number, shapeFlag?: boolean): boolean {
-		if (arguments.length <= 1) {
-			let target: AVM1Object = x as any;
+	public hitTest(x: number | AVM1SymbolBase<DisplayObject>, y?: number, shapeFlag?: boolean): boolean {
+		if (arguments.length < 2) {
 
-			if (typeof target === 'string') {
+			let target: AVM1SymbolBase<DisplayObject> = x as AVM1SymbolBase<DisplayObject>;
+
+			if (typeof target === 'string')
 				target = this.context.resolveTarget(target);
-			}
 
-			if (isNullOrUndefined(target) || !hasAwayJSAdaptee(target)) {
+			if (target == undefined || !target.node)
 				return false; // target is undefined or not a AVM1 display object, returning false.
-			}
 
 			return AVM1Stage.avmStage.pickGroup
 				.getBoundsPicker(this.node.partition)
 				.hitTestObject(
-					AVM1Stage.avmStage.pickGroup.getBoundsPicker(AVM1Stage.avmStage.pool.getNode(<DisplayObject>getAwayJSAdaptee(target)).partition));
+					AVM1Stage.avmStage.pickGroup.getBoundsPicker(target.node.partition));
 		}
 
 		x = alToNumber(this.context, x);
@@ -1637,16 +1634,17 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		console.warn('[AVM1MovieClip] prevScene not implemented');
 	}
 
-	public setMask(mc: Object) {
-		if (mc == null) {
+	public setMask(mask: AVM1SymbolBase<DisplayObject>) {
+		if (mask == null) {
 			// Cancel a mask.
 			this.adaptee.mask = null;
 			return;
 		}
-		const mask = this.context.resolveTarget(mc);
-		if (mask) {
-			this.adaptee.mask = <DisplayObject>getAwayJSAdaptee(mask);
-		}
+
+		mask = this.context.resolveTarget(mask);
+
+		if (mask)
+			this.adaptee.mask = mask.adaptee;
 	}
 
 	public startDrag(lock?: boolean, left?: number, top?: number, right?: number, bottom?: number): void {

@@ -16,12 +16,13 @@
 
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Context } from '../context';
-import { getAwayJSAdaptee, IAVM1SymbolBase, wrapAVM1NativeClass } from './AVM1Utils';
+import { wrapAVM1NativeClass } from './AVM1Utils';
 import { AVM1Matrix, toAS3Matrix } from './AVM1Matrix';
 import { AVM1ColorTransform, toAwayColorTransform } from './AVM1ColorTransform';
 import { AVM1Rectangle } from './AVM1Rectangle';
-import { DisplayObject } from '@awayjs/scene';
+import { DisplayObject, DisplayObjectContainer } from '@awayjs/scene';
 import { Matrix, Transform } from '@awayjs/core';
+import { AVM1SymbolBase } from './AVM1SymbolBase';
 
 export class AVM1Transform extends AVM1Object {
 	static createAVM1Class(context: AVM1Context): AVM1Object {
@@ -31,7 +32,7 @@ export class AVM1Transform extends AVM1Object {
 			null, AVM1Transform.prototype.avm1Constructor);
 	}
 
-	private _target: IAVM1SymbolBase;
+	private _target: AVM1SymbolBase<DisplayObject>;
 	private _targetAwayObject: DisplayObject;
 
 	get as3Transform(): Transform {
@@ -40,7 +41,7 @@ export class AVM1Transform extends AVM1Object {
 
 	public avm1Constructor(target_mc) {
 		this._target = this.context.resolveTarget(target_mc);
-		this._targetAwayObject = <DisplayObject>getAwayJSAdaptee(this._target);
+		this._targetAwayObject = this._target.adaptee;
 	}
 
 	public getMatrix(): AVM1Object {

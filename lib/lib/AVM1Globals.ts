@@ -19,7 +19,7 @@
 import { jsGlobal, notImplemented, release, Debug, somewhatImplemented, warning } from '@awayfl/swf-loader';
 
 import {
-	avm1BroadcastEvent, DEPTH_OFFSET, getAwayJSAdaptee, getAVM1Object, IAVM1SymbolBase,
+	avm1BroadcastEvent, DEPTH_OFFSET, getAVM1Object,
 	wrapAVM1NativeMembers
 } from './AVM1Utils';
 import {
@@ -60,6 +60,7 @@ import { ISoftKeyboardManager } from '../ISoftKeyboardManager';
 import { AVM1Function } from '../runtime/AVM1Function';
 import { AVM1ArrayNative } from '../natives';
 import { AVM1MatrixFunction } from './AVM1Matrix';
+import { AVM1SymbolBase } from './AVM1SymbolBase';
 
 const _escape: (str: string) => string = jsGlobal.escape;
 
@@ -723,7 +724,7 @@ export class AVM1NativeActions {
 		this._loadVariables(nativeTarget, url, method);
 	}
 
-	_loadVariables(nativeTarget: IAVM1SymbolBase, url: string, method: string): void {
+	_loadVariables(nativeTarget: AVM1SymbolBase<DisplayObject>, url: string, method: string): void {
 		const context = this.context;
 		const request = new URLRequest(url);
 		if (method) {
@@ -777,7 +778,7 @@ export class AVM1NativeActions {
 
 	public nextFrame() {
 		const nativeTarget: AVM1MovieClip = <AVM1MovieClip> this.context.resolveTarget(null);
-		const awayObject: MovieClip = <MovieClip>getAwayJSAdaptee(nativeTarget);
+		const awayObject: MovieClip = nativeTarget.adaptee;
 		awayObject.stop();
 		++awayObject.currentFrameIndex;
 	}
@@ -797,7 +798,8 @@ export class AVM1NativeActions {
 	}
 
 	public prevFrame() {
-		const awayObject: MovieClip = <MovieClip>getAwayJSAdaptee(<AVM1MovieClip> this.context.resolveTarget(null));
+		const nativeTarget: AVM1MovieClip = <AVM1MovieClip> this.context.resolveTarget(null);
+		const awayObject: MovieClip = nativeTarget.adaptee;
 		--awayObject.currentFrameIndex;
 		awayObject.stop();
 	}

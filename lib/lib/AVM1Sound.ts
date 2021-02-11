@@ -17,10 +17,12 @@
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Context } from '../context';
 import { warning } from '@awayfl/swf-loader';
-import { IAVM1SymbolBase, wrapAVM1NativeClass } from './AVM1Utils';
+import { wrapAVM1NativeClass } from './AVM1Utils';
 import { AVM1MovieClip } from './AVM1MovieClip';
 import { WaveAudio, AssetLibrary, Loader, AssetEvent,
 	LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset } from '@awayjs/core';
+import { MovieClip } from '@awayjs/scene';
+import { AVM1SymbolBase } from './AVM1SymbolBase';
 
 class SoundChannel {
 	soundTransform: any;
@@ -35,7 +37,7 @@ export class AVM1Sound extends AVM1Object {
 			null, AVM1Sound.prototype.avm1Constructor);
 	}
 
-	private _target: IAVM1SymbolBase;
+	private _target: AVM1SymbolBase<MovieClip>;
 	private _sound: WaveAudio;
 	private _channel: SoundChannel;
 	private _linkageID: string;
