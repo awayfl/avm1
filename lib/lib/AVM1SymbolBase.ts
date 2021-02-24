@@ -354,7 +354,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	public get_height() {
 		const box: Box = AVM1Stage.avmStage.pickGroup
 			.getBoundsPicker(this.node.partition)
-			.getBoxBounds(this.get_parent().node || AVM1Stage.avmStage.rootNode);
+			.getBoxBounds(AVM1Stage.avmStage.pool.getNode(this.adaptee.parent || AVM1Stage.avmStage.root));
 		return (box == null) ? 0 : toTwipFloor(box.height);
 	}
 
@@ -606,7 +606,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	public get_width(): number {
 		const box: Box = AVM1Stage.avmStage.pickGroup
 			.getBoundsPicker(this.node.partition)
-			.getBoxBounds(this.get_parent().node || AVM1Stage.avmStage.rootNode);
+			.getBoxBounds(AVM1Stage.avmStage.pool.getNode(this.adaptee.parent || AVM1Stage.avmStage.root));
 
 		return (box == null) ? 0 : toTwipRound(box.width);
 	}
