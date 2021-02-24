@@ -874,11 +874,11 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			// there exists a avm1 var for this name. Object registration should fail
 			return;
 		}
-		let tmpChild = null;
-		let newChild = null;
+		let tmpChild: DisplayObject;
+		let newChild: DisplayObject;
 		for (let i = 0; i < this.adaptee.numChildren; i++) {
 			tmpChild = this.adaptee.getChildAt(i);
-			if (tmpChild.name && tmpChild.name.toLowerCase() == name) {
+			if (tmpChild.name == name) {
 
 				if (!newChild || newChild._avmDepthID > tmpChild._avmDepthID) {
 					newChild = tmpChild;
@@ -889,6 +889,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		//	if we have a new child to register, we register it
 		//	if not, we delete the registration for this name
 		if (newChild) {
+
+			if (this.context.swfVersion < 8)
+				name = name.toLowerCase();
+
 			this._childrenByName[name] = getAVM1Object(newChild, this.context);
 			if (this.unregisteredColors[name]) {
 				this.unregisteredColors[name].changeTarget(newChild.adapter);
@@ -1847,9 +1851,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		if (this.adaptee.name && parent) {
 			// we need to check if child registration must be updated
-			this.getLatestObjectForName(child1.adaptee.name.toLowerCase());
+			this.getLatestObjectForName(child1.adaptee.name);
 			if (child2) {
-				this.getLatestObjectForName(child2.adaptee.name.toLowerCase());
+				this.getLatestObjectForName(child2.adaptee.name);
 			}
 		}
 
