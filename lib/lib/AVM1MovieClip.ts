@@ -60,7 +60,6 @@ import {
 	TextField,
 	Billboard,
 	TextFormat,
-	MouseManager,
 	FrameScriptManager,
 	Timeline,
 	IDisplayObjectAdapter,
@@ -216,10 +215,23 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public getDepthIndexInternal(depth: number): number {
-		if (!this._depth_childs[depth])
-			return -1;
+		// because this is maybe a wrong
+		let child = this._depth_childs[depth];
 
-		return this.adaptee._children.indexOf(this._depth_childs[depth]);
+		// we must use extra check
+		if (!child) {
+			child = this.adaptee._children.find((e) => e._avmDepthID === depth);
+
+			if (child) {
+				console.warn('[AVM1 MovieClip] Depth `_depth_childs` is invalid, but child is exist by depth:', depth);
+			}
+		}
+
+		if (!child) {
+			return -1;
+		}
+
+		return this.adaptee._children.indexOf(child);
 	}
 
 	public getIndexFromDepth(depth: number) : number
@@ -991,8 +1003,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		depth = alToNumber(this.context, depth);
 
 		let oldAVMMC: any;
-		if (name)
+
+		if (name) {
 			oldAVMMC = this._childrenByName[name.toLowerCase()];
+		}
 
 		mc.reset();
 		//console.log("attachMovie", name, avm2AwayDepth(depth));
