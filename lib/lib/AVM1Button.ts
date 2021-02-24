@@ -117,7 +117,7 @@ export class AVM1Button extends AVM1MovieClip {
 
 		this._requiredListeners = Object.create(null);
 		this._actions = this.adaptee.timeline.avm1ButtonActions;
-		let action:AVM1ButtonAction = null;
+		let action: AVM1ButtonAction = null;
 		let boundListener = null;
 		let foundValidAction: boolean = false;
 		const actionsLength: number = this._actions.length;

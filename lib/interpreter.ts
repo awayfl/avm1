@@ -11,7 +11,7 @@ import {
 } from './parser';
 import { ActionsDataCompiler } from './baseline';
 import {
-	alCoerceString, alDefineObjectProperties, alForEachProperty, alInstanceOf, alIsArray, alIsFunction, alIsName, alNewObject, alToBoolean,
+	alCoerceString, alDefineObjectProperties, alForEachProperty, alIsArray, alIsFunction, alIsName, alNewObject, alToBoolean,
 	alToInt32,
 	alToNumber, alToObject, alToPrimitive, alToString, AVM1EvalFunction, AVM1NativeFunction,
 	AVM1PropertyFlags,

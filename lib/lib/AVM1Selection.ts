@@ -1,10 +1,8 @@
 import { wrapAVM1NativeClass } from './AVM1Utils';
-import { DisplayObject, TextField, MouseManager, DisplayObjectContainer } from '@awayjs/scene';
+import { TextField, DisplayObjectContainer } from '@awayjs/scene';
 import { AVM1Context } from '../context';
 import { AVMStage, notImplemented } from '@awayfl/swf-loader';
-import { PickGroup } from '@awayjs/view';
 import { AVM1Object } from '../runtime/AVM1Object';
-import { AVM1Stage } from './AVM1Stage';
 
 export class AVM1Selection extends AVM1Object {
 

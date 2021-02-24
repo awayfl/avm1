@@ -8,7 +8,7 @@ import {
 } from './AVM1Utils';
 import { AVM1Context, IAVM1EventPropertyObserver } from '../context';
 import { isNullOrUndefined, MapObject, notImplemented,
-	somewhatImplemented, warning, release, assert, AVMStage } from '@awayfl/swf-loader';
+	somewhatImplemented, warning, release, assert } from '@awayfl/swf-loader';
 import { DisplayObject, DisplayObjectContainer } from '@awayjs/scene';
 import { AVM1MovieClip } from './AVM1MovieClip';
 import { AVM1Rectangle, toAS3Rectangle } from './AVM1Rectangle';
@@ -17,7 +17,7 @@ import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
 import { AVM1EventHandler } from './AVM1EventHandler';
 import { AVM1Color } from './AVM1Color';
-import { BasicPartition, ContainerNode, PickGroup } from '@awayjs/view';
+import { BasicPartition, ContainerNode } from '@awayjs/view';
 import { AVM1Stage } from './AVM1Stage';
 import { AVM1Transform } from './AVM1Transform';
 import { AVM1Function } from '../runtime/AVM1Function';
