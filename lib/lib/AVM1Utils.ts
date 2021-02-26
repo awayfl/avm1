@@ -100,7 +100,7 @@ export function avm1HasEventProperty(context: AVM1Context, target: any, property
 export function avm1BroadcastNativeEvent(
 	context: AVM1Context, target: any, propertyName: string, args: any[] = null): void {
 	//console.log("avm1BroadcastNativeEvent", propertyName)
-	console.log(propertyName);
+
 	const handler: AVM1Function = target.alGet(propertyName);
 	if (handler instanceof AVM1Function) {
 		if (propertyName.toLowerCase() == 'onenterframe')	handler.isOnEnter = true;
