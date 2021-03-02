@@ -30,7 +30,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	public hasSwappedDepth: boolean=false;
 	public dynamicallyCreated: boolean=false;
 
-	public get stageNode():ContainerNode {
+	public get stageNode(): ContainerNode {
 		return AVM1Stage.avmStage.pool.getNode(this.adaptee);
 	}
 
