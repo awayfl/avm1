@@ -25,14 +25,11 @@ import { AVM1Function } from '../runtime/AVM1Function';
 export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	implements IAVM1EventPropertyObserver {
 	adaptee: T;
+	node: ContainerNode;
 	_as3ObjectTemplate: any;
 
 	public hasSwappedDepth: boolean=false;
 	public dynamicallyCreated: boolean=false;
-
-	public get stageNode(): ContainerNode {
-		return AVM1Stage.avmStage.pool.getNode(this.adaptee);
-	}
 
 	//	these are used so that we do not rely on values
 	//	coming from awayJS that might have float-issue:
@@ -70,6 +67,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		release || assert(awayObject);
 		this.adaptee = awayObject;
 		this.adaptee.partitionClass = BasicPartition;
+		this.node = AVM1Stage.avmStage.pool.getNode(this.adaptee);
 		const name = awayObject.name;
 		const parent = this.get_parent();
 		if (name && parent) {
@@ -355,7 +353,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 
 	public get_height() {
 		const box: Box = AVM1Stage.avmStage.pickGroup
-			.getBoundsPicker(this.stageNode.partition)
+			.getBoundsPicker(this.node.partition)
 			.getBoxBounds(AVM1Stage.avmStage.pool.getNode(this.adaptee.parent || AVM1Stage.avmStage.root));
 		return (box == null) ? 0 : toTwipFloor(box.height);
 	}
@@ -369,7 +367,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 			return;
 
 		AVM1Stage.avmStage.pickGroup
-			.getBoundsPicker(this.stageNode.partition).height = value;
+			.getBoundsPicker(this.node.partition).height = value;
 	}
 
 	public get_highquality(): number {
@@ -607,7 +605,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 
 	public get_width(): number {
 		const box: Box = AVM1Stage.avmStage.pickGroup
-			.getBoundsPicker(this.stageNode.partition)
+			.getBoundsPicker(this.node.partition)
 			.getBoxBounds(AVM1Stage.avmStage.pool.getNode(this.adaptee.parent || AVM1Stage.avmStage.root));
 
 		return (box == null) ? 0 : toTwipRound(box.width);
@@ -622,7 +620,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 			return;
 
 		AVM1Stage.avmStage.pickGroup
-			.getBoundsPicker(this.stageNode.partition).width = value;
+			.getBoundsPicker(this.node.partition).width = value;
 	}
 
 	public get_x(): number {
@@ -639,7 +637,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_xmouse(): number {
-		return toTwipFloor(AVM1Stage.avmStage.getLocalMouseX(this.stageNode));
+		return toTwipFloor(AVM1Stage.avmStage.getLocalMouseX(this.node));
 	}
 
 	public get_xscale(): number {
@@ -669,7 +667,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_ymouse(): number {
-		return toTwipFloor(AVM1Stage.avmStage.getLocalMouseY(this.stageNode));
+		return toTwipFloor(AVM1Stage.avmStage.getLocalMouseY(this.node));
 	}
 
 	public get_yscale(): number {
