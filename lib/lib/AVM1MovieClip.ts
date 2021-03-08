@@ -186,19 +186,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		return child;
 	}
 
-	public getChildForDraw(child: DisplayObject): DisplayObject {
-		this._tempSessionID = child._sessionID;
-		this._tempDepthID = child._avmDepthID;
-		child._setParent(null);
-		return child;
-	}
-
-	public returnChildAfterDraw(child: DisplayObject) {
-		child._sessionID = this._tempSessionID;
-		child._avmDepthID = this._tempDepthID;
-		child._setParent(<DisplayObjectContainer> this.adaptee);
-	}
-
 	public addTimelineChildAtDepth(child: DisplayObject, depth: number) {
 		depth -= 16383;
 		if (child.adapter != child && (<any>child.adapter).deleteOwnProperties) {
