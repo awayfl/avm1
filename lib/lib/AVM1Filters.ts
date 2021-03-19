@@ -15,11 +15,14 @@
  */
 
 import {
-	alDefineObjectProperties, alNewObject
+	alDefineObjectProperties, alNewObject, alToBoolean, alToNumber, alToString
 } from '../runtime';
 import { AVM1Context } from '../context';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Function } from '../runtime/AVM1Function';
+import { AVM1Point, toAS3Point } from './AVM1Point';
+import { AVM1BitmapData, toAS3BitmapData } from './AVM1BitmapData';
+import { AVM1ArrayNative } from '../natives';
 
 // Base class/function for all AVM1 filters.
 class AVM1BitmapFilterFunction extends AVM1Function {
@@ -36,7 +39,7 @@ class AVM1BitmapFilterFunction extends AVM1Function {
 }
 
 class AVM1BitmapFilterPrototype extends AVM1Object {
-	// asFilterConverter: IFilterConverter;
+	asFilterConverter: IFilterConverter;
 
 	constructor(context: AVM1Context, fn: AVM1Function) {
 		super(context);
@@ -59,11 +62,12 @@ class AVM1BitmapFilterPrototype extends AVM1Object {
 	}
 }
 
-// interface IFilterConverter {
-// 	toAS3Filter(as2Object: AVM1Object): ASObject;
-// 	fromAS3Filter(awayObject: ASObject): AVM1Object;
-// 	getAS3Class(): AXClass;
-// }
+export type IFilterModel = Record<string, any> & {filterName: string};
+interface IFilterConverter {
+	toAS3Filter(as2Object: AVM1Object): Record<string, any> & {filterName: string};
+	fromAS3Filter(awayFilterModel: Record<string, any>): AVM1Object;
+	getAS3Class(): any;
+}
 
 // Automates creation of the AVM1 filter classes.
 function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: AVM1Function,
@@ -94,29 +98,37 @@ function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: A
 	// 	return context.sec.flash.filters[name].axClass;
 	// }
 
-	// function toAS3Filter(as2Object: AVM1Object): ASObject {
-	// 	var awayObject: ASObject = <any> getAS3Class().axConstruct([]);
-	// 	// Just copying all defined properties.
-	// 	for (var i = 0; i < fields.length; i += 2) {
-	// 		var as2Value = as2Object.alGet(fields[i]);
-	// 		if (as2Value === undefined) {
-	// 			continue; // skipping undefined
-	// 		}
-	// 		awayObject.axSetPublicProperty(fields[i],
-	// 			convertToAS3Field(context, as2Value, fields[i + 1]));
-	// 	}
-	// 	return awayObject;
-	// }
+	function toAS3Filter(as2Object: AVM1Object): {filterName: string} & Record<string, any> {
+		const awayFilterModel = {
+			filterName: name
+		};
 
-	// function fromAS3Filter(awayObject: ASObject): AVM1Object {
-	// 	var as2Object = new AVM1Object(context);
-	// 	as2Object.alPrototype = wrappedProto;
-	// 	for (var i = 0; i < fields.length; i += 2) {
-	// 		as2Object.alPut(fields[i],
-	// 			convertFromAS3Field(context, awayObject.axGetPublicProperty(fields[i]), fields[i + 1]));
-	// 	}
-	// 	return as2Object;
-	// }
+		// Just copying all defined properties.
+		for (let i = 0; i < fields.length; i += 2) {
+
+			const as2Value = as2Object.alGet(fields[i]);
+
+			if (as2Value === undefined) {
+				continue; // skipping undefined
+			}
+
+			awayFilterModel[fields[i]] = convertToAS3Field(context, as2Value, fields[i + 1]);
+		}
+
+		return awayFilterModel;
+	}
+
+	function fromAS3Filter(awayObject: Record<string, any>): AVM1Object {
+		const as2Object = new AVM1Object(context);
+		as2Object.alPrototype = wrappedProto;
+
+		for (let i = 0; i < fields.length; i += 2) {
+			as2Object.alPut(fields[i],
+				convertFromAS3Field(context, awayObject[fields[i]], fields[i + 1]));
+		}
+
+		return as2Object;
+	}
 
 	// Creates new prototype object and function for the class.
 	const proto = base.alGetPrototypeProperty();
@@ -140,12 +152,12 @@ function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: A
 		}
 	});
 
-	// ... and also attaches conversion utility.
-	// wrappedProto.asFilterConverter = {
-	// 	toAS3Filter: toAS3Filter,
-	// 	fromAS3Filter: fromAS3Filter,
-	// 	getAS3Class: getAS3Class
-	// };
+	//... and also attaches conversion utility.
+	wrappedProto.asFilterConverter = {
+		toAS3Filter: toAS3Filter,
+		fromAS3Filter: fromAS3Filter,
+		getAS3Class: null
+	};
 
 	filtersObj.alPut(name, wrapped);
 }
@@ -191,82 +203,99 @@ export function createFiltersClasses(context: AVM1Context): AVM1Object {
 	return filters;
 }
 
-// function convertToAS3Field(context: AVM1Context, value: any, type: string): any {
-// 	switch (type) {
-// 		case 'String':
-// 			return alToString(context, value);
-// 		case 'Boolean':
-// 			return alToBoolean(context, value);
-// 		case 'Number':
-// 			return alToNumber(context, value);
-// 		case 'Numbers':
-// 			var arr = [];
-// 			if (value) {
-// 				for (var i = 0, length = value.alGet('length'); i < length; i++) {
-// 					arr[i] = alToNumber(context, value.alGet(i));
-// 				}
-// 			}
-// 			return context.sec.createArray(arr);
-// 		case 'BitmapData':
-// 			return toAS3BitmapData(value);
-// 		case 'Point':
-// 			return toAS3Point(value);
-// 		default:
-// 			release || Debug.assert(false, 'Unknown convertToAS3Field type: ' + type);
-// 	}
-// }
+function convertToAS3Field(context: AVM1Context, value: any, type: string): any {
+	switch (type) {
+		case 'String':
+			return alToString(context, value);
+		case 'Boolean':
+			return alToBoolean(context, value);
+		case 'Number':
+			return alToNumber(context, value);
+		case 'Numbers': {
+			const arr = [];
+			if (value) {
+				for (let i = 0, length = value.alGet('length'); i < length; i++) {
+					arr[i] = alToNumber(context, value.alGet(i));
+				}
+			}
+			return arr;
+		}
+		case 'BitmapData':
+			return toAS3BitmapData(value);
+		case 'Point':
+			return toAS3Point(value);
+		default:
+			console.warn('Filters', 'Unknown convertFromAS3Field type: ' + type);
+	}
+}
 
-// function convertFromAS3Field(context: AVM1Context, value: any, type: string): any {
-// 	switch (type) {
-// 		case 'String':
-// 		case 'Boolean':
-// 		case 'Number':
-// 			return value;
-// 		case 'Numbers':
-// 			var arr = [];
-// 			if (value) {
-// 				for (var i = 0, length = value.value.length; i < length; i++) {
-// 					arr[i] = +value.value[i];
-// 				}
-// 			}
-// 			return new AVM1ArrayNative(context, arr);
-// 		case 'BitmapData':
-// 			return AVM1BitmapData.fromAS3BitmapData(context, value);
-// 		case 'Point':
-// 			return AVM1Point.fromAS3Point(context, value);
-// 		default:
-// 			release || Debug.assert(false, 'Unknown convertFromAS3Field type: ' + type);
-// 	}
-// }
-/*
-const knownFilters: string[] = ['BevelFilter', 'BlurFilter', 'ColorMatrixFilter',
-	'ConvolutionFilter', 'DisplacementMapFilter', 'DropShadowFilter', 'GlowFilter',
-	'GradientBevelFilter', 'GradientGlowFilter'];
-	*/
+function convertFromAS3Field(context: AVM1Context, value: any, type: string): any {
+	switch (type) {
+		case 'String':
+		case 'Boolean':
+		case 'Number':
+			return value;
+		case 'Numbers': {
+			const arr = [];
+			if (value) {
+				for (let i = 0, length = value.value.length; i < length; i++) {
+					arr[i] = +value.value[i];
+				}
+			}
+			return new AVM1ArrayNative(context, arr);
+		}
+		case 'BitmapData':
+			return AVM1BitmapData.fromAS3BitmapData(context, value);
+		case 'Point':
+			return AVM1Point.fromAS3Point(context, value);
+		default:
+			console.warn('Filters', 'Unknown convertFromAS3Field type: ' + type);
+	}
+}
 
-// export function convertToAS3Filter(context: AVM1Context, as2Filter: AVM1Object): ASObject {
-// 	var proto = as2Filter ? as2Filter.alPrototype : null;
-// 	while (proto && !(<AVM1BitmapFilterPrototype>proto).asFilterConverter) {
-// 		proto = proto.alPrototype;
-// 	}
-// 	if (proto) {
-// 		return (<AVM1BitmapFilterPrototype>proto).asFilterConverter.toAS3Filter(as2Filter);
-// 	}
-// 	return undefined;
-// }
+const FILTER_TO_SIMPLE_NAME: Record<string, string> = {
+	'BevelFilter' : 'bevel',
+	'BlurFilter' : 'blur' ,
+	//'ColorMatrixFilter',
+	//'ConvolutionFilter',
+	'DisplacementMapFilter': 'displacement',
+	//'DropShadowFilter',
+	//'GlowFilter',
+	//'GradientBevelFilter',
+	//'GradientGlowFilter'
+};
 
-// export function convertToAS3Filters(context: AVM1Context, as2Filters: AVM1Object): ASObject {
-// 	var arr = [];
-// 	if (as2Filters) {
-// 		for (var i = 0, length = as2Filters.alGet('length'); i < length; i++) {
-// 			var as3Filter = convertToAS3Filter(context, as2Filters.alGet(i));
-// 			if (as3Filter) {
-// 				arr.push(as3Filter);
-// 			}
-// 		}
-// 	}
-// 	return context.sec.createArrayUnsafe(arr);
-// }
+export function convertToAS3Filter(context: AVM1Context, as2Filter: AVM1Object): IFilterModel {
+	let proto = as2Filter ? as2Filter.alPrototype : null;
+
+	while (proto && !(<AVM1BitmapFilterPrototype>proto).asFilterConverter) {
+		proto = proto.alPrototype;
+	}
+
+	if (proto) {
+		return (<AVM1BitmapFilterPrototype>proto).asFilterConverter.toAS3Filter(as2Filter);
+	}
+	return undefined;
+}
+
+export function convertToAS3Filters(context: AVM1Context, as2Filters: AVM1Object): IFilterModel[] {
+	const arr: IFilterModel[] = [];
+
+	if (!as2Filters) {
+		return arr;
+	}
+
+	const length = as2Filters.alGet('length');
+	for (let i = 0; i < length; i++) {
+		const filterModel = convertToAS3Filter(context, as2Filters.alGet(i));
+		if (filterModel && FILTER_TO_SIMPLE_NAME[filterModel.filterName]) {
+			filterModel.filterName = FILTER_TO_SIMPLE_NAME[filterModel.filterName];
+			arr.push(filterModel);
+		}
+	}
+
+	return arr;
+}
 
 // export function convertFromAS3Filters(context: AVM1Context, as3Filters: ASObject): AVM1Object {
 // 	var arr = [];

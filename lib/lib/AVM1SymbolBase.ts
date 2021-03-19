@@ -21,15 +21,21 @@ import { BasicPartition, ContainerNode } from '@awayjs/view';
 import { AVM1Stage } from './AVM1Stage';
 import { AVM1Transform } from './AVM1Transform';
 import { AVM1Function } from '../runtime/AVM1Function';
+import { AVM1ArrayNative } from '../natives';
+import { convertToAS3Filters, IFilterModel } from './AVM1Filters';
 
 export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	implements IAVM1EventPropertyObserver {
+
 	adaptee: T;
 	node: ContainerNode;
 	_as3ObjectTemplate: any;
 
-	public hasSwappedDepth: boolean=false;
-	public dynamicallyCreated: boolean=false;
+	public hasSwappedDepth: boolean = false;
+	public dynamicallyCreated: boolean = false;
+
+	protected _filterModels: IFilterModel[] = [];
+	protected _as2Filters: AVM1ArrayNative;
 
 	//	these are used so that we do not rely on values
 	//	coming from awayJS that might have float-issue:
@@ -313,7 +319,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		return '';//this.adaptee.blendMode;
 	}
 
-	public setBlendMode(value: string) {
+	public setBlendMode(_value: string) {
 		notImplemented('AVM1SymbolBase.setBlendMode');
 		/*value = typeof value === 'number' ? BlendModesMap[value] : alCoerceString(this.context, value);
 		this.adaptee.blendMode = value || null;*/
@@ -330,11 +336,14 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 
 	public getFilters(): AVM1Object {
 		notImplemented('AVM1SymbolBase.getFilters');
-		return null;//80pro convertFromAS3Filters(this.context, this.adaptee.filters);
+		return this._as2Filters;
 	}
 
-	public setFilters(value) {
+	public setFilters(value: AVM1ArrayNative) {
 		notImplemented('AVM1SymbolBase.setFilters');
+
+		this._filterModels = convertToAS3Filters(this.context, value);
+		this._as2Filters = value;
 		//80pro this.adaptee.filters = convertToAS3Filters(this.context, value);
 	}
 
