@@ -21,8 +21,21 @@ import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Stage } from './AVM1Stage';
 import { AVM1Globals } from './AVM1Globals';
 import { AVMStage } from '@awayfl/swf-loader';
-import { MouseEvent } from '@awayjs/scene';
+import { MouseEvent as AwayMouseEvent } from '@awayjs/scene';
 import { Stage } from '@awayjs/stage';
+
+export const enum ASNativeMouseCodes {
+	NONE = 0,
+	LEFT = 1,
+	RIGHT = 2,
+	MIDDLE = 4,
+}
+
+export const JS_TO_AS_CODE_MAP = {
+	[0]: ASNativeMouseCodes.LEFT,
+	[1]: ASNativeMouseCodes.MIDDLE,
+	[2]: ASNativeMouseCodes.RIGHT
+};
 
 export class AVM1Mouse extends AVM1Object {
 	public static createAVM1Class(context: AVM1Context): AVM1Object {
@@ -30,43 +43,81 @@ export class AVM1Mouse extends AVM1Object {
 		return wrapped;
 	}
 
-	public static mouseDownDelegate: any=null;
-	public static mouseMoveDelegate: any=null;
-	public static mouseOutDelegate: any=null;
-	public static mouseUpDelegate: any=null;
-	public static mouseMiddleDownDelegate: any=null;
-	public static mouseMiddleUpDelegate: any=null;
-	public static mouseMiddleDownClicked: boolean=false;
+	public static mouseButtonsState = {
+		[ASNativeMouseCodes.LEFT]: 0,
+		[ASNativeMouseCodes.MIDDLE]: 0,
+		[ASNativeMouseCodes.RIGHT]: 0,
+	};
 
-	public static bindStage(context: AVM1Context, cls: AVM1Object, avmStage: AVMStage, htmlElement: HTMLElement): void {
+	public static mouseDownDelegate: any = null;
+	public static mouseMoveDelegate: any = null;
+	public static mouseOutDelegate: any = null;
+	public static mouseUpDelegate: any = null;
+
+	public static bindStage (
+		_context: AVM1Context,
+		cls: AVM1Object,
+		avmStage: AVMStage,
+		_htmlElement: HTMLElement
+	): void {
+
+		AVM1Mouse.mouseButtonsState[ASNativeMouseCodes.LEFT] = 0;
+		AVM1Mouse.mouseButtonsState[ASNativeMouseCodes.MIDDLE] = 0;
+		AVM1Mouse.mouseButtonsState[ASNativeMouseCodes.RIGHT] = 0;
 
 		const stage: Stage = avmStage.view.stage;
 
 		if (AVM1Mouse.mouseDownDelegate)
-			stage.removeEventListener(MouseEvent.MOUSE_DOWN, AVM1Mouse.mouseDownDelegate);
+			stage.removeEventListener(AwayMouseEvent.MOUSE_DOWN, AVM1Mouse.mouseDownDelegate);
 		if (AVM1Mouse.mouseMoveDelegate)
-			stage.removeEventListener(MouseEvent.MOUSE_MOVE, AVM1Mouse.mouseMoveDelegate);
+			stage.removeEventListener(AwayMouseEvent.MOUSE_MOVE, AVM1Mouse.mouseMoveDelegate);
 		if (AVM1Mouse.mouseOutDelegate)
-			stage.removeEventListener(MouseEvent.MOUSE_OUT, AVM1Mouse.mouseOutDelegate);
+			stage.removeEventListener(AwayMouseEvent.MOUSE_OUT, AVM1Mouse.mouseOutDelegate);
 		if (AVM1Mouse.mouseUpDelegate)
-			stage.removeEventListener(MouseEvent.MOUSE_UP, AVM1Mouse.mouseUpDelegate);
+			stage.removeEventListener(AwayMouseEvent.MOUSE_UP, AVM1Mouse.mouseUpDelegate);
 
-		AVM1Mouse.mouseDownDelegate = (e)=>{
+		AVM1Mouse.mouseDownDelegate = (e: AwayMouseEvent) => {
+			// ?? = (a === undef || null) ? b : a;
+			const button = (<any>e).button ?? 0;
+
+			AVM1Mouse.mouseButtonsState[JS_TO_AS_CODE_MAP[button]] = 1;
+
+			// we should not handle middle mouse, because FLASH can use it
+			if (button === 1) {
+				return;
+			}
+
 			alCallProperty(cls, 'broadcastMessage', ['onMouseDown']);
 		};
-		AVM1Mouse.mouseMoveDelegate = (e)=>{
+
+		AVM1Mouse.mouseMoveDelegate = (_e: AwayMouseEvent) => {
 			alCallProperty(cls, 'broadcastMessage', ['onMouseMove']);
 		};
-		AVM1Mouse.mouseOutDelegate = (e)=>{
+
+		AVM1Mouse.mouseOutDelegate = (_e: AwayMouseEvent)=>{
 			alCallProperty(cls, 'broadcastMessage', ['onMouseOut']);
 		};
-		AVM1Mouse.mouseUpDelegate = (e)=>{
+
+		AVM1Mouse.mouseUpDelegate = (e: AwayMouseEvent)=>{
+
+			// ?? = (a === undef || null) ? b : a;
+			const button = (<any>e).button ?? 0;
+
+			// reset latest mouse,  but this is not fully valid implementation
+			AVM1Mouse.mouseButtonsState[JS_TO_AS_CODE_MAP[button]] = 0;
+
+			// we should not handle middle mouse, because FLASH can use it
+			if (button === 1) {
+				return;
+			}
+
 			alCallProperty(cls, 'broadcastMessage', ['onMouseUp']);
 		};
-		stage.addEventListener(MouseEvent.MOUSE_DOWN, AVM1Mouse.mouseDownDelegate);
-		stage.addEventListener(MouseEvent.MOUSE_MOVE, AVM1Mouse.mouseMoveDelegate);
-		stage.addEventListener(MouseEvent.MOUSE_OUT, AVM1Mouse.mouseOutDelegate);
-		stage.addEventListener(MouseEvent.MOUSE_UP, AVM1Mouse.mouseUpDelegate);
+
+		stage.addEventListener(AwayMouseEvent.MOUSE_DOWN, AVM1Mouse.mouseDownDelegate);
+		stage.addEventListener(AwayMouseEvent.MOUSE_MOVE, AVM1Mouse.mouseMoveDelegate);
+		stage.addEventListener(AwayMouseEvent.MOUSE_OUT, AVM1Mouse.mouseOutDelegate);
+		stage.addEventListener(AwayMouseEvent.MOUSE_UP, AVM1Mouse.mouseUpDelegate);
 	}
 
 	public static hide() {

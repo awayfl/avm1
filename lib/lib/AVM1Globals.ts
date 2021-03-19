@@ -146,13 +146,13 @@ export class AVM1Globals extends AVM1Object {
 
 		this._initializeFlashObject(context);
 
-		this.middleMouseButtonFunction = new AVM1Function(context);
-		this.middleMouseButtonFunction.alCall = (thisArg: any, args?: any[])=>{
-			return false; // only return ture if middle mouse button was pressed
+		this.buttonCheckFunc = new AVM1Function(context);
+		this.buttonCheckFunc.alCall = (_thisArg: any, _args?: any[]) => {
+			return AVM1Mouse.mouseButtonsState[_args[0]];
 		};
 	}
 
-	public middleMouseButtonFunction: AVM1Function;
+	public buttonCheckFunc: AVM1Function;
 
 	public flash: AVM1Object;
 
@@ -192,15 +192,18 @@ export class AVM1Globals extends AVM1Object {
 		}
 	}
 
-	public ASnative(classID, id) {
+	public ASnative(classID: number, id: number): any {
+		// more interesting about this
+		// eslint-disable-next-line max-len
+		// http://etutorials.org/Macromedia/Flash+hacks.+100+industrial-strength+tips+tools/Chapter+8.+User+Interface+Elements/Hack+62+Right+and+Middle+Mouse+Buttons/
 		if (classID === 800 && id === 2) {
-			return this.middleMouseButtonFunction;
+			return this.buttonCheckFunc;
 		}
 		console.log('ASnatives', classID, id);
 		return null;
 	}
 
-	public ASSetPropFlags(obj: any, children: any, flags: any, allowFalse: any): any {
+	public ASSetPropFlags(_obj: any, _children: any, _flags: any, _allowFalse: any): any {
 		// flags (from bit 0): dontenum, dontdelete, readonly, ....
 		// TODO
 	}
@@ -270,24 +273,27 @@ export class AVM1Globals extends AVM1Object {
 			return undefined;
 		}
 
+		// eslint-disable-next-line prefer-rest-params
+		const inputArgs = arguments;
 		const context = this.context;
+
 		let fn: Function;
 		let time: number | undefined = undefined;
 		let argsStartIdx: number = 2;
 
-		if (alIsFunction(arguments[0])) {
-			fn = arguments[0].toJSFunction();
-			time = arguments[1];
+		if (alIsFunction(inputArgs[0])) {
+			fn = inputArgs[0].toJSFunction();
+			time = inputArgs[1];
 		} else {
 
-			if (arguments.length < 3) {
+			if (inputArgs.length < 3) {
 				return undefined;
 			}
 
-			const obj: any = arguments[0];
-			const funName: string = arguments[1];
+			const obj: any = inputArgs[0];
+			const funName: string = inputArgs[1];
 
-			time = arguments[2];
+			time = inputArgs[2];
 			argsStartIdx = 3;
 
 			if (!(obj instanceof AVM1Object) || typeof funName !== 'string') {
@@ -300,7 +306,7 @@ export class AVM1Globals extends AVM1Object {
 				}
 
 				// internal arguments
-				const args = Array.prototype.slice.call(arguments, 0);
+				const args = Array.prototype.slice.call(inputArgs, 0);
 				context.executeFunction(avmFn, obj, args);
 			};
 		}
@@ -313,13 +319,14 @@ export class AVM1Globals extends AVM1Object {
 		// Invalid cast. Return 0 for NaN/undefined.
 		time = alToInteger(context, time);
 
-		const args: any[] = Array.prototype.slice.call(arguments, argsStartIdx);
+		const args: any[] = Array.prototype.slice.call(inputArgs, argsStartIdx);
 
 		// Unconditionally coerce interval to int, as one would do.
-		let internalId;
+		let internalId: number;
 
 		if (fn) {
 			const callback = function() {
+				// eslint-disable-next-line prefer-spread
 				fn.apply(null, args);
 			};
 
@@ -330,25 +337,28 @@ export class AVM1Globals extends AVM1Object {
 	}
 
 	public setTimeout() {
+		// eslint-disable-next-line prefer-rest-params
+		const inputArgs = arguments;
 		// AVM1 setTimeout silently swallows most things that vaguely look like errors.
-		if (arguments.length < 2 || !alIsFunction(arguments[0])) {
+		if (inputArgs.length < 2 || !alIsFunction(inputArgs[0])) {
 			return undefined;
 		}
-		const fn: Function = arguments[0].toJSFunction();
-		const time = alToInteger(this.context, arguments[1]);
+		const fn: Function = inputArgs[0].toJSFunction();
+		const time = alToInteger(this.context, inputArgs[1]);
 		const args: any[] = [];
-		const argsLength: number = arguments.length;
+		const argsLength: number = inputArgs.length;
 		for (let i = 2; i < argsLength; i++) {
-			args.push(arguments[i]);
+			args.push(inputArgs[i]);
 		}
 		const callback = function() {
+			// eslint-disable-next-line prefer-spread
 			fn.apply(null, args);
 		};
 		const internalId = FrameScriptManager.setTimeOut(callback, time);
 		return _internalTimeouts.push(internalId);
 	}
 
-	public showRedrawRegions(enable, color) {
+	public showRedrawRegions(_enable: boolean, _color: number) {
 		// flash.profiler.showRedrawRegions.apply(null, arguments);
 		notImplemented('AVM1Globals.showRedrawRegions');
 	}
@@ -623,9 +633,11 @@ export class AVM1NativeActions {
 			mc.currentFrameIndex = (<number>frame) - 1;
 	}
 
-	public ifFrameLoaded(scene, frame?) {
+	public ifFrameLoaded(frame: number): any
+	public ifFrameLoaded(scene: any, frame?: any) {
 		// ignoring scene parameter ?
 		const nativeTarget = <AVM1MovieClip> this.context.resolveTarget(null);
+		// eslint-disable-next-line prefer-rest-params
 		const frameNum = arguments.length < 2 ? arguments[0] : arguments[1];
 		const framesLoaded = nativeTarget.alGet('_framesloaded');
 		const totalFrames = nativeTarget.alGet('_totalframes');
@@ -635,7 +647,7 @@ export class AVM1NativeActions {
 		return Math.min(frameNum + 1, totalFrames) <= framesLoaded;
 	}
 
-	public length_(expression): number {
+	public length_(expression: any): number {
 		return ('' + expression).length; // ASCII Only?
 	}
 
@@ -844,10 +856,13 @@ export class AVM1NativeActions {
 		nativeTarget.removeMovieClip();
 	}
 
-	public startDrag(target?, ...args: any[]): void {
+	public startDrag(target?: AVM1Object, ...args: any[]): void {
 		const mc = <AVM1MovieClip> this.context.resolveTarget(target);
-		if (mc)
+
+		if (mc) {
+			// eslint-disable-next-line prefer-spread
 			mc.startDrag.apply(mc, args);
+		}
 	}
 
 	public stop() {
@@ -877,7 +892,7 @@ export class AVM1NativeActions {
 		}
 	}
 
-	public substring(value, index, count) {
+	public substring(value: string, index: number, count: number): string {
 		return this.mbsubstring(value, index, count); // ASCII Only?
 	}
 
@@ -886,7 +901,7 @@ export class AVM1NativeActions {
 		notImplemented('AVM1NativeActions.toggleHighQuality');
 	}
 
-	public trace(expression) {
+	public trace(expression: string) {
 
 		if (AVM1Globals.tracelevel == TraceLevel.NONE)
 			return;
@@ -911,7 +926,7 @@ export class AVM1NativeActions {
 		console.log('%cAVM1 trace: %c ' + value + ' ', 'color: #054996', 'background: #eee; color: #054996');
 	}
 
-	public unloadMovie(target) {
+	public unloadMovie(target: AVM1Object | string) {
 		const nativeTarget = <AVM1MovieClip> this.context.resolveTarget(target);
 		if (!nativeTarget) {
 			warning('AVM1Globals.unloadMovie - target not found');

@@ -112,7 +112,7 @@ function convertAS3RectangeToBounds(as3Rectange: any, context: IAVM1Context): AV
 }
 
 export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieClipAdapter {
-
+	private _hitReportCount: number = 0;
 	private _depthToChilds: NumberMap<DisplayObject> = {};
 	// should be a 0, but it return a -1 when there are not childrens
 	private _nextHighestDepth: number = 1;
@@ -1538,7 +1538,16 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		const r = this.get_root();
 
 		if (!r) {
-			console.warn('[AVM1MovieClip:: hitTest] Root return undef! Return false to prevent crash!');
+			if (this._hitReportCount < 10) {
+				console.warn(
+					'[AVM1MovieClip:: hitTest] Root return undef! Return false to prevent crash!', this.adaptee.id
+				);
+
+				this._hitReportCount++;
+				if (this._hitReportCount === 10) {
+					console.warn('[AVM1MovieClip:: hitTest] To many reports, supress other!');
+				}
+			}
 			return false;
 		}
 
