@@ -951,7 +951,16 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public attachBitmap(bmp: AVM1BitmapData, depth: number,
 		pixelSnapping: string = 'auto',
-		smoothing: boolean = false): void {
+		smoothing: boolean = false
+	): void {
+
+		if (!bmp) {
+			console.error(
+				'[AVM1MovieClip:attachBitmap] Bitmap not resolved! Skip attach for prevent crash',
+				this.adaptee.id
+			);
+			return;
+		}
 
 		pixelSnapping = alCoerceString(this.context, pixelSnapping);
 		smoothing = alToBoolean(this.context, smoothing);
