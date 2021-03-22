@@ -448,6 +448,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			vsItem = virtualSceneGraph[i];
 			if (vsItem.sessionID == -1 && vsItem.child) {
 				newChildren[i] = vsItem.child;
+				this.setDepthToChild(vsItem.depth, vsItem.child);
 			} else if (existingSessionIDs[vsItem.sessionID]) {
 				//	the same sessionID already is child of the mc
 				const existingChild = existingSessionIDs[vsItem.sessionID];
@@ -457,7 +458,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				existingChild._avmDepthID = depth;
 				existingChild._sessionID = vsItem.sessionID;
 
-				//this._depthToChilds[depth] = existingChild;
 				this.setDepthToChild(depth, existingChild);
 				this.adaptee._sessionID_childs[vsItem.sessionID] = existingChild;
 
