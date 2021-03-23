@@ -62,9 +62,11 @@ export class AVM1BitmapData extends AVM1Object {
 		height = alToNumber(this.context, height);
 		transparent = arguments.length < 3 ? true : alToBoolean(this.context, transparent);
 		fillColor = arguments.length < 4 ? 0xFFFFFFFF : alToInt32(this.context, fillColor);
-		const awayObject = new BitmapData(
+		const awayObject = BitmapData.getImage(
 			width, height, transparent, fillColor, false, AVM1Stage.avmStage.view.stage
 		);
+
+		console.log('Construct:', awayObject.id);
 		this.adaptee = awayObject;
 	}
 
@@ -199,6 +201,7 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	dispose(): void {
+		console.log('Dispose', this.as3BitmapData.id);
 		this.as3BitmapData.dispose();
 	}
 

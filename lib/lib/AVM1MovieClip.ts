@@ -74,7 +74,7 @@ import {
 	Rectangle,
 } from '@awayjs/core';
 import { AVM1TextField } from './AVM1TextField';
-import { Graphics, LineScaleMode, GradientType } from '@awayjs/graphics';
+import { Graphics, LineScaleMode, GradientType, MaterialManager } from '@awayjs/graphics';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Stage } from './AVM1Stage';
@@ -85,8 +85,6 @@ import { AVM1LoaderHelper } from './AVM1LoaderHelper';
 import { EventsListForMC } from './AVM1EventHandler';
 import { AVM1InterpretedFunction } from '../interpreter';
 import { EntityNode, PickEntity } from '@awayjs/view';
-
-import { MethodMaterial } from '@awayjs/materials';
 import { AVM1Function } from '../runtime/AVM1Function';
 interface IVirtualSceneGraphItem {
 	sessionID: number,
@@ -964,13 +962,13 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		pixelSnapping = alCoerceString(this.context, pixelSnapping);
 		smoothing = alToBoolean(this.context, smoothing);
+
 		const awayBitmapImage2D = bmp.as3BitmapData;
 		awayBitmapImage2D.transparent = true;
-		const billboardMaterial: MethodMaterial = new MethodMaterial(awayBitmapImage2D);
-		billboardMaterial.alphaBlending = true;
-		billboardMaterial.useColorTransform = true;
 
-		const billboard: Billboard = new Billboard(billboardMaterial, pixelSnapping, smoothing);
+		const billboardMaterial = MaterialManager.getMaterialForBitmap(awayBitmapImage2D, true);
+		const billboard = new Billboard(billboardMaterial, pixelSnapping, smoothing);
+
 		this.addChildAtDepth(billboard, depth);
 	}
 
