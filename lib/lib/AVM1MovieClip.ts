@@ -1515,12 +1515,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		// The hitArea getter always returns exactly the value set here, so we have to store that.
 		this._hitArea = value;
 		let obj = value ? value.node : null;
-		if (obj && !obj.isAsset(MovieClip))
+		if (obj && !obj.container.isAsset(MovieClip))
 			obj = null;
 
 		// 	MA_GBR_0700AAx0100 is the first lesson encountered that makes use of hitArea
 		// 	if the hitArea is set, the mouse-interactions on the ducks stop working
-		//	this.adaptee.hitArea=obj;
+		// this.adaptee.hitArea=obj;
 	}
 
 	// Alternative method signature: hitTest(target: AVM1Object): boolean
