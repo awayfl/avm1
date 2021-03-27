@@ -552,6 +552,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			avm1parent.removeChildAtDepth(this.adaptee._avmDepthID);
 		}
 
+		// remove all props that was assigned in runtime
+		// require for batch3/DarkValentine
+		this.deleteOwnProperties();
+
 		// drop prototype
 		this.alPut('__proto__', null);
 	}
