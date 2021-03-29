@@ -74,7 +74,8 @@ import {
 	Rectangle,
 } from '@awayjs/core';
 import { AVM1TextField } from './AVM1TextField';
-import { Graphics, LineScaleMode, GradientType, MaterialManager } from '@awayjs/graphics';
+import { Graphics, GradientType, MaterialManager } from '@awayjs/graphics';
+import { LineScaleMode } from '@awayjs/renderer';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Stage } from './AVM1Stage';
