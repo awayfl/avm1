@@ -342,9 +342,10 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	public setFilters(value: AVM1ArrayNative) {
 		notImplemented('AVM1SymbolBase.setFilters');
 
-		this._filterModels = convertToAS3Filters(this.context, value);
+		const filters = convertToAS3Filters(this.context, value);
+		//@ts-ignore
+		this.adaptee.filters = filters;
 		this._as2Filters = value;
-		//80pro this.adaptee.filters = convertToAS3Filters(this.context, value);
 	}
 
 	public get_focusrect(): boolean {
