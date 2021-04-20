@@ -546,16 +546,24 @@ class AVM1XMLPrototype extends AVM1Object implements IAVM1DataObject {
 		value = alCoerceString(this.context, value);
 
 		const oParser = new DOMParser();
-		const as3Doc = <any>oParser.parseFromString(value, 'application/xml');
+		const as3Doc = oParser.parseFromString('<syntheticRoot>' + value + '</syntheticRoot>', 'application/xml');
 		const error = as3Doc.getElementsByTagName('parsererror');
 
 		if (error.length > 0) {
-			console.warn('[AVM1XML] Parsing error!');
+			console.error('[AVM1XML] Parsing error!');
 			console.groupCollapsed(error[0].textContent);
 			console.log(value);
 			console.groupEnd();
+
+			return;
 		}
-		this.as3XMLDocument = <any>as3Doc;
+
+		const root = as3Doc.childNodes[0];
+
+		AVM1XMLNodePrototype.prototype.initializeFromAS3Node.call(this, root);
+
+		this.as3XMLDocument = <any>root;
+
 		/*this.as3XMLDocument.axSetPublicProperty('ignoreWhite',
 			alToBoolean(this.context, this.alGet('ignoreWhite')));
 		this.as3XMLDocument.axCallPublicProperty('parseXML', [value]);*/
