@@ -237,8 +237,12 @@ export class AVM1Handler implements IAVMHandler {
 		FrameScriptManager.execute_queue();
 	}
 
+	public dispose() {
+		// @todo
+	}
+
 	public resizeStage() {
-		// todo: is this available for AVM1 code
+		// @todo: is this available for AVM1 code
 		// if so we must dispatch/broadcast a event here
 	}
 
