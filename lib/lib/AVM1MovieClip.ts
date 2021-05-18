@@ -551,14 +551,15 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		if (this.adaptee.parent && away2avmDepth(this.adaptee._avmDepthID) >= -1) {
 			const avm1parent: AVM1MovieClip = <AVM1MovieClip> this.adaptee.parent.adapter;
 			avm1parent.removeChildAtDepth(this.adaptee._avmDepthID);
+			// remove all props that was assigned in runtime
+			// require for batch3/DarkValentine
+			// moved this into this condition. required for chickClick level-button issue
+			this.deleteOwnProperties();
+	
+			// drop prototype
+			this.alPut('__proto__', null);
 		}
 
-		// remove all props that was assigned in runtime
-		// require for batch3/DarkValentine
-		this.deleteOwnProperties();
-
-		// drop prototype
-		this.alPut('__proto__', null);
 	}
 
 	protected _mouseButtonListenerCount: number;
