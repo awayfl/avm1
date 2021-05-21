@@ -62,12 +62,14 @@ export class AVM1BitmapData extends AVM1Object {
 		height = alToNumber(this.context, height);
 		transparent = arguments.length < 3 ? true : alToBoolean(this.context, transparent);
 		fillColor = arguments.length < 4 ? 0xFFFFFFFF : alToInt32(this.context, fillColor);
-		const awayObject = BitmapData.getImage(
-			width, height, transparent, fillColor, false, AVM1Stage.avmStage.view.stage
-		);
-
-		console.log('Construct:', awayObject.id);
-		this.adaptee = awayObject;
+		if (width!=0 && height!=0) {
+			const awayObject = BitmapData.getImage(
+				width, height, transparent, fillColor, false, AVM1Stage.avmStage.view.stage
+			);
+	
+			console.log('Construct:', awayObject.id);
+			this.adaptee = awayObject;
+		}
 	}
 
 	static fromAS3BitmapData(context: AVM1Context, awayObject: BitmapData): AVM1Object {
@@ -114,20 +116,22 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	public getHeight(): number {
-		return (<BitmapData> this.adaptee).height;
+		return this.adaptee ? (<BitmapData> this.adaptee).height : 0;
 	}
 
 	public getRectangle(): AVM1Object {
-		const rect = this.as3BitmapData;
+		const rect = (<BitmapData> this.adaptee);
+		if(!rect)
+			return new AVM1Rectangle(this.context, 0, 0, 0, 0);
 		return new AVM1Rectangle(this.context, 0, 0, rect.width, rect.height);
 	}
 
 	public getTransparent(): boolean {
-		return (<BitmapData> this.adaptee).transparent;
+		return this.adaptee ? (<BitmapData> this.adaptee).transparent : true;
 	}
 
 	public getWidth(): number {
-		return (<BitmapData> this.adaptee).width;
+		return this.adaptee ? (<BitmapData> this.adaptee).width : 0;
 	}
 
 	public applyFilter(sourceBitmap: AVM1BitmapData,
@@ -150,7 +154,7 @@ export class AVM1BitmapData extends AVM1Object {
 	public clone(): AVM1BitmapData {
 		const bitmap = new AVM1BitmapData(this.context);
 		bitmap.alPrototype = this.context.globals.BitmapData.alGetPrototypeProperty();
-		bitmap.adaptee = (<BitmapData> this.adaptee).clone();
+		bitmap.adaptee = this.adaptee ? (<BitmapData> this.adaptee).clone() : null;
 		return bitmap;
 	}
 
@@ -170,12 +174,14 @@ export class AVM1BitmapData extends AVM1Object {
 
 	public copyChannel(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
 		sourceChannel: number, destChannel: number): void {
-		const as3BitmapData = sourceBitmap.as3BitmapData;
+		const sourceAdaptee = sourceBitmap.as3BitmapData;
+		if(!this.adaptee || !sourceAdaptee)
+			return;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
 		const as3DestPoint = toAS3Point(destPoint);
 		sourceChannel = alCoerceNumber(this.context, sourceChannel);
 		destChannel = alCoerceNumber(this.context, destChannel);
-		this.as3BitmapData.copyChannel(as3BitmapData, as3SourceRect, as3DestPoint, sourceChannel, destChannel);
+		(<BitmapData> this.adaptee).copyChannel(sourceAdaptee, as3SourceRect, as3DestPoint, sourceChannel, destChannel);
 	}
 
 	public copyPixels(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
@@ -188,26 +194,30 @@ export class AVM1BitmapData extends AVM1Object {
 		}
 		//console.warn('[avm1/AVM1BitmapData] - copyPixels not implemented');
 
-		const thisAs3 = this.as3BitmapData;
-		const as3BitmapData = sourceBitmap.as3BitmapData;
+		const adaptee = (<BitmapData> this.adaptee);
+		const sourceAdaptee = sourceBitmap.as3BitmapData;
+		if(!this.adaptee || !sourceAdaptee)
+			return;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
 		const as3DestPoint = toAS3Point(destPoint);
 		const as3AlphaData = alphaBitmap ? alphaBitmap.as3BitmapData : null;
 		const as3AlphaPoint = alphaPoint ? toAS3Point(alphaPoint) : null;
 		mergeAlpha = alToBoolean(this.context, mergeAlpha);
 
-		thisAs3.copyPixels(
-			as3BitmapData, as3SourceRect, as3DestPoint, as3AlphaData, as3AlphaPoint, mergeAlpha);
+		adaptee.copyPixels(
+			sourceAdaptee, as3SourceRect, as3DestPoint, as3AlphaData, as3AlphaPoint, mergeAlpha);
 	}
 
 	dispose(): void {
-		console.log('Dispose', this.as3BitmapData.id);
-		this.as3BitmapData.dispose();
+		if(!this.adaptee)
+			return;
+		(<BitmapData> this.adaptee).dispose();
 	}
 
 	draw(source: AVM1Object | string, matrix?: AVM1Object, colorTransform?: AVM1ColorTransform, blendMode?: any,
 		clipRect?: AVM1Object, smooth?: boolean): void {
-
+		if (!this.adaptee)
+			return;
 		if (!source) {
 			console.warn('[AVM1BitmapData::draw] Empty source!');
 			return;
@@ -243,6 +253,10 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	fillRect(rect: AVM1Object, color: number): void {
+		
+		if(!this.adaptee)
+			return;
+
 		const as3Rect = toAS3Rectangle(rect);
 		color = alToInt32(this.context, color);
 
@@ -264,6 +278,8 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	getColorBoundsRect(mask: number, color: number, findColor?: boolean): AVM1Object {
+		if(!this.adaptee)
+			return;
 		mask = alToInt32(this.context, mask) >>> 0;
 		color = alToInt32(this.context, color) >>> 0;
 		findColor = alToBoolean(this.context, findColor);
@@ -279,11 +295,11 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	getPixel(x: number, y: number): number {
-		return (<BitmapData> this.adaptee).getPixel(x, y);
+		return this.adaptee ? (<BitmapData> this.adaptee).getPixel(x, y) : 0;
 	}
 
 	getPixel32(x: number, y: number): number {
-		return (<BitmapData> this.adaptee).getPixel32(x, y);
+		return this.adaptee ? (<BitmapData> this.adaptee).getPixel32(x, y) : 0;
 	}
 
 	hitTest(firstPoint: AVM1Object, firstAlphaThreshold: number, secondObject: AVM1Object,
@@ -310,6 +326,8 @@ export class AVM1BitmapData extends AVM1Object {
 	merge(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
 		redMult: number, greenMult: number, blueMult: number, alphaMult: number): void {
 		const as3BitmapData = sourceBitmap.as3BitmapData;
+		if(!this.adaptee || !as3BitmapData)
+			return;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
 		const as3DestPoint = toAS3Point(destPoint);
 		redMult = alToInt32(this.context, redMult);
@@ -385,6 +403,7 @@ export class AVM1BitmapData extends AVM1Object {
 		y = alCoerceNumber(this.context, y) | 0;
 
 		if (!x && !y) return;
+		if (!this.adaptee) return;
 
 		const as3this = this.as3BitmapData;
 
@@ -393,6 +412,8 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	setPixel(x: number, y: number, color: number): void {
+		if (!this.adaptee)
+			return;
 		x = alCoerceNumber(this.context, x);
 		y = alCoerceNumber(this.context, y);
 		color = alToInt32(this.context, color);
@@ -400,6 +421,8 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	setPixel32(x: number, y: number, color: number): void {
+		if (!this.adaptee)
+			return;
 		x = alCoerceNumber(this.context, x);
 		y = alCoerceNumber(this.context, y);
 		color = alToInt32(this.context, color);
@@ -413,9 +436,8 @@ export class AVM1BitmapData extends AVM1Object {
 		const thisAsBitmap = this.as3BitmapData;
 		const as3BitmapData = sourceBitmap.as3BitmapData;
 
-		if (!as3BitmapData) {
+		if(!this.adaptee || !as3BitmapData)
 			return;
-		}
 
 		const as3SourceRect = toAS3Rectangle(sourceRect);
 		const as3DestPoint = toAS3Point(destPoint);
