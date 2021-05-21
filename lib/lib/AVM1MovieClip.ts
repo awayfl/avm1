@@ -551,6 +551,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		if (this.adaptee.parent && away2avmDepth(this.adaptee._avmDepthID) >= -1) {
 			const avm1parent: AVM1MovieClip = <AVM1MovieClip> this.adaptee.parent.adapter;
 			avm1parent.removeChildAtDepth(this.adaptee._avmDepthID);
+			if (this.scriptMaskee){
+				(<AVM1MovieClip>this.scriptMaskee).setMask(null);
+			}
 			// remove all props that was assigned in runtime
 			// require for batch3/DarkValentine
 			// moved this into this condition. required for chickClick level-button issue
@@ -1682,14 +1685,14 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	public setMask(mask: AVM1SymbolBase<DisplayObjectContainer>) {
 		if (mask == null) {
 			// Cancel a mask.
-			this.adaptee.mask = null;
+			this.adaptee.scriptMask = null;
 			return;
 		}
-
+		mask.scriptMaskee = this;
 		mask = this.context.resolveTarget(mask);
 
 		if (mask)
-			this.adaptee.mask = mask.adaptee;
+			this.adaptee.scriptMask = mask.adaptee;
 	}
 
 	public startDrag(lock?: boolean, left?: number, top?: number, right?: number, bottom?: number): void {

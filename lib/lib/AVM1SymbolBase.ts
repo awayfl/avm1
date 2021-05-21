@@ -31,6 +31,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	node: ContainerNode;
 	_as3ObjectTemplate: any;
 
+	public scriptMaskee: AVM1SymbolBase<DisplayObjectContainer>;
 	public hasSwappedDepth: boolean = false;
 	public dynamicallyCreated: boolean = false;
 
