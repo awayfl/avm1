@@ -97,6 +97,8 @@ export class AVM1BitmapData extends AVM1Object {
 		// REDUX verify
 		if (symbol && (<IAsset><any>symbol).isAsset(BitmapImage2D)) {
 			const bitmapData = new AVM1BitmapData(context);
+			bitmapData.alPrototype = context.globals.BitmapData.alGetPrototypeProperty();
+
 			bitmapData.adaptee = <IAsset><any>symbol;
 			return bitmapData;
 		}
