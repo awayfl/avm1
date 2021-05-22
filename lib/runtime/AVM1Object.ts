@@ -283,26 +283,32 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		return this._prototype.alGetProperty(p);
 	}
 
-	public alGet(p): any {
+	public alGet(propName: string | number): any {
 		if (this._isGhost) {
 			return void  0;
 		}
 
-		const name = this.context.normalizeName(p);
+		const name = this.context.normalizeName(propName);
 		const desc = this.alGetProperty(name);
-		if (!desc) {
-			return undefined;
-		}
-		if ((desc.flags & AVM1PropertyFlags.DATA)) {
-			// for xml nodes we need to return the nodeValue
-			if (desc.value && desc.value.nodeValue)
-				return desc.value.nodeValue;
 
-			return desc.value;
+		if (!desc) {
+			return void 0;
 		}
-		release || Debug.assert((desc.flags & AVM1PropertyFlags.ACCESSOR));
+
+		if ((desc.flags & AVM1PropertyFlags.DATA)) {
+			const val = desc.value;
+			// for xml nodes we need to return the nodeValue
+			// https://developer.mozilla.org/ru/docs/Web/API/Node/nodeType
+			if (val && (val.nodeType == 2 /* Attr */ || val.nodeType == 3 /* Text */ || val.nodeValue)) {
+				return desc.value.nodeValue;
+			}
+
+			return val;
+		}
+
+		release || Debug.assert(!!(desc.flags & AVM1PropertyFlags.ACCESSOR));
 		const getter = desc.get;
-		if (!getter) {
+		return getter ? getter.alCall(this) : void 0;
 			return undefined;
 		}
 		const value = getter.alCall(this);
