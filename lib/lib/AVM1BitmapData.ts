@@ -62,11 +62,11 @@ export class AVM1BitmapData extends AVM1Object {
 		height = alToNumber(this.context, height);
 		transparent = arguments.length < 3 ? true : alToBoolean(this.context, transparent);
 		fillColor = arguments.length < 4 ? 0xFFFFFFFF : alToInt32(this.context, fillColor);
-		if (width!=0 && height!=0) {
+		if (width != 0 && height != 0) {
 			const awayObject = BitmapData.getImage(
 				width, height, transparent, fillColor, false, AVM1Stage.avmStage.view.stage
 			);
-	
+
 			console.log('Construct:', awayObject.id);
 			this.adaptee = awayObject;
 		}
@@ -121,7 +121,7 @@ export class AVM1BitmapData extends AVM1Object {
 
 	public getRectangle(): AVM1Object {
 		const rect = (<BitmapData> this.adaptee);
-		if(!rect)
+		if (!rect)
 			return new AVM1Rectangle(this.context, 0, 0, 0, 0);
 		return new AVM1Rectangle(this.context, 0, 0, rect.width, rect.height);
 	}
@@ -175,7 +175,7 @@ export class AVM1BitmapData extends AVM1Object {
 	public copyChannel(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
 		sourceChannel: number, destChannel: number): void {
 		const sourceAdaptee = sourceBitmap.as3BitmapData;
-		if(!this.adaptee || !sourceAdaptee)
+		if (!this.adaptee || !sourceAdaptee)
 			return;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
 		const as3DestPoint = toAS3Point(destPoint);
@@ -196,7 +196,7 @@ export class AVM1BitmapData extends AVM1Object {
 
 		const adaptee = (<BitmapData> this.adaptee);
 		const sourceAdaptee = sourceBitmap.as3BitmapData;
-		if(!this.adaptee || !sourceAdaptee)
+		if (!this.adaptee || !sourceAdaptee)
 			return;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
 		const as3DestPoint = toAS3Point(destPoint);
@@ -209,7 +209,7 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	dispose(): void {
-		if(!this.adaptee)
+		if (!this.adaptee)
 			return;
 		(<BitmapData> this.adaptee).dispose();
 	}
@@ -253,8 +253,8 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	fillRect(rect: AVM1Object, color: number): void {
-		
-		if(!this.adaptee)
+
+		if (!this.adaptee)
 			return;
 
 		const as3Rect = toAS3Rectangle(rect);
@@ -278,7 +278,7 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	getColorBoundsRect(mask: number, color: number, findColor?: boolean): AVM1Object {
-		if(!this.adaptee)
+		if (!this.adaptee)
 			return;
 		mask = alToInt32(this.context, mask) >>> 0;
 		color = alToInt32(this.context, color) >>> 0;
@@ -326,7 +326,7 @@ export class AVM1BitmapData extends AVM1Object {
 	merge(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
 		redMult: number, greenMult: number, blueMult: number, alphaMult: number): void {
 		const as3BitmapData = sourceBitmap.as3BitmapData;
-		if(!this.adaptee || !as3BitmapData)
+		if (!this.adaptee || !as3BitmapData)
 			return;
 		const as3SourceRect = toAS3Rectangle(sourceRect);
 		const as3DestPoint = toAS3Point(destPoint);
@@ -436,7 +436,7 @@ export class AVM1BitmapData extends AVM1Object {
 		const thisAsBitmap = this.as3BitmapData;
 		const as3BitmapData = sourceBitmap.as3BitmapData;
 
-		if(!this.adaptee || !as3BitmapData)
+		if (!this.adaptee || !as3BitmapData)
 			return;
 
 		const as3SourceRect = toAS3Rectangle(sourceRect);
