@@ -179,7 +179,7 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		return DEBUG_PROPERTY_PREFIX + name;
 	}
 
-	public alGetOwnProperty(name): AVM1PropertyDescriptor {
+	public alGetOwnProperty(name: string | number): AVM1PropertyDescriptor {
 		if (this._isGhost) {
 			return null;
 		}
@@ -192,14 +192,14 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		return this._ownProperties[name];
 	}
 
-	public alSetOwnProperty(p, desc: AVM1PropertyDescriptor): void {
+	public alSetOwnProperty(propName: string | number, desc: AVM1PropertyDescriptor): void {
 		if (this._isGhost) {
 			return;
 		}
 
-		const name = this.context.normalizeName(p);
+		const name = this.context.normalizeName(propName);
 		if (!desc.originalName && !this.context.isPropertyCaseSensitive) {
-			desc.originalName = p;
+			desc.originalName = propName;
 		}
 		if (!release) {
 			Debug.assert(desc instanceof AVM1PropertyDescriptor);
@@ -217,20 +217,20 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		this._ownProperties[name] = desc;
 	}
 
-	public alHasOwnProperty(p): boolean  {
+	public alHasOwnProperty(propName: string | number): boolean  {
 		if (this._isGhost) {
 			return  false;
 		}
 
-		const name = this.context.normalizeName(p);
+		const name = this.context.normalizeName(propName);
 		return !!this._ownProperties[name];
 	}
 
-	public alDeleteOwnProperty(p) {
-		const name = this.context.normalizeName(p);
+	public alDeleteOwnProperty(propName: string | number): void {
+		const name = this.context.normalizeName(propName);
 		delete this._ownProperties[name];
 		if (!release) {
-			delete this[this._debugEscapeProperty(p)];
+			delete this[this._debugEscapeProperty(propName)];
 		}
 	}
 
@@ -268,19 +268,19 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		return keys;
 	}
 
-	public alGetProperty(p): AVM1PropertyDescriptor {
+	public alGetProperty(propName: string | number): AVM1PropertyDescriptor {
 		if (this._isGhost) {
 			return null;
 		}
 
-		const desc = this.alGetOwnProperty(p);
+		const desc = this.alGetOwnProperty(propName);
 		if (desc) {
 			return desc;
 		}
 		if (!this._prototype) {
 			return undefined;
 		}
-		return this._prototype.alGetProperty(p);
+		return this._prototype.alGetProperty(propName);
 	}
 
 	public alGet(propName: string | number): any {
@@ -309,21 +309,14 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		release || Debug.assert(!!(desc.flags & AVM1PropertyFlags.ACCESSOR));
 		const getter = desc.get;
 		return getter ? getter.alCall(this) : void 0;
-			return undefined;
-		}
-		const value = getter.alCall(this);
-		//if(value && value.adaptee && value.adaptee instanceof DisplayObject && !value.adaptee.parent){
-		//   return undefined;
-		//}
-		return value;
 	}
 
-	public alCanPut(p): boolean {
+	public alCanPut(propName: string | number): boolean {
 		if (this._isGhost) {
 			return  false;
 		}
 
-		const desc = this.alGetOwnProperty(p);
+		const desc = this.alGetOwnProperty(propName);
 		if (desc) {
 			if ((desc.flags & AVM1PropertyFlags.ACCESSOR)) {
 				return !!desc.set;
@@ -335,80 +328,80 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		if (!proto) {
 			return true;
 		}
-		return proto.alCanPut(p);
+		return proto.alCanPut(propName);
 	}
 
-	public alPut(p, v) {
+	public alPut(propName: string | number, value: any): void {
 		if (this._isGhost) {
 			return;
 		}
 
 		// Perform all lookups with the canonicalized name, but keep the original name around to
 		// pass it to `alSetOwnProperty`, which stores it on the descriptor.
-		const originalName = p;
-		p = this.context.normalizeName(p);
+		const originalName = propName;
+		propName = this.context.normalizeName(propName);
 
 		// stupid hack to make sure we can update references to objects in cases when the timeline changes the objects
 		// if a new object is registered for the same name, we can use the "scriptRefsToChilds"
 		// to update all references to the old object with the new one
-		if (v && typeof v === 'object'
-			&& v.avmType === 'symbol'
-			&& p != 'this' && p != '_parent'
-			&& !v.dynamicallyCreated) {
-			if (v.adaptee && v.adaptee.parent
-				&& v.adaptee.parent.adapter
-				&& v.adaptee.parent.adapter.scriptRefsToChilds) {
-				v.adaptee.parent.adapter.scriptRefsToChilds[v.adaptee.name] = { obj:this, name:p };
+		if (value && typeof value === 'object'
+			&& value.avmType === 'symbol'
+			&& propName != 'this' && propName != '_parent'
+			&& !value.dynamicallyCreated) {
+			if (value.adaptee && value.adaptee.parent
+				&& value.adaptee.parent.adapter
+				&& value.adaptee.parent.adapter.scriptRefsToChilds) {
+				value.adaptee.parent.adapter.scriptRefsToChilds[value.adaptee.name] = { obj:this, name:propName };
 			}
 		}
-		if (!this.alCanPut(p)) {
+		if (!this.alCanPut(propName)) {
 			return;
 		}
 
-		const ownDesc = this.alGetOwnProperty(p);
+		const ownDesc = this.alGetOwnProperty(propName);
 		if (ownDesc && (ownDesc.flags & AVM1PropertyFlags.DATA)) {
 
 			if (ownDesc.watcher) {
-				v = ownDesc.watcher.callback.alCall(this,
-					[ownDesc.watcher.name, ownDesc.value, v, ownDesc.watcher.userData]);
+				value = ownDesc.watcher.callback.alCall(this,
+					[ownDesc.watcher.name, ownDesc.value, value, ownDesc.watcher.userData]);
 			}
 			// Real properties (i.e., not things like "_root" on MovieClips) can be updated in-place.
-			if (p in this._ownProperties) {
-				ownDesc.value = v;
+			if (propName in this._ownProperties) {
+				ownDesc.value = value;
 			} else {
-				this.alSetOwnProperty(originalName, new AVM1PropertyDescriptor(ownDesc.flags, v));
+				this.alSetOwnProperty(originalName, new AVM1PropertyDescriptor(ownDesc.flags, value));
 			}
 			return;
 		}
-		if (typeof v === 'undefined'
-			&& (p == '_x' || p == '_y' || p == '_xscale' || p == '_yscale' || p == '_width' || p == '_height')) {
+		if (typeof value === 'undefined'
+			&& (propName == '_x' || propName == '_y' || propName == '_xscale' || propName == '_yscale' || propName == '_width' || propName == '_height')) {
 			// certain props do not allow their value to be set to "undefined", so we exit here
 			// todo: there might be more props that do not allow "undefined"
 			return;
 		}
-		const desc = this.alGetProperty(p);
+		const desc = this.alGetProperty(propName);
 		if (desc && (desc.flags & AVM1PropertyFlags.ACCESSOR)) {
 			if (desc.watcher) {
 				const oldValue = desc.get ? desc.get.alCall(this) : undefined;
-				v = desc.watcher.callback.alCall(this,
-					[desc.watcher.name, oldValue, v, desc.watcher.userData]);
+				value = desc.watcher.callback.alCall(this,
+					[desc.watcher.name, oldValue, value, desc.watcher.userData]);
 			}
 			const setter = desc.set;
 			release || Debug.assert(setter);
-			setter.alCall(this, [v]);
+			setter.alCall(this, [value]);
 		} else {
 			if (desc && desc.watcher) {
 				release || Debug.assert(desc.flags & AVM1PropertyFlags.DATA);
-				v = desc.watcher.callback.alCall(this,
-					[desc.watcher.name, desc.value, v, desc.watcher.userData]);
+				value = desc.watcher.callback.alCall(this,
+					[desc.watcher.name, desc.value, value, desc.watcher.userData]);
 			}
-			if (v && v.isTextVar) {
-				v = v.value;
-				const newDesc = new AVM1PropertyDescriptor(desc ? desc.flags : AVM1PropertyFlags.DATA, v);
+			if (value && value.isTextVar) {
+				value = value.value;
+				const newDesc = new AVM1PropertyDescriptor(desc ? desc.flags : AVM1PropertyFlags.DATA, value);
 				(<any>newDesc).isTextVar = true;
 				this.alSetOwnProperty(originalName, newDesc);
 			} else {
-				const newDesc = new AVM1PropertyDescriptor(desc ? desc.flags : AVM1PropertyFlags.DATA, v);
+				const newDesc = new AVM1PropertyDescriptor(desc ? desc.flags : AVM1PropertyFlags.DATA, value);
 				this.alSetOwnProperty(originalName, newDesc);
 			}
 
@@ -424,30 +417,30 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 		return !!desc;
 	}
 
-	public alDeleteProperty(p): boolean {
-		const desc = this.alGetOwnProperty(p);
+	public alDeleteProperty(propName: string | number): boolean {
+		const desc = this.alGetOwnProperty(propName);
 		if (!desc) {
 			return true;
 		}
 		if ((desc.flags & AVM1PropertyFlags.DONT_DELETE)) {
 			return false;
 		}
-		this.alDeleteOwnProperty(p);
+		this.alDeleteOwnProperty(propName);
 		return true;
 	}
 
-	public alAddPropertyWatcher(p: any, callback: IAVM1Callable, userData: any): boolean {
+	public alAddPropertyWatcher(propName: string | number, callback: IAVM1Callable, userData: any): boolean {
 		if (this._isGhost) {
 			return  false;
 		}
 
 		// TODO verify/test this functionality to match ActionScript
-		const desc = this.alGetProperty(p);
+		const desc = this.alGetProperty(propName);
 		if (!desc) {
 			return false;
 		}
 		desc.watcher = {
-			name: p,
+			name: propName,
 			callback: callback,
 			userData: userData
 		};
