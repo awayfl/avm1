@@ -33,12 +33,34 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	public protoTypeChanged: boolean;
 	protected _visibilityByScript: boolean;
 
+	// mark that object is GHOST, FP not allow assign/get/call props in this mode, instanceOf always is false
+	private _isGhost: boolean = false;
+
+	public get isGhost() {
+		return this._isGhost;
+	}
+
 	public get eventObserver(): AVM1Object {
 		return this._eventObserver;
 	}
 
 	public set eventObserver(value: AVM1Object) {
 		this._eventObserver = value;
+	}
+
+	/**
+	 * Move object to ghost mode, we can't recover back from this mode, all props and methods will be undef
+	 */
+	public makeGhost() {
+		// remove all props that was assigned in runtime
+		// require for batch3/DarkValentine
+		// moved this into this condition. required for chickClick level-button issue
+		this.deleteOwnProperties();
+
+		// drop prototype, instanceOf always will false
+		this.alPut('__proto__', null);
+
+		this._isGhost = true;
 	}
 
 	public dispose(): any {
@@ -158,6 +180,10 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 
 	public alGetOwnProperty(name): AVM1PropertyDescriptor {
+		if (this._isGhost) {
+			return null;
+		}
+
 		if (typeof name === 'string' && !this.context.isPropertyCaseSensitive) {
 			name = name.toLowerCase();
 		}
@@ -167,6 +193,10 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 
 	public alSetOwnProperty(p, desc: AVM1PropertyDescriptor): void {
+		if (this._isGhost) {
+			return;
+		}
+
 		const name = this.context.normalizeName(p);
 		if (!desc.originalName && !this.context.isPropertyCaseSensitive) {
 			desc.originalName = p;
@@ -188,6 +218,10 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 
 	public alHasOwnProperty(p): boolean  {
+		if (this._isGhost) {
+			return  false;
+		}
+
 		const name = this.context.normalizeName(p);
 		return !!this._ownProperties[name];
 	}
@@ -209,6 +243,11 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 
 	public alGetOwnPropertiesKeys(): string[] {
 		const keys: string[] = [];
+
+		if (this._isGhost) {
+			return keys;
+		}
+
 		let desc;
 		if (!this.context.isPropertyCaseSensitive) {
 			for (const name in this._ownProperties) {
@@ -230,6 +269,10 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 
 	public alGetProperty(p): AVM1PropertyDescriptor {
+		if (this._isGhost) {
+			return null;
+		}
+
 		const desc = this.alGetOwnProperty(p);
 		if (desc) {
 			return desc;
@@ -241,6 +284,10 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 
 	public alGet(p): any {
+		if (this._isGhost) {
+			return void  0;
+		}
+
 		const name = this.context.normalizeName(p);
 		const desc = this.alGetProperty(name);
 		if (!desc) {
@@ -266,6 +313,10 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 
 	public alCanPut(p): boolean {
+		if (this._isGhost) {
+			return  false;
+		}
+
 		const desc = this.alGetOwnProperty(p);
 		if (desc) {
 			if ((desc.flags & AVM1PropertyFlags.ACCESSOR)) {
@@ -282,6 +333,10 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 
 	public alPut(p, v) {
+		if (this._isGhost) {
+			return;
+		}
+
 		// Perform all lookups with the canonicalized name, but keep the original name around to
 		// pass it to `alSetOwnProperty`, which stores it on the descriptor.
 		const originalName = p;
@@ -355,6 +410,10 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 
 	public alHasProperty(p): boolean  {
+		if (this._isGhost) {
+			return  false;
+		}
+
 		const desc = this.alGetProperty(p);
 		return !!desc;
 	}
@@ -372,6 +431,10 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 
 	public alAddPropertyWatcher(p: any, callback: IAVM1Callable, userData: any): boolean {
+		if (this._isGhost) {
+			return  false;
+		}
+
 		// TODO verify/test this functionality to match ActionScript
 		const desc = this.alGetProperty(p);
 		if (!desc) {
@@ -421,6 +484,10 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 	}
 
 	public alGetKeys(): string[] {
+		if (this._isGhost) {
+			return [];
+		}
+
 		const ownKeys = this.alGetOwnPropertiesKeys();
 		const proto = this._prototype;
 		if (!proto) {

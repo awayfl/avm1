@@ -548,21 +548,31 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		if (this.adaptee.isAVMScene) {
 			return; // let's not remove root symbol
 		}
-		if (this.adaptee.parent && away2avmDepth(this.adaptee._avmDepthID) >= -1) {
-			const avm1parent: AVM1MovieClip = <AVM1MovieClip> this.adaptee.parent.adapter;
-			avm1parent.removeChildAtDepth(this.adaptee._avmDepthID);
-			if (this.scriptMaskee){
-				(<AVM1MovieClip>this.scriptMaskee).setMask(null);
-			}
-			// remove all props that was assigned in runtime
-			// require for batch3/DarkValentine
-			// moved this into this condition. required for chickClick level-button issue
-			this.deleteOwnProperties();
-	
-			// drop prototype
-			this.alPut('__proto__', null);
+
+		if (!this.adaptee.parent || away2avmDepth(this.adaptee._avmDepthID)  < 0) {
+			return;
 		}
 
+		const avm1parent: AVM1MovieClip = <AVM1MovieClip> this.adaptee.parent.adapter;
+		avm1parent.removeChildAtDepth(this.adaptee._avmDepthID);
+
+		if (this.scriptMaskee) {
+			(<AVM1MovieClip> this.scriptMaskee).setMask(null);
+		}
+
+		// to be sure
+		this.freeFromScript();
+
+		// todo should we unlink all child and call removeMovieClip recursive  or not?
+		// workground for https://github.com/awaystudios/nitrome-conversions-batch7/issues/9
+		this._childrenByName = {};
+		this._depthToChilds = {};
+
+		// going to ghost mode
+		this.makeGhost();
+
+		// todo why whe should keep adaptee?
+		// this.adaptee?.dispose();
 	}
 
 	protected _mouseButtonListenerCount: number;
@@ -1135,7 +1145,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	 * Using this map instead of always relaying lookups to the AVM2 MovieClip substantially
 	 * reduces the time spent in looking up children. In some cases by two orders of magnitude.
 	 */
-	private _childrenByName: Map<string, AVM1MovieClip>;
+	private _childrenByName: Record<string, AVM1SymbolBase<any>>;
 
 	public _updateChildName(child: AVM1MovieClip, oldName: string, newName: string) {
 		if (oldName === newName) {
@@ -1156,7 +1166,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		if (this._childrenByName[name] !== child) {
 			return;
 		}
-		const newChildForName = this._lookupChildInAS3Object(name);
+		const newChildForName = <AVM1SymbolBase<any>> this._lookupChildInAS3Object(name);
 		if (newChildForName) {
 			this._childrenByName[name] = newChildForName;
 		} else {
