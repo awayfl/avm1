@@ -131,48 +131,56 @@ class AVM1XMLNodeChildNodes extends AVM1Object  {
 }
 
 class AVM1XMLNodeAttributes extends AVM1Object {
-	private _as3Attributes: Object;
-	private _cachedNodePropertyDescriptor: AVM1PropertyDescriptor;
-	constructor(context: AVM1Context, as3Attributes: Object) {
+	private readonly _nativeAttr: NamedNodeMap;
+	private readonly _cachedNodePropertyDescriptor: AVM1PropertyDescriptor;
+
+	constructor(context: AVM1Context, as3Attributes: NamedNodeMap) {
 		super(context);
 		this.alPrototype = context.builtins.Object.alGetPrototypeProperty();
-		this._as3Attributes = as3Attributes;
+		this._nativeAttr = as3Attributes;
 		this._cachedNodePropertyDescriptor = new AVM1PropertyDescriptor(AVM1PropertyFlags.DATA,
 			undefined);
 	}
 
 	public alGetOwnProperty(p): AVM1PropertyDescriptor {
 		const name = alCoerceString(this.context, p);
-		if (this._as3Attributes.hasOwnProperty(name)) {
-			this._cachedNodePropertyDescriptor.value =
-				this._as3Attributes[name];
+		const data = this._nativeAttr.getNamedItem(name);
+
+		if (data) {
+			this._cachedNodePropertyDescriptor.value = data;
 			return this._cachedNodePropertyDescriptor;
 		}
-		return undefined;
+
+		return void 0;
 	}
 
 	public alSetOwnProperty(p, desc: AVM1PropertyDescriptor): void {
 		const name = alCoerceString(this.context, p);
 		if ((desc.flags & AVM1PropertyFlags.DATA)) {
 			const value = alCoerceString(this.context, desc.value);
-			this._as3Attributes[name] = value;
+			// this can be unsafe, for NodeNamedMap we should use setNamedItem
+			this._nativeAttr[name] = value;
 		}
 	}
 
 	public alHasOwnProperty(p): boolean  {
 		const name = alCoerceString(this.context, p);
-		return this._as3Attributes.hasOwnProperty(name);
+		return !!this._nativeAttr.getNamedItem(name);
 	}
 
 	public alDeleteOwnProperty(p) {
 		const name = alCoerceString(this.context, p);
-		delete this._as3Attributes[name];
+		this._nativeAttr.removeNamedItem(name);
 	}
 
 	public alGetOwnPropertiesKeys(): string[] {
-		const as3Keys = Object.keys(this._as3Attributes);
+		const names: string[] = [];
 
-		return as3Keys.map((key) => alCoerceString(this.context, this._as3Attributes[key].name));
+		for (let i = 0; i < this._nativeAttr.length; i++) {
+			names[i] = alCoerceString(this.context, this._nativeAttr.item(i).name);
+		}
+
+		return names;
 	}
 }
 
@@ -296,22 +304,30 @@ class AVM1XMLNodePrototype extends AVM1Object {
 	}
 
 	setAttributes(value: AVM1Object) {
+		// this method has unstable implementation, mixed from native and emulative
 		if (isNullOrUndefined(value)) {
 			this._attributes = undefined;
 			return;
 		}
+		//todo we can\'t set attribute for node easly, `attributes` is read only,
+		// for this we MUST iterate over attribute and call `setAttribute`
 		if (value instanceof AVM1XMLNodeAttributes) {
 			this._attributes = value;
 			return;
 		}
 		const context = this.context;
-		const as3Attributes = {};
+		const as3Attributes = <NamedNodeMap> this.as3XMLNode.attributes;
+
 		alForEachProperty(value, (prop) => {
 			const name = alCoerceString(context, prop);
 			const value = alCoerceString(context, this.alGet(prop));
-			as3Attributes[name] = value;
+			const attr = /* dom */ document.createAttribute(name);
+			attr.value = value;
+			as3Attributes.setNamedItem(attr);
 		}, this);
-		this._attributes = new AVM1XMLNodeAttributes(context, as3Attributes);
+
+		console.warn('[XMLNode] Invalid attribute implementation');
+		this._attributes = new AVM1XMLNodeAttributes(context, this.as3XMLNode.attributes);
 	}
 
 	getChildNodes(): AVM1Object {
