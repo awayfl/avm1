@@ -147,7 +147,7 @@ class AVM1XMLNodeAttributes extends AVM1Object {
 		const data = this._nativeAttr.getNamedItem(name);
 
 		if (data) {
-			this._cachedNodePropertyDescriptor.value = data;
+			this._cachedNodePropertyDescriptor.value = data.nodeValue;
 			return this._cachedNodePropertyDescriptor;
 		}
 

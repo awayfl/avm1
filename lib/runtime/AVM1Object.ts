@@ -297,11 +297,13 @@ export class AVM1Object extends NullPrototypeObject implements IDisplayObjectAda
 
 		if ((desc.flags & AVM1PropertyFlags.DATA)) {
 			const val = desc.value;
+
+			// redurant, XML should return value direct
 			// for xml nodes we need to return the nodeValue
 			// https://developer.mozilla.org/ru/docs/Web/API/Node/nodeType
-			if (val && (val.nodeType == 2 /* Attr */ || val.nodeType == 3 /* Text */ || val.nodeValue)) {
-				return desc.value.nodeValue;
-			}
+			// if (val && (val.nodeType == 2 /* Attr */ || val.nodeType == 3 /* Text */ || val.nodeValue)) {
+			// 	return desc.value.nodeValue;
+			// }
 
 			return val;
 		}
