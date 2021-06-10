@@ -44,7 +44,6 @@ export class AVM1Sound extends AVM1Object {
 	private _assetNameSpace: string;
 	private _onCompleteCallback: Function;
 	private _playAfterLoading: boolean;
-	private loopsToPlay: number=0;
 
 	public avm1Constructor(target_mc) {
 		this._target = this.context.resolveTarget(target_mc);
@@ -71,44 +70,39 @@ export class AVM1Sound extends AVM1Object {
 	}
 
 	public attachSound(id: string): void {
-
 		if (typeof id !== 'string' && typeof id !== 'number')
 			return;
+
 		const symbol = AssetLibrary.getAsset(id, this._assetNameSpace);
 		if (!symbol) {
 			warning('AVM1Sound.attachSound no symbol found ' + id);
 			return;
 		}
+
 		this._linkageID = id;
 		this._sound = (<WaveAudio>symbol).clone();
 		if (!this._sound) {
 			warning('AVM1Sound.attachSound no WaveAudio found ' + id);
 			return;
 		}
-		this._sound.onSoundComplete = ()=>this.soundCompleteInternal();
+
+		this.soundCompleteInternal = this.soundCompleteInternal.bind(this);
 	}
 
 	private soundCompleteInternal() {
-		this.loopsToPlay--;
-		if (this.loopsToPlay > 0) {
-			this.stop();
-			this._sound.play(0, false);
-		} else {
-			if (this._onCompleteCallback) {
-				this._onCompleteCallback();
-			}
-		}
+		this._onCompleteCallback && this._onCompleteCallback();
 	}
 
 	public onSoundComplete(callback: any = null): void {
-
 		const myThis = this;
 		this._onCompleteCallback = null;
+
 		if (callback) {
 			this._onCompleteCallback = function() {
 				callback.alCall(myThis);
 			};
 		}
+
 		if (!this._sound) {
 			warning('AVM1Sound.onSoundComplete called, but no WaveAudio set');
 			return;
@@ -233,11 +227,15 @@ export class AVM1Sound extends AVM1Object {
 
 		secondOffset = isNaN(secondOffset) || secondOffset < 0 ? 0 : +secondOffset;
 		loops = isNaN(loops) || loops < 1 ? 1 : Math.floor(loops);
-		this.loopsToPlay = loops;
+
 		if (this._target && this._target.adaptee) {
-			this._target.adaptee.startSound(this._linkageID, this._sound, this.loopsToPlay);
+			this._target.adaptee.startSound(
+				this._linkageID,
+				this._sound,
+				loops,
+				this.soundCompleteInternal
+			);
 		}
-		//this._sound.play(secondOffset, false);
 	}
 
 	public stop(linkageID?: string): void {
