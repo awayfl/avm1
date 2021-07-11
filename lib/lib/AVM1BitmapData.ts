@@ -19,18 +19,17 @@ import { AVM1Context } from '../context';
 import { AVM1Rectangle, toAS3Rectangle } from './AVM1Rectangle';
 import { toAS3Point } from './AVM1Point';
 import { BlendModesMap, wrapAVM1NativeClass } from './AVM1Utils';
-// import {convertToAS3Filter} from "./AVM1Filters";
 import { toAwayColorTransform, AVM1ColorTransform } from './AVM1ColorTransform';
 import { toAS3Matrix } from './AVM1Matrix';
-//import {BitmapImage2D as BitmapData} from "@awayjs/stage";
-import { SceneImage2D as BitmapData } from '@awayjs/scene';
+import { Billboard, SceneImage2D } from '@awayjs/scene';
 import { AssetLibrary, IAsset, IAssetAdapter, Point } from '@awayjs/core';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Stage } from './AVM1Stage';
 import { BitmapImage2D } from '@awayjs/stage';
 import { AVM1MovieClip } from './AVM1MovieClip';
+import { MaterialManager } from '@awayjs/graphics';
 
-export function toAS3BitmapData(as2Object: AVM1BitmapData): BitmapData {
+export function toAS3BitmapData(as2Object: AVM1BitmapData): SceneImage2D {
 	if (!(as2Object instanceof AVM1BitmapData)) {
 		return null;
 	}
@@ -51,10 +50,21 @@ export class AVM1BitmapData extends AVM1Object {
 			null, AVM1BitmapData.prototype.avm1Constructor);
 	}
 
+	private _linkedBillboards: Billboard[] = [];
+
+	public getBillboard(snap: string, smooth: boolean): Billboard {
+		const billboardMaterial = MaterialManager.getMaterialForBitmap(<SceneImage2D> this.adaptee, true);
+		const billboard = new Billboard(billboardMaterial, snap, smooth);
+
+		this._linkedBillboards.push(billboard);
+
+		return billboard;
+	}
+
 	//adaptee: BitmapData;
 
-	get as3BitmapData(): BitmapData {
-		return <BitmapData> this.adaptee;
+	get as3BitmapData(): SceneImage2D {
+		return <SceneImage2D> this.adaptee;
 	}
 
 	public avm1Constructor(width: number, height: number, transparent?: boolean, fillColor?: number) {
@@ -63,7 +73,7 @@ export class AVM1BitmapData extends AVM1Object {
 		transparent = arguments.length < 3 ? true : alToBoolean(this.context, transparent);
 		fillColor = arguments.length < 4 ? 0xFFFFFFFF : alToInt32(this.context, fillColor);
 		if (width != 0 && height != 0) {
-			const awayObject = BitmapData.getImage(
+			const awayObject = SceneImage2D.getImage(
 				width, height, transparent, fillColor, false, AVM1Stage.avmStage.view.stage
 			);
 
@@ -72,7 +82,7 @@ export class AVM1BitmapData extends AVM1Object {
 		}
 	}
 
-	static fromAS3BitmapData(context: AVM1Context, awayObject: BitmapData): AVM1Object {
+	static fromAS3BitmapData(context: AVM1Context, awayObject: SceneImage2D): AVM1Object {
 		const as2Object = new AVM1BitmapData(context);
 		as2Object.alPrototype = context.globals.BitmapData.alGetPrototypeProperty();
 		as2Object.adaptee = <IAsset>awayObject;
@@ -118,22 +128,22 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	public getHeight(): number {
-		return this.adaptee ? (<BitmapData> this.adaptee).height : 0;
+		return this.adaptee ? (<SceneImage2D> this.adaptee).height : 0;
 	}
 
 	public getRectangle(): AVM1Object {
-		const rect = (<BitmapData> this.adaptee);
+		const rect = (<SceneImage2D> this.adaptee);
 		if (!rect)
 			return new AVM1Rectangle(this.context, 0, 0, 0, 0);
 		return new AVM1Rectangle(this.context, 0, 0, rect.width, rect.height);
 	}
 
 	public getTransparent(): boolean {
-		return this.adaptee ? (<BitmapData> this.adaptee).transparent : true;
+		return this.adaptee ? (<SceneImage2D> this.adaptee).transparent : true;
 	}
 
 	public getWidth(): number {
-		return this.adaptee ? (<BitmapData> this.adaptee).width : 0;
+		return this.adaptee ? (<SceneImage2D> this.adaptee).width : 0;
 	}
 
 	public applyFilter(sourceBitmap: AVM1BitmapData,
@@ -156,14 +166,14 @@ export class AVM1BitmapData extends AVM1Object {
 	public clone(): AVM1BitmapData {
 		const bitmap = new AVM1BitmapData(this.context);
 		bitmap.alPrototype = this.context.globals.BitmapData.alGetPrototypeProperty();
-		bitmap.adaptee = this.adaptee ? (<BitmapData> this.adaptee).clone() : null;
+		bitmap.adaptee = this.adaptee ? (<SceneImage2D> this.adaptee).clone() : null;
 		return bitmap;
 	}
 
 	public colorTransform(rect: AVM1Object, colorTransform: AVM1Object): void {
 		const as3Rect = toAS3Rectangle(rect);
 		const as3ColorTransform = toAwayColorTransform(<AVM1ColorTransform>colorTransform);
-		(<BitmapData> this.adaptee).colorTransform(as3Rect, as3ColorTransform);
+		(<SceneImage2D> this.adaptee).colorTransform(as3Rect, as3ColorTransform);
 	}
 
 	public compare(other: AVM1BitmapData): boolean {
@@ -183,7 +193,7 @@ export class AVM1BitmapData extends AVM1Object {
 		const as3DestPoint = toAS3Point(destPoint);
 		sourceChannel = alCoerceNumber(this.context, sourceChannel);
 		destChannel = alCoerceNumber(this.context, destChannel);
-		(<BitmapData> this.adaptee).copyChannel(sourceAdaptee, as3SourceRect, as3DestPoint, sourceChannel, destChannel);
+		(<SceneImage2D> this.adaptee).copyChannel(sourceAdaptee, as3SourceRect, as3DestPoint, sourceChannel, destChannel);
 	}
 
 	public copyPixels(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,
@@ -196,7 +206,7 @@ export class AVM1BitmapData extends AVM1Object {
 		}
 		//console.warn('[avm1/AVM1BitmapData] - copyPixels not implemented');
 
-		const adaptee = (<BitmapData> this.adaptee);
+		const adaptee = (<SceneImage2D> this.adaptee);
 		const sourceAdaptee = sourceBitmap.as3BitmapData;
 		if (!this.adaptee || !sourceAdaptee)
 			return;
@@ -213,7 +223,15 @@ export class AVM1BitmapData extends AVM1Object {
 	dispose(): void {
 		if (!this.adaptee)
 			return;
-		(<BitmapData> this.adaptee).dispose();
+
+		for (const billboard of this._linkedBillboards) {
+			billboard.parent.removeChild(billboard);
+			billboard.dispose();
+		}
+
+		this._linkedBillboards = [];
+
+		(<SceneImage2D> this.adaptee).dispose();
 	}
 
 	draw(source: AVM1Object | string, matrix?: AVM1Object, colorTransform?: AVM1ColorTransform, blendMode?: any,
@@ -297,11 +315,11 @@ export class AVM1BitmapData extends AVM1Object {
 	}
 
 	getPixel(x: number, y: number): number {
-		return this.adaptee ? (<BitmapData> this.adaptee).getPixel(x, y) : 0;
+		return this.adaptee ? (<SceneImage2D> this.adaptee).getPixel(x, y) : 0;
 	}
 
 	getPixel32(x: number, y: number): number {
-		return this.adaptee ? (<BitmapData> this.adaptee).getPixel32(x, y) : 0;
+		return this.adaptee ? (<SceneImage2D> this.adaptee).getPixel32(x, y) : 0;
 	}
 
 	hitTest(firstPoint: AVM1Object, firstAlphaThreshold: number, secondObject: AVM1Object,
@@ -419,7 +437,7 @@ export class AVM1BitmapData extends AVM1Object {
 		x = alCoerceNumber(this.context, x);
 		y = alCoerceNumber(this.context, y);
 		color = alToInt32(this.context, color);
-		(<BitmapData> this.adaptee).setPixel(x, y, color);
+		(<SceneImage2D> this.adaptee).setPixel(x, y, color);
 	}
 
 	setPixel32(x: number, y: number, color: number): void {
@@ -428,7 +446,7 @@ export class AVM1BitmapData extends AVM1Object {
 		x = alCoerceNumber(this.context, x);
 		y = alCoerceNumber(this.context, y);
 		color = alToInt32(this.context, color);
-		(<BitmapData> this.adaptee).setPixel32(x, y, color);
+		(<SceneImage2D> this.adaptee).setPixel32(x, y, color);
 	}
 
 	threshold(sourceBitmap: AVM1BitmapData, sourceRect: AVM1Object, destPoint: AVM1Object,

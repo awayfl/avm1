@@ -64,17 +64,17 @@ import {
 	IDisplayObjectAdapter,
 	DisplayObjectContainer,
 	IFrameScript,
-	MouseEvent,
+	MouseEvent, SceneImage2D,
 } from '@awayjs/scene';
 import {
 	AssetLibrary,
 	Matrix3D,
 	Point,
 	WaveAudio,
-	Rectangle,
+	Rectangle, AssetEvent,
 } from '@awayjs/core';
 import { AVM1TextField } from './AVM1TextField';
-import { Graphics, GradientType, MaterialManager } from '@awayjs/graphics';
+import { Graphics, GradientType } from '@awayjs/graphics';
 import { LineScaleMode } from '@awayjs/renderer';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 import { AVM1Object } from '../runtime/AVM1Object';
@@ -160,9 +160,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	public onLoaded: Function;
 	public onConstruct: AVM1Function;
 	public onInitialize: AVM1Function;
-
-	private _tempSessionID: number = 0;
-	private _tempDepthID: number = 0;
 
 	private get _stage(): AVMStage {
 		return AVM1Stage.avmStage;
@@ -985,8 +982,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		const awayBitmapImage2D = bmp.as3BitmapData;
 		awayBitmapImage2D.transparent = true;
 
-		const billboardMaterial = MaterialManager.getMaterialForBitmap(awayBitmapImage2D, true);
-		const billboard = new Billboard(billboardMaterial, pixelSnapping, smoothing);
+		const billboard = bmp.getBillboard(pixelSnapping, smoothing);
 
 		this.addChildAtDepth(billboard, depth);
 	}
