@@ -52,6 +52,9 @@ export class AVM1BitmapData extends AVM1Object {
 
 	private _linkedBillboards: Billboard[] = [];
 
+	// for symbols we should prevent disposing a adaptee
+	private _isSymbolSource: boolean = false;
+
 	public getBillboard(snap: string, smooth: boolean): Billboard {
 		const billboardMaterial = MaterialManager.getMaterialForBitmap(<SceneImage2D> this.adaptee, true);
 		const billboard = new Billboard(billboardMaterial, snap, smooth);
@@ -60,8 +63,6 @@ export class AVM1BitmapData extends AVM1Object {
 
 		return billboard;
 	}
-
-	//adaptee: BitmapData;
 
 	get as3BitmapData(): SceneImage2D {
 		return <SceneImage2D> this.adaptee;
@@ -105,26 +106,19 @@ export class AVM1BitmapData extends AVM1Object {
 		}
 
 		// REDUX verify
-		if (symbol && (<IAsset><any>symbol).isAsset(BitmapImage2D)) {
-			const bitmapData = new AVM1BitmapData(context);
-			bitmapData.alPrototype = context.globals.BitmapData.alGetPrototypeProperty();
+		if (!symbol || !(<IAsset><any>symbol).isAsset(BitmapImage2D)) {
+			console.warn('[AVM1 BitmapData] Missing bitmap:', symbolId);
 
-			bitmapData.adaptee = <IAsset><any>symbol;
-			return bitmapData;
+			return null;
 		}
-		/*
-		var symbolClass = symbol.symbolProps.symbolClass;
-		var bitmapClass = context.sec.flash.display.BitmapData.axClass;
-		if (symbol && (bitmapClass === symbolClass ||
-				bitmapClass.dPrototype.isPrototypeOf((<any>symbolClass).dPrototype))) {
-			var awayObject = constructClassFromSymbol(symbol.symbolProps, bitmapClass);
-			bitmap.alPrototype = context.globals.BitmapData.alGetPrototypeProperty();
-			bitmap.adaptee = awayObject;
-			return bitmap;
-		}*/
 
-		console.warn('[AVM1 BitmapData] Missing bitmap:', symbolId);
-		return null;
+		const bitmapData = new AVM1BitmapData(context);
+		bitmapData.alPrototype = context.globals.BitmapData.alGetPrototypeProperty();
+
+		bitmapData.adaptee = <IAsset><any>symbol;
+		bitmapData._isSymbolSource = true;
+
+		return bitmapData;
 	}
 
 	public getHeight(): number {
@@ -167,6 +161,8 @@ export class AVM1BitmapData extends AVM1Object {
 		const bitmap = new AVM1BitmapData(this.context);
 		bitmap.alPrototype = this.context.globals.BitmapData.alGetPrototypeProperty();
 		bitmap.adaptee = this.adaptee ? (<SceneImage2D> this.adaptee).clone() : null;
+		bitmap._isSymbolSource = this._isSymbolSource;
+
 		return bitmap;
 	}
 
@@ -231,7 +227,11 @@ export class AVM1BitmapData extends AVM1Object {
 
 		this._linkedBillboards = [];
 
-		(<SceneImage2D> this.adaptee).dispose();
+		if (!this._isSymbolSource) {
+			(<SceneImage2D> this.adaptee).dispose();
+		}
+
+		this.adaptee = null;
 	}
 
 	draw(source: AVM1Object | string, matrix?: AVM1Object, colorTransform?: AVM1ColorTransform, blendMode?: any,
