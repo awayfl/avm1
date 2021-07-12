@@ -256,13 +256,13 @@ function convertFromAS3Field(context: AVM1Context, value: any, type: string): an
 const FILTER_TO_SIMPLE_NAME: Record<string, string> = {
 	'BevelFilter' : 'bevel',
 	'BlurFilter' : 'blur' ,
-	//'ColorMatrixFilter',
-	//'ConvolutionFilter',
+	'ColorMatrixFilter': 'colorMatrix',
+	'ConvolutionFilter': 'convolution', // not supported yet
 	'DisplacementMapFilter': 'displacement',
-	//'DropShadowFilter',
-	//'GlowFilter',
-	//'GradientBevelFilter',
-	//'GradientGlowFilter'
+	'DropShadowFilter': 'dropShadow',
+	'GlowFilter' : 'glow',
+	'GradientBevelFilter': 'bevel',
+	'GradientGlowFilter': 'gradientGlow' // not supported yet
 };
 
 export function convertToAS3Filter(context: AVM1Context, as2Filter: AVM1Object): IFilterModel {
