@@ -21,7 +21,7 @@ import {
 	alCoerceString, alDefineObjectProperties, alToString
 } from '../runtime';
 import { avm1BroadcastEvent } from './AVM1Utils';
-import { URLLoaderEvent as Event, URLLoader, URLRequest } from '@awayjs/core';
+import { URLLoaderEvent as Event, URLLoader, URLRequest, URLVariables } from '@awayjs/core';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Function } from '../runtime/AVM1Function';
 
@@ -32,9 +32,14 @@ export interface IAVM1DataObject {
 	getBytesTotal(): number;
 }
 
-export function loadAVM1DataObject(context: AVM1Context, url: string,
-	method: string, contentType: string,
-	data: any, target: IAVM1DataObject): void {
+export function loadAVM1DataObject(
+	context: AVM1Context,
+	url: string,
+	method: string,
+	contentType: string,
+	data: string,
+	target: IAVM1DataObject
+): void {
 
 	const request = new URLRequest(url);
 	const directUrl = request.url || '';
@@ -43,7 +48,7 @@ export function loadAVM1DataObject(context: AVM1Context, url: string,
 
 	if (redirect) {
 		if (redirect.supressLoad) {
-			console.log('[LOADER] Load surpressed ', redirect.url);
+			console.log('[LOADER] Load supressed ', redirect.url);
 			return;
 
 		}
@@ -52,24 +57,33 @@ export function loadAVM1DataObject(context: AVM1Context, url: string,
 	} else {
 		console.log('[LOADER] start loading the url:', cleanUrl);
 	}
+
 	if (method) {
 		request.method = method;
 	}
+
 	if (contentType) {
 		//request.contentType = contentType;
 	}
+
 	if (data) {
 		release || Debug.assert(typeof data === 'string');
-		request.data = data;
+		// generate valid payload
+		request.data = contentType === 'application/x-www-form-urlencoded'
+			? new URLVariables(data)
+			: data;
 	}
+
 	const loader = new URLLoader();
+
 	loader.dataFormat = 'text'; // flash.net.URLLoaderDataFormat.TEXT;
+
 	const completeHandler = function (event: Event): void {
 		loader.removeEventListener(Event.LOAD_COMPLETE, completeHandler);
 		release || Debug.assert(typeof loader.data === 'string');
 		avm1BroadcastEvent(context, target, 'onData', [loader.data]);
-		//avm1BroadcastEvent(context, target, 'onLoad', [loader.data]);
 	};
+
 	loader.addEventListener(Event.LOAD_COMPLETE, completeHandler);
 	target._as3Loader = loader;
 
@@ -79,6 +93,7 @@ export function loadAVM1DataObject(context: AVM1Context, url: string,
 			loader.dispatchEvent(new Event(Event.LOAD_COMPLETE, loader));
 		});
 	}
+
 	loader.load(request);
 }
 
@@ -123,8 +138,8 @@ export class AVM1LoadVarsPrototype extends AVM1Object implements IAVM1DataObject
 			send: {
 				value: this.load
 			},
-			sendAndload: {
-				value: this.load
+			sendAndLoad: {
+				value: this.sendAndLoad
 			}
 		});
 	}
@@ -180,15 +195,13 @@ export class AVM1LoadVarsPrototype extends AVM1Object implements IAVM1DataObject
 	}
 
 	_toString(): string {
-		//const context = this.context;
-		/*var as3Variables = new context.sec.flash.net.URLVariables();
-		alForEachProperty(this, function (name) {
-			if (this.alHasOwnProperty(name)) {
-				as3Variables.axSetPublicProperty(name, alToString(context, this.alGet(name)));
-			}
-		}, this);
-		return as3Variables.axCallPublicProperty('toString', null);*/
-		return '';
+		const payload: Record<string, string> = {};
+
+		for (const key in this._ownProperties) {
+			payload[key] = this.alGet(key);
+		}
+
+		return (new URLSearchParams(payload)).toString();
 	}
 
 	send(url: string, target: string, method?: string): boolean {
@@ -208,11 +221,22 @@ export class AVM1LoadVarsPrototype extends AVM1Object implements IAVM1DataObject
 			return false;
 		}
 		let contentType = this.alGet('contentType');
+
 		contentType = isNullOrUndefined(contentType) ?
 			'application/x-www-form-urlencoded' :
 			alCoerceString(this.context, contentType);
+
 		const data = alToString(this.context, this);
-		loadAVM1DataObject(this.context, url, method, contentType, data, <IAVM1DataObject><any>target);
+
+		loadAVM1DataObject(
+			this.context,
+			url,
+			method,
+			contentType,
+			data,
+			<IAVM1DataObject><any>target
+		);
+
 		return true;
 	}
 }
