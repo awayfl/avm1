@@ -183,15 +183,12 @@ export class AVM1LoadVarsPrototype extends AVM1Object implements IAVM1DataObject
 
 	decode(queryString: string): void {
 		queryString = alCoerceString(this.context, queryString);
-		/*var as3Variables = new URLVariables();
-		as3Variables._ignoreDecodingErrors = true;
-		as3Variables.decode(queryString);
-		forEachPublicProperty(as3Variables, function (name, value) {
-			// TODO Are we leaking some AS3 properties/fields here?
-			if (typeof value === 'string') {
-				this.alPut(name, value);
-			}
-		}, this);*/
+
+		const vars = new URLVariables(queryString);
+
+		for (const key in vars.variables) {
+			this.alPut(key, vars.variables[key]);
+		}
 	}
 
 	_toString(): string {
