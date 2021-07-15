@@ -306,7 +306,7 @@ export class AVM1Globals extends AVM1Object {
 				}
 
 				// internal arguments
-				const args = Array.prototype.slice.call(inputArgs, 0);
+				const args = Array.prototype.slice.call(arguments, 0);
 				context.executeFunction(avmFn, obj, args);
 			};
 		}
