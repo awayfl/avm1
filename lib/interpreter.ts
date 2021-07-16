@@ -1645,18 +1645,12 @@ function avm1_0x0D_ActionDivide(ectx: ExecutionContext) {
 
 	let a = stack.pop();
 	let b = stack.pop();
+
+	a = Number.isNaN(+a) ? a : +a;
+	b = Number.isNaN(+b) ? b : +b;
+
 	let type_a = typeof a;
 	let type_b = typeof b;
-
-	if (!isNaN(+a)) {
-		a = +a;
-		type_a = 'number';
-	}
-
-	if (!isNaN((+b))) {
-		b = +b;
-		type_b = 'number';
-	}
 
 	if (!ectx.isSwfVersion7) {
 		// for SWF version < 7:
@@ -1670,6 +1664,7 @@ function avm1_0x0D_ActionDivide(ectx: ExecutionContext) {
 			type_b = 'number';
 		}
 	}
+
 	if (type_a === 'object' || type_b === 'object'
 		|| type_a === 'string' || type_b === 'string'
 		|| type_a === 'undefined' || type_b === 'undefined'
@@ -2621,15 +2616,6 @@ function avm1_0x3F_ActionModulo(ectx: ExecutionContext) {
 	let a = stack.pop();
 	let b = stack.pop();
 
-	a = Number.isNaN(+a) ? a : +a;
-	b = Number.isNaN(+b) ? b : +b;
-
-	if (typeof a === 'string' || typeof b === 'string') {
-		stack.push(NaN);
-		return;
-	}
-	a = alToNumber(ectx.context, a);
-	b = alToNumber(ectx.context, b);
 	if (!ectx.isSwfVersion7) {
 		if (typeof a === 'undefined')
 			a = 0;
@@ -2637,6 +2623,10 @@ function avm1_0x3F_ActionModulo(ectx: ExecutionContext) {
 		if (typeof b === 'undefined')
 			b = 0;
 	}
+
+	a = alToNumber(ectx.context, a);
+	b = alToNumber(ectx.context, b);
+
 	if (!isFinite(a) || !isFinite(b) || (a == 0 && b == 0)) {
 		if (isNaN(a) || isNaN(b) || (!isFinite(a) && !isFinite(b)))
 			stack.push(NaN);
