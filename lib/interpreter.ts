@@ -1647,6 +1647,17 @@ function avm1_0x0D_ActionDivide(ectx: ExecutionContext) {
 	let b = stack.pop();
 	let type_a = typeof a;
 	let type_b = typeof b;
+
+	if (!isNaN(+a)) {
+		a = +a;
+		type_a = 'number';
+	}
+
+	if (!isNaN((+b))) {
+		b = +b;
+		type_b = 'number';
+	}
+
 	if (!ectx.isSwfVersion7) {
 		// for SWF version < 7:
 		// undefined and null get converted to 0
@@ -2609,6 +2620,9 @@ function avm1_0x3F_ActionModulo(ectx: ExecutionContext) {
 
 	let a = stack.pop();
 	let b = stack.pop();
+
+	a = Number.isNaN(+a) ? a : +a;
+	b = Number.isNaN(+b) ? b : +b;
 
 	if (typeof a === 'string' || typeof b === 'string') {
 		stack.push(NaN);
