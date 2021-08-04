@@ -1348,10 +1348,16 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		if (!bounds)
 			return undefined;
 
-		return convertAS3RectangeToBounds(
-			this._stage.pickGroup.getBoundsPicker(this.node.partition).getBoxBounds(bounds.node, true, true),
-			this.context
-		);
+		const box = this._stage.pickGroup
+			.getBoundsPicker(this.node.partition)
+			.getBoxBounds(bounds.node, true, true);
+
+		if (!box) {
+			console.warn('[AVM1 MovieClip::getBounds] Bounds is null!', this.adaptee.id);
+			return undefined;
+		}
+
+		return convertAS3RectangeToBounds(box, this.context);
 	}
 
 	public getBytesLoaded(): number {
