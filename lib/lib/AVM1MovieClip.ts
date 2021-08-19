@@ -64,14 +64,14 @@ import {
 	IDisplayObjectAdapter,
 	DisplayObjectContainer,
 	IFrameScript,
-	MouseEvent, SceneImage2D,
+	MouseEvent as AwayMouseEvent,
 } from '@awayjs/scene';
 import {
 	AssetLibrary,
 	Matrix3D,
 	Point,
 	WaveAudio,
-	Rectangle, AssetEvent,
+	Rectangle,
 } from '@awayjs/core';
 import { AVM1TextField } from './AVM1TextField';
 import { Graphics, GradientType } from '@awayjs/graphics';
@@ -1709,7 +1709,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public startDrag(lock?: boolean, left?: number, top?: number, right?: number, bottom?: number): void {
 		const stage = this._stage;
-		const pool = stage.pool;
 
 		if (AVM1MovieClip.currentDraggedMC && AVM1MovieClip.currentDraggedMC != this) {
 			AVM1MovieClip.currentDraggedMC.stopDrag();
@@ -1721,15 +1720,11 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		this._dragBounds = null;
 
 		if (left > right) {
-			const tmp = right;
-			right = left;
-			left = tmp;
+			[right, left] = [left, right];
 		}
 
 		if (top > bottom) {
-			const tmp = bottom;
-			bottom = top;
-			top = tmp;
+			[top, bottom] = [bottom, top];
 		}
 
 		if (arguments.length > 1) {
@@ -1741,32 +1736,39 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			this._dragBounds = new Rectangle(left, top, right - left, bottom - top);
 		}//todo: listen on stage
 
-		if (!this.isDragging) {
-			this.isDragging = true;
-			this.startDragPoint = pool.getNode(this.adaptee.parent)
-				.globalToLocal(new Point(stage.view.stage.screenX, stage.view.stage.screenY));
-
-			if (lock) {
-				this.adaptee.x = this.startDragPoint.x;
-				this.adaptee.y = this.startDragPoint.y;
-			}
-
-			if (this._dragBounds)
-				this.checkBounds();
-
-			this.startDragMCPosition.x = this.adaptee.x;
-			this.startDragMCPosition.y = this.adaptee.y;
-
-			const dragNode = this.node;
-			stage.view.stage.addEventListener(MouseEvent.MOUSE_MOVE, this.dragListenerDelegate);
-			stage.mousePicker.dragNode = dragNode;
-			stage.mouseManager.startDragObject(
-				this.adaptee
-					.getAbstraction<EntityNode>(dragNode.partition)
-					.getAbstraction<PickEntity>(stage.mousePicker.pickGroup)
-					.pickingCollision);
-
+		if (this.isDragging) {
+			return;
 		}
+
+		this.isDragging = true;
+		const parentNode = stage.pool.getNode(this.adaptee.parent);
+
+		const localX = stage.getLocalMouseX(parentNode);
+		const localY = stage.getLocalMouseY(parentNode);
+
+		this.startDragPoint = this.startDragPoint || new Point();
+		this.startDragPoint.setTo(localX, localY);
+
+		if (lock) {
+			this.adaptee.x = this.startDragPoint.x;
+			this.adaptee.y = this.startDragPoint.y;
+		}
+
+		if (this._dragBounds)
+			this.checkBounds();
+
+		this.startDragMCPosition.x = this.adaptee.x;
+		this.startDragMCPosition.y = this.adaptee.y;
+
+		const dragNode = this.node;
+		stage.view.stage.addEventListener(AwayMouseEvent.MOUSE_MOVE, this.dragListenerDelegate);
+		stage.mousePicker.dragNode = dragNode;
+		stage.mouseManager.startDragObject(
+			this.adaptee
+				.getAbstraction<EntityNode>(dragNode.partition)
+				.getAbstraction<PickEntity>(stage.mousePicker.pickGroup)
+				.pickingCollision);
+
 	}
 
 	private isDragging: boolean = false;
@@ -1777,19 +1779,23 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	public dragListener(_e: any) {
 		//console.log("drag", e);
-		if (this.adaptee.parent) {
-
-			const stage = this._stage.view.stage;
-			const tmpPoint = this._stage.pool.getNode(this.adaptee.parent)
-				.globalToLocal(new Point(stage.screenX, stage.screenY));
-
-			this.adaptee.x = this.startDragMCPosition.x + (tmpPoint.x - this.startDragPoint.x);
-			this.adaptee.y = this.startDragMCPosition.y + (tmpPoint.y - this.startDragPoint.y);
-
-			if (this._dragBounds)
-				this.checkBounds();
-
+		if (!this.adaptee.parent) {
+			return;
 		}
+
+		const stage = this._stage.view.stage;
+		const parentNode = this._stage.pool.getNode(this.adaptee.parent);
+
+		const localX = this._stage.getLocalMouseX(parentNode);
+		const localY = this._stage.getLocalMouseY(parentNode);
+
+		console.log(stage.screenX, stage.screenY, stage.width, stage.height);
+
+		this.adaptee.x = this.startDragMCPosition.x + (localX - this.startDragPoint.x);
+		this.adaptee.y = this.startDragMCPosition.y + (localY - this.startDragPoint.y);
+
+		if (this._dragBounds)
+			this.checkBounds();
 
 	}
 
@@ -1820,10 +1826,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 
 		this.isDragging = false;
+
 		AVM1MovieClip.currentDraggedMC = null;
+
 		this._stage.mousePicker.dragNode = null;
 		this._stage.mouseManager.stopDragObject();
-		this._stage.removeEventListener(MouseEvent.MOUSE_MOVE, this.dragListenerDelegate);
+		this._stage.view.stage.removeEventListener(AwayMouseEvent.MOUSE_MOVE, this.dragListenerDelegate);
 	}
 
 	/**
