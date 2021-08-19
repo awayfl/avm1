@@ -1789,8 +1789,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		const localX = this._stage.getLocalMouseX(parentNode);
 		const localY = this._stage.getLocalMouseY(parentNode);
 
-		console.log(stage.screenX, stage.screenY, stage.width, stage.height);
-
 		this.adaptee.x = this.startDragMCPosition.x + (localX - this.startDragPoint.x);
 		this.adaptee.y = this.startDragMCPosition.y + (localY - this.startDragPoint.y);
 
