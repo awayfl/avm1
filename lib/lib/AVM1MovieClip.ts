@@ -1762,12 +1762,20 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		const dragNode = this.node;
 		stage.view.stage.addEventListener(AwayMouseEvent.MOUSE_MOVE, this.dragListenerDelegate);
-		stage.mousePicker.dragNode = dragNode;
-		stage.mouseManager.startDragObject(
-			this.adaptee
-				.getAbstraction<EntityNode>(dragNode.partition)
-				.getAbstraction<PickEntity>(stage.mousePicker.pickGroup)
-				.pickingCollision);
+
+		// PLZ, never set this! Because this damage a dragging when it started without event
+		//stage.mousePicker.dragNode = dragNode;
+
+		const collision = this.adaptee
+			.getAbstraction<EntityNode>(dragNode.partition)
+			.getAbstraction<PickEntity>(stage.mousePicker.pickGroup)
+			.pickingCollision;
+
+		// collision MUST has rootNode, otherwise will be drag bug
+		collision.rootNode = dragNode;
+
+		//console.log(collision, dragNode);
+		stage.mouseManager.startDragObject(collision);
 
 	}
 
@@ -1778,12 +1786,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	public dragListenerDelegate: (_e: any) => void;
 
 	public dragListener(_e: any) {
-		//console.log("drag", e);
 		if (!this.adaptee.parent) {
 			return;
 		}
 
-		const stage = this._stage.view.stage;
 		const parentNode = this._stage.pool.getNode(this.adaptee.parent);
 
 		const localX = this._stage.getLocalMouseX(parentNode);
@@ -1844,40 +1850,37 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			// if no child2 was passed, check if there exists a child at depth1
 			// depth1 is the target depth for child1, so if it is occupied we want to swap the two children
 			// if its not occupied, we can just set the new depth for child1, order childs by depth and be done with it
-			child2 = <AVM1MovieClip> this.getDepthToChild(depth1).adapter;// this._depthToChilds[depth1].adapter;
+			child2 = <AVM1MovieClip> this.getDepthToChild(depth1).adapter;
 		}
 
 		delete this.adaptee._sessionID_childs[child1.adaptee._sessionID];
 		child1.adaptee._avmDepthID = depth1;
 		child1.adaptee._sessionID = -1;
 
-		// not required, removed internally
-		// this.adaptee.removeChild(child1.adaptee);
 		this.adaptee.addChildAt(child1.adaptee, this.getIndexFromDepthOrTop(depth1));
 
 		child1.hasSwappedDepth = true;
 
 		this.setDepthToChild(depth1, child1.adaptee);
-		//this._depthToChilds[depth1] = child1.adaptee;
 
 		if (child2) {
 			delete this.adaptee._sessionID_childs[child2.adaptee._sessionID];
 
 			this.setDepthToChild(depth2, child2.adaptee);
-			//this._depthToChilds[depth2] = child2.adaptee;
 
 			child2.adaptee._avmDepthID = depth2;
 			child2.adaptee._sessionID = -1;
 
-			// not required, removed internally
-			// this.adaptee.removeChild(child2.adaptee);
 			this.adaptee.addChildAt(child2.adaptee, this.getIndexFromDepthOrTop(depth2));
 
 			child2.hasSwappedDepth = true;
 		} else {
-			//delete this._depthToChilds[depth2];
 			this.setDepthToChild(depth2);
 		}
+
+		// re-trap a events, new depth require update mapping for it
+		child1 && child1.updateAllEvents();
+		child2 && child2.updateAllEvents();
 
 		if (this.adaptee.name && parent) {
 			// we need to check if child registration must be updated
