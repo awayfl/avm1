@@ -1371,38 +1371,13 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public getInstanceAtDepth(depth: number): AVM1MovieClip {
-		//const child: DisplayObject = this._depthToChilds[avm2AwayDepth(depth)];
 		const child: DisplayObject = this.getDepthToChild(avm2AwayDepth(depth));
 
 		if (!child) {
 			return null;
 		}
 
-		if (child.isAsset(Billboard)) {
-			return this;
-		} else if (child.isAsset(MovieClip)) {
-			return this;
-		}
-
 		return <AVM1MovieClip>getAVM1Object(child, this.context);
-
-		/*
-		var symbolDepth = alCoerceNumber(this.context, depth) + DEPTH_OFFSET;
-		var nativeObject = this.adaptee;
-		var lookupChildOptions = LookupChildOptions.INCLUDE_NON_INITIALIZED;
-		for (var i = 0, numChildren = nativeObject.numChildren; i < numChildren; i++) {
-			var child = nativeObject._lookupChildByIndex(i, lookupChildOptions);
-			// child is null if it hasn't been constructed yet. This can happen in InitActionBlocks.
-			if (child && child._depth === symbolDepth) {
-				// Somewhat absurdly, this method returns the mc if a bitmap is at the given depth.
-				if (this.context.sec.flash.display.Bitmap.axIsType(child)) {
-					return this;
-				}
-				return <AVM1MovieClip>getAVM1Object(child, this.context);
-			}
-		}
-		return undefined;
-		*/
 	}
 
 	public getNextHighestDepth(): number {
