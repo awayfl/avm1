@@ -174,7 +174,7 @@ export class AVM1Sound extends AVM1Object {
 	}
 
 	public getPan(): number {
-		console.warn('AVM1Sound.getPan');
+		// console.warn('AVM1Sound.getPan');
 		// todo 80pro var transform: ASObject =(<ASObject> this._channel && this._channel.soundTransform);
 		return 0; //transform ? transform.axGetPublicProperty('pan') * 100 : 0;
 	}
