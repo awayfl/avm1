@@ -1,14 +1,31 @@
 import {
-	alCoerceString, alToBoolean, alToInteger, alToNumber,
+	alCoerceString,
+	alToBoolean,
+	alToInteger,
+	alToNumber,
 	AVM1PropertyFlags
 } from '../runtime';
 import {
-	avm1BroadcastNativeEvent, avm1HasEventProperty, getAVM1Object,
-	toTwipFloor, toTwipRound, away2avmDepth
+	avm1BroadcastNativeEvent,
+	avm1HasEventProperty,
+	getAVM1Object,
+	toTwipFloor,
+	toTwipRound,
+	away2avmDepth
 } from './AVM1Utils';
-import { AVM1Context, IAVM1EventPropertyObserver } from '../context';
-import { isNullOrUndefined, MapObject, notImplemented,
-	somewhatImplemented, warning, release, assert } from '@awayfl/swf-loader';
+import {
+	AVM1Context,
+	IAVM1EventPropertyObserver
+} from '../context';
+import {
+	isNullOrUndefined,
+	MapObject,
+	notImplemented,
+	somewhatImplemented,
+	warning,
+	release,
+	assert
+} from '@awayfl/swf-loader';
 import { DisplayObject, DisplayObjectContainer } from '@awayjs/scene';
 import { AVM1MovieClip } from './AVM1MovieClip';
 import { AVM1Rectangle, toAS3Rectangle } from './AVM1Rectangle';
@@ -22,7 +39,7 @@ import { AVM1Stage } from './AVM1Stage';
 import { AVM1Transform } from './AVM1Transform';
 import { AVM1Function } from '../runtime/AVM1Function';
 import { AVM1ArrayNative } from '../natives';
-import { convertToAS3Filters, IFilterModel } from './AVM1Filters';
+import { convertFromTimelineFilters, convertToAS3Filters, IFilterModel } from './AVM1Filters';
 
 export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	implements IAVM1EventPropertyObserver {
@@ -343,10 +360,16 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	public setFilters(value: AVM1ArrayNative) {
 		notImplemented('AVM1SymbolBase.setFilters');
 
-		const filters = convertToAS3Filters(this.context, value);
-		//@ts-ignore
-		this.adaptee.filters = filters;
+		this.adaptee.filters = <any> convertToAS3Filters(this.context, value);
 		this._as2Filters = value;
+	}
+
+	public updateFilters(newFilters: []) {
+		if (!newFilters) {
+			return this.setFilters(null);
+		}
+
+		this.setFilters(convertFromTimelineFilters(this.context, newFilters));
 	}
 
 	public get_focusrect(): boolean {

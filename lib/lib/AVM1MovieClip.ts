@@ -57,7 +57,6 @@ import {
 	DisplayObject,
 	MovieClip,
 	TextField,
-	Billboard,
 	TextFormat,
 	FrameScriptManager,
 	Timeline,

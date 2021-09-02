@@ -23,6 +23,143 @@ import { AVM1Function } from '../runtime/AVM1Function';
 import { AVM1Point, toAS3Point } from './AVM1Point';
 import { AVM1BitmapData, toAS3BitmapData } from './AVM1BitmapData';
 import { AVM1ArrayNative } from '../natives';
+import { FilterType as TimelineFilterType } from '@awayfl/swf-loader';
+import { IFilter } from '@awayjs/scene';
+
+const enum BitmapFilterType {
+	INNER = 'inner',
+	OUTER = 'outer',
+	FULL = 'full',
+}
+
+enum NonTimelineFilterType {
+	DISPLACEMENT = 8
+}
+
+export const ExtendsFilterType = { ...TimelineFilterType, ...NonTimelineFilterType };
+
+const FILTER_TYPE_NAME_MAP: Record<number,  string> = {
+	[ExtendsFilterType.DROPSHADOW]: 'DropShadowFilter',
+	[ExtendsFilterType.GLOW]: 'GlowFilter',
+	[ExtendsFilterType.BEVEL]: 'BevelFilter',
+	[ExtendsFilterType.GRADIENTGLOW]: 'GradientGlowFilter',
+	[ExtendsFilterType.GRADIENTBEVEL]: 'GradientBevelFilter',
+	[ExtendsFilterType.BLUR]: 'BlurFilter',
+	[ExtendsFilterType.CONVOLUTION]: 'ConvolutionFilter',
+	[ExtendsFilterType.COLORMATRIX]: 'ColorMatrixFilter',
+
+	// displacement can be created from timeline
+	[ExtendsFilterType.DISPLACEMENT]: 'DisplacementMapFilter',
+};
+
+const FILTER_TO_SIMPLE_NAME: Record<number, string> = {
+	[ExtendsFilterType.DROPSHADOW]: 'dropShadow',
+	[ExtendsFilterType.GLOW]: 'glow',
+	[ExtendsFilterType.BEVEL]: 'bevel',
+	[ExtendsFilterType.GRADIENTGLOW]: 'gradientGlow', // not supported yet
+	[ExtendsFilterType.GRADIENTBEVEL]: 'bevel',
+	[ExtendsFilterType.BLUR]: 'blur',
+	[ExtendsFilterType.CONVOLUTION]: 'convolution', // not supported yet
+	[ExtendsFilterType.COLORMATRIX]: 'colorMatrix',
+
+	// displacement can be created from timeline
+	[ExtendsFilterType.DISPLACEMENT]: 'displacement',
+};
+
+type ITimelineFabric = (obj: IFilter) => any;
+
+const FILL_FILTER_FROM_TIMELINE: Record<number, ITimelineFabric> = {
+	[ExtendsFilterType.DROPSHADOW]: (obj: IFilter) => {
+		const color: number = obj.colors[0] >>> 8;
+		const alpha: number = (obj.colors[0] & 0xff) / 0xff;
+		// obj.angle is represented in radians, the api needs degrees
+		const angle: number = obj.angle * 180 / Math.PI;
+		// obj.compositeSource maps to !hideObject
+		const hideObject: boolean = !obj.compositeSource;
+		return {
+			distance: obj.distance,
+			angle: angle,
+			color: color,
+			alpha: alpha,
+			blurX : obj.blurX,
+			blurY: obj.blurY,
+			strength: obj.strength,
+			quality: obj.quality,
+			inner: obj.inner,
+			knockout: obj.knockout,
+			hideObject: hideObject
+		};
+	},
+
+	[ExtendsFilterType.GLOW]: (obj: IFilter) => {
+		// obj.colors is an array of RGBA colors.
+		const color: number = obj.colors[0] >>> 8;
+		const alpha: number = (obj.colors[0] & 0xff) / 0xff;
+
+		return {
+			color: color,
+			alpha: alpha,
+			blurX: obj.blurX,
+			blurY: obj.blurY,
+			strength: obj.strength,
+			quality: obj.quality,
+			inner: obj.inner,
+			knockout: obj.knockout
+		};
+	},
+
+	[ExtendsFilterType.BEVEL]: (obj: IFilter) => {
+		// obj.colors is an array of RGBA colors.
+		// Here it contains exactly two color objects (spec might state it differently):
+		//  - first maps to highlightColor and highlightAlpha;
+		//  - second maps to shadowColor and shadowAlpha;
+		const highlightColor: number = obj.colors[0] >>> 8;
+		const highlightAlpha: number = (obj.colors[0] & 0xff) / 0xff;
+		const shadowColor: number = obj.colors[1] >>> 8;
+		const shadowAlpha: number = (obj.colors[1] & 0xff) / 0xff;
+		// type is derived from obj.onTop and obj.innerShadow
+		// obj.onTop true: type is FULL
+		// obj.inner true: type is INNER
+		// neither true: type is OUTER
+		let type: string = BitmapFilterType.OUTER;
+		if (obj.onTop) {
+			type = BitmapFilterType.FULL;
+		} else if (obj.inner) {
+			type = BitmapFilterType.INNER;
+		}
+		// obj.angle is represented in radians, the api needs degrees
+		const angle: number = obj.angle * 180 / Math.PI;
+		return {
+			distance: obj.distance,
+			angle: angle,
+			highlightColor :highlightColor,
+			highlightAlpha : highlightAlpha,
+			shadowColor : shadowColor,
+			shadowAlpha : shadowAlpha,
+			blurX: obj.blurX,
+			blurY: obj.blurY,
+			strength: obj.strength,
+			quality: obj.quality,
+			type: type,
+			knockout: obj.knockout
+		};
+	},
+	[ExtendsFilterType.GRADIENTGLOW]: (obj: IFilter) => {
+		return null;
+	}, // not supported yet
+	[ExtendsFilterType.GRADIENTBEVEL]: (data: IFilter) => {
+		return null;
+	},
+	[ExtendsFilterType.BLUR]: (obj: IFilter) => {
+		return null;
+	},
+	[ExtendsFilterType.CONVOLUTION]: (obj: IFilter) => {
+		return null;
+	},
+	[ExtendsFilterType.COLORMATRIX]: (data: IFilter) => {
+		return null;
+	},
+};
 
 // Base class/function for all AVM1 filters.
 class AVM1BitmapFilterFunction extends AVM1Function {
@@ -62,16 +199,23 @@ class AVM1BitmapFilterPrototype extends AVM1Object {
 	}
 }
 
-export type IFilterModel = Record<string, any> & {filterName: string};
+export type IFilterModel = Record<string, any> & {filterName: string, filterType: number};
 interface IFilterConverter {
-	toAS3Filter(as2Object: AVM1Object): Record<string, any> & {filterName: string};
+	toAS3Filter(as2Object: AVM1Object): Record<string, any> & {filterName: string, filterType: number};
 	fromAS3Filter(awayFilterModel: Record<string, any>): AVM1Object;
+	fromTimelineFilter(timeline: Record<string, any>): AVM1Object;
 	getAS3Class(): any;
 }
 
 // Automates creation of the AVM1 filter classes.
-function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: AVM1Function,
-	name: string, fields: string[]): void {
+function createFilterClass(
+	context: AVM1Context,
+	filtersObj: AVM1Object,
+	base: AVM1Function,
+	type: number,
+	fields: string[]
+): void {
+	const name = FILTER_TYPE_NAME_MAP[type];
 	// Simple constructor for the class function.
 	function construct(args?: any[]): AVM1Object {
 		const as2Object = new AVM1Object(context);
@@ -93,14 +237,10 @@ function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: A
 		return as2Object;
 	}
 
-	// function getAS3Class(): AXClass {
-	// 	// The AS3 class name shall match
-	// 	return context.sec.flash.filters[name].axClass;
-	// }
-
-	function toAS3Filter(as2Object: AVM1Object): {filterName: string} & Record<string, any> {
+	function toAS3Filter(as2Object: AVM1Object): {filterName: string, filterType: number} & Record<string, any> {
 		const awayFilterModel = {
-			filterName: name
+			filterName: name,
+			filterType: type,
 		};
 
 		// Just copying all defined properties.
@@ -130,6 +270,18 @@ function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: A
 		return as2Object;
 	}
 
+	function fromTimelineFilter(data: IFilter): AVM1Object {
+		const CONVERTER = FILL_FILTER_FROM_TIMELINE[data.type];
+		const model = CONVERTER ? CONVERTER(data) : null;
+
+		if (!model) {
+			console.warn('[AVM1 FILTER] Timeline filter converter not implemented for:', data);
+			return undefined;
+		}
+
+		return fromAS3Filter(model);
+	}
+
 	// Creates new prototype object and function for the class.
 	const proto = base.alGetPrototypeProperty();
 	const wrappedProto: AVM1BitmapFilterPrototype = Object.create(AVM1BitmapFilterPrototype.prototype);
@@ -156,6 +308,7 @@ function createFilterClass(context: AVM1Context, filtersObj: AVM1Object, base: A
 	wrappedProto.asFilterConverter = {
 		toAS3Filter: toAS3Filter,
 		fromAS3Filter: fromAS3Filter,
+		fromTimelineFilter: fromTimelineFilter,
 		getAS3Class: null
 	};
 
@@ -167,36 +320,36 @@ export function createFiltersClasses(context: AVM1Context): AVM1Object {
 	const base = new AVM1BitmapFilterFunction(context);
 	filters.alPut('BitmapFilter', base);
 	// TODO make field types non-string
-	createFilterClass(context, filters, base, 'BevelFilter',
+	createFilterClass(context, filters, base, ExtendsFilterType.BEVEL,
 		['distance', 'Number', 'angle', 'Number', 'highlightColor', 'Number',
 			'highlightAlpha', 'Number', 'shadowColor', 'Number', 'shadowAlpha', 'Number',
 			'blurX', 'Number', 'blurY', 'Number', 'strength', 'Number', 'quality', 'Number',
 			'type', 'String', 'knockout', 'Boolean']);
-	createFilterClass(context, filters, base, 'BlurFilter',
+	createFilterClass(context, filters, base, ExtendsFilterType.BLUR,
 		['blurX', 'Number', 'blurY', 'Number', 'quality', 'Number']);
-	createFilterClass(context, filters, base, 'ColorMatrixFilter',
+	createFilterClass(context, filters, base, ExtendsFilterType.COLORMATRIX,
 		['matrix', 'Numbers']);
-	createFilterClass(context, filters, base, 'ConvolutionFilter',
+	createFilterClass(context, filters, base, ExtendsFilterType.CONVOLUTION,
 		['matrixX', 'Number', 'matrixY', 'Number', 'matrix', 'Numbers',
 			'divisor', 'Number', 'bias', 'Number', 'preserveAlpha', 'Boolean',
 			'clamp', 'Boolean', 'color', 'Number', 'alpha', 'Number']);
-	createFilterClass(context, filters, base, 'DisplacementMapFilter',
+	createFilterClass(context, filters, base, ExtendsFilterType.DISPLACEMENT,
 		['mapBitmap', 'BitmapData', 'mapPoint', 'Point', 'componentX', 'Number',
 			'componentY', 'Number', 'scaleX', 'Number', 'scaleY', 'Number',
 			'mode', 'String', 'color', 'Number', 'alpha', 'Number']);
-	createFilterClass(context, filters, base, 'DropShadowFilter',
+	createFilterClass(context, filters, base, ExtendsFilterType.DROPSHADOW,
 		['distance', 'Number', 'angle', 'Number', 'color', 'Number',
 			'alpha', 'Number', 'blurX', 'Number', 'blurY', 'Number',
 			'strength', 'Number', 'quality', 'Number', 'inner', 'Boolean',
 			'knockout', 'Boolean', 'hideObject', 'Boolean']);
-	createFilterClass(context, filters, base, 'GlowFilter',
+	createFilterClass(context, filters, base, ExtendsFilterType.GLOW,
 		['color', 'Number', 'alpha', 'Number', 'blurX', 'Number', 'blurY', 'Number',
 			'strength', 'Number', 'quality', 'Number', 'inner', 'Boolean', 'knockout', 'Boolean']);
-	createFilterClass(context, filters, base, 'GradientBevelFilter',
+	createFilterClass(context, filters, base, ExtendsFilterType.GRADIENTBEVEL,
 		['distance', 'Number', 'angle', 'Number', 'colors', 'Numbers',
 			'alphas', 'Numbers', 'ratios', 'Numbers', 'blurX', 'Number', 'blurY', 'Number',
 			'strength', 'Number', 'quality', 'Number', 'type', 'String', 'knockout', 'Boolean']);
-	createFilterClass(context, filters, base, 'GradientGlowFilter',
+	createFilterClass(context, filters, base, ExtendsFilterType.GRADIENTGLOW,
 		['distance', 'Number', 'angle', 'Number', 'colors', 'Numbers',
 			'alphas', 'Numbers', 'ratios', 'Numbers', 'blurX', 'Number', 'blurY', 'Number',
 			'strength', 'Number', 'quality', 'Number', 'type', 'String', 'knockout', 'Boolean']);
@@ -253,18 +406,6 @@ function convertFromAS3Field(context: AVM1Context, value: any, type: string): an
 	}
 }
 
-const FILTER_TO_SIMPLE_NAME: Record<string, string> = {
-	'BevelFilter' : 'bevel',
-	'BlurFilter' : 'blur' ,
-	'ColorMatrixFilter': 'colorMatrix',
-	'ConvolutionFilter': 'convolution', // not supported yet
-	'DisplacementMapFilter': 'displacement',
-	'DropShadowFilter': 'dropShadow',
-	'GlowFilter' : 'glow',
-	'GradientBevelFilter': 'bevel',
-	'GradientGlowFilter': 'gradientGlow' // not supported yet
-};
-
 export function convertToAS3Filter(context: AVM1Context, as2Filter: AVM1Object): IFilterModel {
 	let proto = as2Filter ? as2Filter.alPrototype : null;
 
@@ -288,13 +429,43 @@ export function convertToAS3Filters(context: AVM1Context, as2Filters: AVM1Object
 	const length = as2Filters.alGet('length');
 	for (let i = 0; i < length; i++) {
 		const filterModel = convertToAS3Filter(context, as2Filters.alGet(i));
-		if (filterModel && FILTER_TO_SIMPLE_NAME[filterModel.filterName]) {
-			filterModel.filterName = FILTER_TO_SIMPLE_NAME[filterModel.filterName];
+		if (filterModel && FILTER_TO_SIMPLE_NAME[filterModel.filterType]) {
+			filterModel.filterName = FILTER_TO_SIMPLE_NAME[filterModel.filterType];
 			arr.push(filterModel);
 		}
 	}
 
 	return arr;
+}
+
+export function convertFromTimelineFilters(context: AVM1Context, filters: IFilter[]): AVM1ArrayNative {
+	if (!filters || !filters.length) {
+		return undefined;
+	}
+
+	const filtersClasses = context.globals.filters;
+	const result = [];
+
+	for (const filter of filters) {
+		const filterClass = filtersClasses.alGet(FILTER_TYPE_NAME_MAP[filter.type]);
+
+		if (!filterClass) {
+			continue;
+		}
+		const proto: AVM1BitmapFilterPrototype = filterClass.alGetPrototypeProperty();
+
+		if (proto.asFilterConverter) {
+			const converted = proto.asFilterConverter.fromTimelineFilter(filter);
+
+			if (!converted) {
+				continue;
+			}
+
+			result.push(converted);
+		}
+	}
+
+	return new AVM1ArrayNative(context, result);
 }
 
 // export function convertFromAS3Filters(context: AVM1Context, as3Filters: ASObject): AVM1Object {
