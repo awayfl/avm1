@@ -12,6 +12,7 @@ import { AVM1MovieClip } from './lib/AVM1MovieClip';
 import { AVM1EventProps } from './lib/AVM1EventHandler';
 import { getAVM1Object } from './lib/AVM1Utils';
 import { Stage } from '@awayjs/stage';
+import { AVM1SymbolBase } from './lib/AVM1SymbolBase';
 
 export class AVM1Handler implements IAVMHandler {
 	public avmVersion: string = AVMVERSION.AVM1;
@@ -98,42 +99,41 @@ export class AVM1Handler implements IAVMHandler {
 
 	public enterFrame(dt: number) {
 		// todo: do we need this ?
-		this._avmStage.view.stage.clear();
+		// this._avmStage.view.stage.clear();
 
 		FrameScriptManager.execute_queue();
 
 		this._avmStage.root.advanceFrame();
 
-		FrameScriptManager.execute_queue();
-
-		let i: number;
-		let child: DisplayObject;
-
-		const enterFramesChilds = [];
+		//FrameScriptManager.execute_queue();
 
 		// now dispatch the onEnterFrame
-		for (i = 0; i < this._avmStage.root.numChildren; i++) {
-			child = this._avmStage.root.getChildAt(i);
+		const enterFramesChilds = [];
+		for (let i = 0; i < this._avmStage.root.numChildren; i++) {
+			const child = this._avmStage.root.getChildAt(i);
 			this.executeEnterFrame(child, enterFramesChilds);
 		}
 
-		for (i = 0; i < enterFramesChilds.length; i++) {
+		for (let i = 0; i < enterFramesChilds.length; i++) {
 			(<MovieClip>enterFramesChilds[i]).dispatchEvent(this.enterEvent);
 		}
+
+		//we should register clip events after dispatching
+		AVM1SymbolBase.CompleteEventRegistering();
+
 		FrameScriptManager.execute_queue();
 
 		FrameScriptManager.execute_intervals(dt);
 		FrameScriptManager.execute_queue();
 
-		for (i = 0; i < this._avmStage.root.numChildren; i++) {
-			child = this._avmStage.root.getChildAt(i);
+		for (let i = 0; i < this._avmStage.root.numChildren; i++) {
+			const child = this._avmStage.root.getChildAt(i);
 			if (child.isAsset(MovieClip)) {
 				(<MovieClip>child).dispatchExitFrame(this.exitEvent);
 			}
 		}
 
 		FrameScriptManager.execute_queue();
-
 	}
 
 	private onKeyEvent(event): void {

@@ -39,3 +39,14 @@ export const avm1DebuggerEnabled =
 export const avm1WellknownActionsCompilationsEnabled =
 	avm1Options.register(new Option(
 		'cw1', 'wellknownAvm1', 'boolean', true, 'Replaces well-known actions patterns instead of compilation'));
+
+export interface IAVM1Settings {
+	LAZY_EVENT_REGISTERING: boolean;
+}
+
+export const Settings: IAVM1Settings = {
+	/**
+	 * @description Register `onClipEvent` after broadcasting a events. Used as fix for papa louie
+	 */
+	LAZY_EVENT_REGISTERING: false
+};

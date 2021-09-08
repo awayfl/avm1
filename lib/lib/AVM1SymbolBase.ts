@@ -40,9 +40,30 @@ import { AVM1Transform } from './AVM1Transform';
 import { AVM1Function } from '../runtime/AVM1Function';
 import { AVM1ArrayNative } from '../natives';
 import { convertFromTimelineFilters, convertToAS3Filters, IFilterModel } from './AVM1Filters';
+import { Settings } from '../settings';
 
 export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	implements IAVM1EventPropertyObserver {
+
+	public static LAZY_EVENT_QUEUE: Array<{
+		event: AVM1EventHandler,
+		callback: any,
+		target: AVM1SymbolBase<any>,
+		eventProps: any
+	}> = [];
+
+	public static CompleteEventRegistering() {
+		const lazyEvents = AVM1SymbolBase.LAZY_EVENT_QUEUE.slice();
+		AVM1SymbolBase.LAZY_EVENT_QUEUE = [];
+
+		for (const eventData of lazyEvents) {
+			eventData.target.addEventListenerOnAdapter(
+				eventData.event,
+				eventData.callback,
+				eventData.eventProps
+			);
+		}
+	}
 
 	adaptee: T;
 	node: ContainerNode;
@@ -173,9 +194,20 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 
 	public _addOnClipEventListener(event: AVM1EventHandler, callback: () => void = null, eventProps = null) {
 		event.propertyName = this.context.normalizeName(event.propertyName);
-		this._onClipEventsListeners.push({ event:event, callback:callback });
-		if (this.enabled || !event.allowDisable)
-			this.addEventListenerOnAdapter(event, callback, eventProps);
+
+		if (this.enabled || !event.allowDisable) {
+			if (!Settings.LAZY_EVENT_REGISTERING) {
+				this._onClipEventsListeners.push({ event, callback });
+				this.addEventListenerOnAdapter(event, callback, eventProps);
+			} else {
+				AVM1SymbolBase.LAZY_EVENT_QUEUE.push({
+					target: this,
+					event,
+					callback,
+					eventProps
+				});
+			}
+		}
 	}
 
 	public _addEventListener(event: AVM1EventHandler, callback: Function = null) {
