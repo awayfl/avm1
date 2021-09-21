@@ -690,10 +690,14 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_x(): number {
-		return toTwipFloor(this.adaptee.x);
+		return this.adaptee ? toTwipFloor(this.adaptee.x) : void 0;
 	}
 
 	public set_x(value: number) {
+		if (!this.adaptee) {
+			return;
+		}
+
 		value = toTwipFloor(alToNumber(this.context, value));
 		this._blockedByScript = true;
 		if (isNaN(value)) {
@@ -707,10 +711,14 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_xscale(): number {
-		return this.adaptee.scaleX * 100;
+		return this.adaptee ? this.adaptee.scaleX * 100 : void 0;
 	}
 
 	public set_xscale(value: number) {
+		if (!this.adaptee) {
+			return;
+		}
+
 		value = alToNumber(this.context, value);
 		this._blockedByScript = true;
 		if (isNaN(value)) {
@@ -720,15 +728,21 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_y(): number {
-		return toTwipFloor(this.adaptee.y);
+		// MovieClip.prototype._y is valid invocation =)
+		return this.adaptee ? toTwipFloor(this.adaptee.y) : void 0;
 	}
 
 	public set_y(value: number) {
+		if (!this.adaptee) {
+			return;
+		}
+
 		value = toTwipFloor(alToNumber(this.context, value));
 		this._blockedByScript = true;
 		if (isNaN(value)) {
 			return;
 		}
+
 		this.adaptee.y = value;
 	}
 
@@ -737,10 +751,14 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_yscale(): number {
-		return this.adaptee.scaleY * 100;
+		return this.adaptee ? this.adaptee.scaleY * 100 : void 0;
 	}
 
 	public set_yscale(value: number) {
+		if (!this.adaptee) {
+			return;
+		}
+
 		value = alToNumber(this.context, value);
 		this._blockedByScript = true;
 		if (isNaN(value)) {
@@ -750,7 +768,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public getDepth() {
-		if (this.protoTypeChanged)
+		if (this.protoTypeChanged || !this.adaptee)
 			return null;
 		return away2avmDepth(this.adaptee._avmDepthID);
 	}
