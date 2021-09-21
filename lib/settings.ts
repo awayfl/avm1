@@ -48,5 +48,5 @@ export const Settings: IAVM1Settings = {
 	/**
 	 * @description Register `onClipEvent` after broadcasting a events. Used as fix for papa louie
 	 */
-	LAZY_EVENT_REGISTERING: false
+	LAZY_EVENT_REGISTERING: true
 };
