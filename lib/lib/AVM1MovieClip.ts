@@ -983,6 +983,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		const billboard = bmp.getBillboard(pixelSnapping, smoothing);
 
+		// bitmap not handle events
+		billboard.mouseEnabled = false;
+
 		this.addChildAtDepth(billboard, depth);
 	}
 
