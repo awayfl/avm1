@@ -48,7 +48,7 @@ export class AVM1Key extends AVM1Object {
 		const wrapped = wrapAVM1NativeClass(context, false, AVM1Key,
 			['BACKSPACE', 'CAPSLOCK', 'CONTROL', 'DELETEKEY', 'DOWN',
 				'END', 'ENTER', 'ESCAPE', 'HOME', 'INSERT', 'LEFT',
-				'PGDN','PGUP','RIGHT', 'SHIFT', 'SPACE', 'TAB', 'UP','isDown', 'getCode'],
+				'PGDN','PGUP','RIGHT', 'SHIFT', 'SPACE', 'TAB', 'UP','isDown', 'getCode', 'getAscii'],
 			[]);
 		return wrapped;
 	}
@@ -71,13 +71,13 @@ export class AVM1Key extends AVM1Object {
 		if (AVM1Key.keyUpDelegate)
 			htmlElement.removeEventListener('keyup', AVM1Key.keyUpDelegate);
 
-		AVM1Key.keyDownDelegate = (e)=>{
+		AVM1Key.keyDownDelegate = (e: KeyboardEvent)=>{
 			const staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
 			staticState._lastKeyCode = e.keyCode;
 			staticState._keyStates[e.keyCode] = 1;
 			alCallProperty(cls, 'broadcastMessage', ['onKeyDown']);
 		};
-		AVM1Key.keyUpDelegate = (e)=>{
+		AVM1Key.keyUpDelegate = (e: KeyboardEvent)=>{
 			const staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
 			staticState._lastKeyCode = e.keyCode;
 			delete staticState._keyStates[e.keyCode];
@@ -95,6 +95,14 @@ export class AVM1Key extends AVM1Object {
 	}
 
 	public static getCode(context: AVM1Context): number {
+		const staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
+		return staticState._lastKeyCode;
+	}
+
+	public static getAscii(context: AVM1Context): number {
+		// really this is not same, but charCode depricated and emmited only on keypress (after keyDown)
+		// that can't be used for us
+		// keycode similar while meta keys not used
 		const staticState: typeof AVM1Key = context.getStaticState(AVM1Key);
 		return staticState._lastKeyCode;
 	}
