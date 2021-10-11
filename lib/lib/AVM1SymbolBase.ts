@@ -1,4 +1,5 @@
 import {
+	alCallProperty,
 	alCoerceString,
 	alToBoolean,
 	alToInteger,
@@ -276,13 +277,19 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public freeFromScript(): void {
+
 		super.freeFromScript();
 		this.enabled = true;
 		this.adaptee.mouseEnabled = false;
 		this.adaptee.mouseChildren = true;
+
+		// object was detached from scene and should freed from Key events
+		alCallProperty(this.context.globals.Key, 'removeListener', [this]);
+
 		for (const key in this._eventsListeners) {
 			this.removeEventListenerOnAdapter(this._eventHandlers[key], <any> this._eventsListeners[key]);
 		}
+
 		this._eventsListeners = {};
 		let cnt = this._onClipEventsListeners.length;
 		while (cnt > 0) {
