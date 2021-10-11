@@ -73,13 +73,11 @@ export class AVM1BitmapData extends AVM1Object {
 		height = alToNumber(this.context, height);
 		transparent = arguments.length < 3 ? true : alToBoolean(this.context, transparent);
 		fillColor = arguments.length < 4 ? 0xFFFFFFFF : alToInt32(this.context, fillColor);
+
 		if (width != 0 && height != 0) {
-			const awayObject = SceneImage2D.getImage(
+			this.adaptee = SceneImage2D.getImage(
 				width, height, transparent, fillColor, false, AVM1Stage.avmStage.view.stage
 			);
-
-			console.log('Construct:', awayObject.id);
-			this.adaptee = awayObject;
 		}
 	}
 
