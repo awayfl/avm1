@@ -151,7 +151,11 @@ const FILL_FILTER_FROM_TIMELINE: Record<number, ITimelineFabric> = {
 		return null;
 	},
 	[ExtendsFilterType.BLUR]: (obj: IFilter) => {
-		return null;
+		return {
+			blurX: obj.blurX,
+			blurY: obj.blurY,
+			quality: obj.quality,
+		};
 	},
 	[ExtendsFilterType.CONVOLUTION]: (obj: IFilter) => {
 		return null;
@@ -275,7 +279,8 @@ function createFilterClass(
 		const model = CONVERTER ? CONVERTER(data) : null;
 
 		if (!model) {
-			console.warn('[AVM1 FILTER] Timeline filter converter not implemented for:', data);
+			// eslint-disable-next-line max-len
+			console.warn('[AVM1 FILTER] Timeline filter converter not implemented for:', FILTER_TO_SIMPLE_NAME[data.type]);
 			return undefined;
 		}
 
@@ -467,23 +472,3 @@ export function convertFromTimelineFilters(context: AVM1Context, filters: IFilte
 
 	return new AVM1ArrayNative(context, result);
 }
-
-// export function convertFromAS3Filters(context: AVM1Context, as3Filters: ASObject): AVM1Object {
-// 	var arr = [];
-// 	if (as3Filters) {
-
-// 		var classes = context.globals.filters;
-// 		for (var i = 0, length = as3Filters.axGetPublicProperty('length'); i < length; i++) {
-// 			var as3Filter = as3Filters.axGetPublicProperty(i);
-// 			// TODO inefficient search, refactor
-// 			knownFilters.forEach((filterName: string) => {
-// 				var filterClass = classes.alGet(filterName);
-// 				var proto: AVM1BitmapFilterPrototype = filterClass.alGetPrototypeProperty();
-// 				if (proto.asFilterConverter && proto.asFilterConverter.getAS3Class().axIsType(as3Filter)) {
-// 					arr.push(proto.asFilterConverter.fromAS3Filter(as3Filter));
-// 				}
-// 			});
-// 		}
-// 	}
-// 	return new AVM1ArrayNative(context, arr);
-// }
