@@ -295,11 +295,12 @@ export class AVM1BitmapData extends AVM1Object {
 		return undefined;
 	}
 
-	getColorBoundsRect(mask: number, color: number, findColor?: boolean): AVM1Object {
+	getColorBoundsRect(mask: number, color: number, findColor: boolean = true): AVM1Object {
 		if (!this.adaptee)
 			return;
 		mask = alToInt32(this.context, mask) >>> 0;
 		color = alToInt32(this.context, color) >>> 0;
+		// default value is true!
 		findColor = alToBoolean(this.context, findColor);
 		// todo 80pro
 		//console.warn('[avm1/AVM1BitmapData] - getColorBoundsRect not implemented');
@@ -467,11 +468,18 @@ export class AVM1BitmapData extends AVM1Object {
 		copySource = arguments.length < 8 ? false : alToBoolean(this.context, copySource);
 
 		// if 0, treshold is bugged
-		color = color === 0 ? 0x00010101 : color;
+		// color = color === 0 ? 0xff0000ff : color;
 
 		thisAsBitmap.threshold(
-			as3BitmapData, as3SourceRect, as3DestPoint,
-			operation, threshold, 0x00ff00ff, mask, copySource);
+			as3BitmapData,
+			as3SourceRect,
+			as3DestPoint,
+			operation,
+			threshold,
+			color,
+			mask,
+			copySource
+		);
 
 		//console.warn('[avm1/AVM1BitmapData] - scroll not implemented');
 		return 0;
