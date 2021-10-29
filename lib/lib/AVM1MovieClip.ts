@@ -1029,34 +1029,43 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		if (!mc) {
 			return undefined;
 		}
+
 		if (!mc.name) {
 			mc.name = '';
 		}
+
 		depth = alToNumber(this.context, depth);
 
-		let oldAVMMC: any;
+		return this.initChildMovie(mc, name, depth, initObject, true);
+	}
 
-		if (name) {
-			oldAVMMC = this._childrenByName[name.toLowerCase()];
-		}
+	private initChildMovie(
+		mc: MovieClip,
+		name: string,
+		depth: number,
+		initObject: AVM1Object,
+		fromTimeline = false
+	) {
+		const oldAVMMC: any = this._childrenByName[name.toLowerCase()];
 
 		mc.reset();
-		//console.log("attachMovie", name, avm2AwayDepth(depth));
+		mc.name = name;
+
 		const avmMc = <AVM1MovieClip> this.addChildAtDepth(mc, avm2AwayDepth(depth));
-		if (initObject) {
-			avmMc._init(initObject);
-		}
+
+		initObject && avmMc._init(initObject);
+
 		if (oldAVMMC && oldAVMMC.avmColor) {
 			oldAVMMC.avmColor.changeTarget(avmMc);
 		}
+
 		if (mc.timeline && mc.timeline.isButton) {
 			mc.addButtonListeners();
 		}
+
 		avmMc.dynamicallyCreated = true;
 
-		if (name) {
-			this.registerScriptObject(mc, true);
-		}
+		name && this.registerScriptObject(mc, fromTimeline);
 
 		const cCtor = avmMc.executeConstructor;
 		avmMc.executeConstructor = null;
@@ -1281,29 +1290,17 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 
 		let parent = this.get_parent();
+
 		if (!parent) {
 			console.warn('[AVM1MovieClip] duplicateMovieClip could not get parent');
 			parent = this.context.resolveTarget(null);
 		}
 
-		let mc: MovieClip;
-		if (this.adaptee._symbol) {
-			console.warn('[AVM1MovieClip] duplicateMovieClip from symbol not implemented');
-			//mc = constructClassFromSymbol(nativeAS3Object._symbol, nativeAS3Object.axClass);
-		} else {
-			mc = (<any> this).clone().adaptee;//new this.context.sec.flash.display.MovieClip();
-		}
+		const mc = (<any> this).clone().adaptee;
+		const avmMc = parent.initChildMovie(mc, name, depth, null, false);
 
-		mc.reset();
-		mc.name = name;
-		(<any>mc.adapter).placeObjectTag = (<any> this).placeObjectTag;
-		(<any>mc.adapter).initEvents = (<any> this).initEvents;
-
-		const avmMc = <AVM1MovieClip>parent.addChildAtDepth(mc, avm2AwayDepth(depth));
-		// dynamicallyCreated needs to be set after adding child, otherwise it gets reset
-		avmMc.dynamicallyCreated = true;
-		avmMc._avm1Context = this._avm1Context;
-		parent.registerScriptObject(mc, false);
+		(<any>avmMc).placeObjectTag = (<any> this).placeObjectTag;
+		(<any>avmMc).initEvents = (<any> this).initEvents;
 
 		const new_matrix: Matrix3D = mc.transform.matrix3D;
 		const originalMatrix: Float32Array = this.adaptee.transform.matrix3D._rawData;
@@ -1319,6 +1316,11 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		mc.blendMode = this.adaptee.blendMode;
 		mc.cacheAsBitmap = this.adaptee.cacheAsBitmap;
 
+		//filters, clone array if it exist
+		const f = this.getFilters() as AVM1ArrayNative;
+		f && avmMc.setFilters(new AVM1ArrayNative(this.context, f.value.slice()));
+
+		// we should apply init after copy transform
 		if (initObject) {
 			avmMc._init(initObject);
 		}
