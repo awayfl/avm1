@@ -161,7 +161,9 @@ const FILL_FILTER_FROM_TIMELINE: Record<number, ITimelineFabric> = {
 		return null;
 	},
 	[ExtendsFilterType.COLORMATRIX]: (data: IFilter) => {
-		return null;
+		return {
+			matrix: data.matrix,
+		};
 	},
 };
 
@@ -396,8 +398,8 @@ function convertFromAS3Field(context: AVM1Context, value: any, type: string): an
 		case 'Numbers': {
 			const arr = [];
 			if (value) {
-				for (let i = 0, length = value.value.length; i < length; i++) {
-					arr[i] = +value.value[i];
+				for (let i = 0, length = value.length; i < length; i++) {
+					arr[i] = +value[i];
 				}
 			}
 			return new AVM1ArrayNative(context, arr);
