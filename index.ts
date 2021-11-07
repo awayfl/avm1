@@ -1,5 +1,5 @@
 
-console.debug('AwayFL - 0.2.139');
+console.debug('AwayFL - 0.2.140');
 
 export { AVM1Handler } from './lib/AVM1Handler';
 export { AVM1SceneGraphFactory } from './lib/AVM1SceneGraphFactory';
