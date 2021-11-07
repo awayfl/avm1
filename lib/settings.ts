@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { ConfigManager } from '@awayjs/core';
 import { shumwayOptions, Option, OptionSet } from '@awayfl/swf-loader';
 
 const avm1Options = shumwayOptions.register(new OptionSet('AVM1'));
@@ -44,9 +45,9 @@ export interface IAVM1Settings {
 	LAZY_EVENT_REGISTERING: boolean;
 }
 
-export const Settings: IAVM1Settings = {
+export const Settings: IAVM1Settings = ConfigManager.instance.addStore('avm1', {
 	/**
 	 * @description Register `onClipEvent` after broadcasting a events. Used as fix for papa louie
 	 */
 	LAZY_EVENT_REGISTERING: true
-};
+});
