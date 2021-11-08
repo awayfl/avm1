@@ -22,7 +22,7 @@ import { BlendModesMap, wrapAVM1NativeClass } from './AVM1Utils';
 import { toAwayColorTransform, AVM1ColorTransform } from './AVM1ColorTransform';
 import { toAS3Matrix } from './AVM1Matrix';
 import { Billboard, SceneImage2D } from '@awayjs/scene';
-import { AssetLibrary, IAsset, IAssetAdapter, Point } from '@awayjs/core';
+import { AssetLibrary, IAsset, Point } from '@awayjs/core';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Stage } from './AVM1Stage';
 import { BitmapImage2D } from '@awayjs/stage';
@@ -97,23 +97,36 @@ export class AVM1BitmapData extends AVM1Object {
 		const bundle = AssetLibrary.getBundle();
 		const nss = Object.keys((<any> bundle)._assetDictionary);
 
-		let symbol: IAssetAdapter;
+		let symbol: BitmapImage2D;
 		for (const ns of nss) {
-			symbol = bundle.getAsset(symbolId, ns);
+			symbol = bundle.getAsset(symbolId, ns) as BitmapImage2D;
 			if (symbol) break;
 		}
 
 		// REDUX verify
-		if (!symbol || !(<IAsset><any>symbol).isAsset(BitmapImage2D)) {
+		if (!symbol || !symbol.isAsset(BitmapImage2D)) {
 			console.warn('[AVM1 BitmapData] Missing bitmap:', symbolId);
 
 			return null;
 		}
 
+		/**
+		 * Warp to SceneImage2D, because BitmapData not have all methods
+		 */
+		const sceneImage = SceneImage2D.getImage(
+			symbol.width,
+			symbol.height,
+			symbol.transparent,
+			null, null,
+			AVM1Stage.avmStage.view.stage
+		);
+
+		sceneImage.copyPixels(symbol, sceneImage.rect, new Point(0,0));
+
 		const bitmapData = new AVM1BitmapData(context);
 		bitmapData.alPrototype = context.globals.BitmapData.alGetPrototypeProperty();
 
-		bitmapData.adaptee = <IAsset><any>symbol;
+		bitmapData.adaptee = <IAsset>sceneImage;
 		bitmapData._isSymbolSource = true;
 
 		return bitmapData;
@@ -285,9 +298,8 @@ export class AVM1BitmapData extends AVM1Object {
 		x = alCoerceNumber(this.context, x);
 		y = alCoerceNumber(this.context, y);
 		color = alToInt32(this.context, color);
-		// todo 80pro
-		console.warn('[avm1/AVM1BitmapData] - floodFill not implemented');
-		//this.adaptee.floodFill(x, y, color);
+
+		this.as3BitmapData.floodFill(x, y, color);
 	}
 
 	generateFilterRect(sourceRect: AVM1Object, filter: AVM1Object): AVM1Object {
