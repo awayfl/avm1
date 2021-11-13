@@ -15,18 +15,19 @@
  */
 
 import {
-	getAwayObjectOrTemplate,
-	getAVM1Object,
-	hasAwayJSAdaptee,
-	initializeAVM1Object,
-	wrapAVM1NativeClass,
-	toTwipFloor,
 	avm2AwayDepth,
 	away2avmDepth,
+	getAVM1Object,
+	getAwayObjectOrTemplate,
+	hasAwayJSAdaptee,
+	initializeAVM1Object,
+	toTwipFloor,
+	wrapAVM1NativeClass,
 } from './AVM1Utils';
 import {
 	alCoerceString,
 	alForEachProperty,
+	alIsArray,
 	alIsName,
 	alNewObject,
 	alToBoolean,
@@ -34,58 +35,43 @@ import {
 	alToNumber,
 	alToString,
 	AVM1PropertyFlags,
-	alIsArray,
 	IAVM1Context,
 } from '../runtime';
 import { AVM1Context } from '../context';
-import {
-	isNullOrUndefined,
-	release,
-	assert,
-	Debug,
-	somewhatImplemented,
-	warning,
-	AVMStage,
-} from '@awayfl/swf-loader';
+import { assert, AVMStage, Debug, isNullOrUndefined, release, somewhatImplemented, warning, } from '@awayfl/swf-loader';
 import { AVM1BitmapData, toAS3BitmapData } from './AVM1BitmapData';
 import { toAS3Matrix } from './AVM1Matrix';
 import { AVM1ArrayNative } from '../natives';
 import { copyAS3PointTo, toAS3Point } from './AVM1Point';
 import { MovieClipProperties } from '../interpreter/MovieClipProperties';
 import {
-	IMovieClipAdapter,
 	DisplayObject,
+	DisplayObjectContainer,
+	FrameScriptManager,
+	IDisplayObjectAdapter,
+	IFrameScript,
+	IMovieClipAdapter,
+	MouseEvent as AwayMouseEvent,
 	MovieClip,
 	TextField,
 	TextFormat,
-	FrameScriptManager,
 	Timeline,
-	IDisplayObjectAdapter,
-	DisplayObjectContainer,
-	IFrameScript,
-	MouseEvent as AwayMouseEvent,
 } from '@awayjs/scene';
-import {
-	AssetLibrary,
-	Matrix3D,
-	Point,
-	WaveAudio,
-	Rectangle,
-} from '@awayjs/core';
+import { AssetLibrary, Matrix3D, Point, Rectangle, WaveAudio, } from '@awayjs/core';
 import { AVM1TextField } from './AVM1TextField';
-import { Graphics, GradientType } from '@awayjs/graphics';
+import { GradientType, Graphics } from '@awayjs/graphics';
 import { LineScaleMode } from '@awayjs/renderer';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Stage } from './AVM1Stage';
 
 import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
-import { AVM1EventHandler } from './AVM1EventHandler';
+import { AVM1EventHandler, EventsListForMC } from './AVM1EventHandler';
 import { AVM1LoaderHelper } from './AVM1LoaderHelper';
-import { EventsListForMC } from './AVM1EventHandler';
 import { AVM1InterpretedFunction } from '../interpreter';
 import { EntityNode, PickEntity } from '@awayjs/view';
 import { AVM1Function } from '../runtime/AVM1Function';
+
 interface IVirtualSceneGraphItem {
 	sessionID: number,
 	depth: number,
@@ -186,6 +172,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		if (child.adapter != child && (<any>child.adapter).deleteOwnProperties) {
 			(<any>child.adapter).deleteOwnProperties();
 		}
+
 		child.reset();
 		this.addChildAtDepth(child, depth, true);
 	}
@@ -262,7 +249,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 	private addChildAtDepth<T extends DisplayObject>(child: T,
 		depth: number,
-		fromTimeline: boolean = false): AVM1Object {
+		fromTimeline: boolean = false
+	): AVM1Object {
 
 		//console.log("[AVM1MovieClip]", this.adaptee.name, "addChildAtDepth", child, depth, fromTimeline);
 
@@ -305,7 +293,15 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			this.adaptee._sessionID_childs[child._sessionID] = child;
 		}
 
-		return getAVM1Object(child, <AVM1Context> this._avm1Context);
+		const avmChild = getAVM1Object(child, <AVM1Context> this._avm1Context);
+
+		// so, we should register node at this place too
+		// because timeline not register child before update_child,
+		// but it not always can be called.
+
+		this.registerScriptObject(child, fromTimeline);
+
+		return avmChild;
 	}
 
 	public sortVirtualSceneGraph(a: IVirtualSceneGraphItem, b: IVirtualSceneGraphItem): number {
@@ -799,6 +795,12 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 				//register new object
 				this._childrenByName[name] = getAVM1Object(child, this.context);
+
+				// timeline nodes should presented as vars too
+				// but in readonly mode
+				// you can't delete it by `delete` operation
+				// and rewrite
+
 				if (!fromTimeline) {
 					this.alPut(name, this._childrenByName[name]);
 				}
@@ -2023,28 +2025,13 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return keys; // not initialized yet
 		}
 
-		const as3MovieClip = this.adaptee;
-		if (as3MovieClip.numChildren === 0) {
-			return keys; // no children
+		const processed: any = Object.assign(Object.create(null), this._childrenByName);
+
+		for (const key of keys) {
+			processed[key] = true;
 		}
 
-		const processed = Object.create(null);
-		const keysLength: number = keys.length;
-		let i: number = 0;
-		for (i = 0; i < keysLength; i++) {
-			processed[keys[i]] = true;
-		}
-		const numChilds: number = as3MovieClip.numChildren;
-		let child = null;
-		let name: string = null;
-		let normalizedName: string = null;
-		for (i = 0; i < numChilds; i++) {
-			child = as3MovieClip.getChildAt(i);
-			name = child.name;
-			normalizedName = name; // TODO something like this._unescapeProperty(this._escapeProperty(name));
-			processed[normalizedName] = true;
-		}
-		return Object.getOwnPropertyNames(processed);
+		return Object.keys(processed);
 	}
 
 	private _init(initObject: AVM1Object) {
