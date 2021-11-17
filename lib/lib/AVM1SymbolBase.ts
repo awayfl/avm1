@@ -663,6 +663,9 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_visible(): boolean {
+		if (!this.adaptee) {
+			return undefined;
+		}
 		return this.adaptee.visible;
 	}
 
