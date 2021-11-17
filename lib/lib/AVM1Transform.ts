@@ -21,7 +21,7 @@ import { AVM1Matrix, toAS3Matrix } from './AVM1Matrix';
 import { AVM1ColorTransform, toAwayColorTransform } from './AVM1ColorTransform';
 import { AVM1Rectangle } from './AVM1Rectangle';
 import { DisplayObject, DisplayObjectContainer } from '@awayjs/scene';
-import { Transform } from '@awayjs/core';
+import { Matrix, Transform } from '@awayjs/core';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 
 export class AVM1Transform extends AVM1Object {
@@ -55,10 +55,31 @@ export class AVM1Transform extends AVM1Object {
 	}
 
 	public getConcatenatedMatrix(): AVM1Matrix {
-		console.log('[AVM1Transform] concatenatedMatrix not implemented');
+		//console.log('[AVM1Transform] concatenatedMatrix not implemented');
 
-		return null;
-		//return AVM1Matrix.fromAS3Matrix(this.context, <Matrix>transform.concatenatedMatrix);
+		const node = this._target.node;
+		// should be global
+		const matrix3DRawData = node.getMatrix3D()._rawData;
+
+		/*
+		const matrix = this._concatenatedMatrix;
+
+		matrix.a = matrix3DRawData[0];
+		matrix.b = matrix3DRawData[1];
+		matrix.c = matrix3DRawData[4];
+		matrix.d = matrix3DRawData[5];
+		matrix.tx = matrix3DRawData[12];
+		matrix.ty = matrix3DRawData[13];
+		*/
+		return new AVM1Matrix(
+			this.context,
+			matrix3DRawData[0],
+			matrix3DRawData[1],
+			matrix3DRawData[4],
+			matrix3DRawData[5],
+			matrix3DRawData[12],
+			matrix3DRawData[13]
+		);
 	}
 
 	public getColorTransform(): AVM1ColorTransform {
