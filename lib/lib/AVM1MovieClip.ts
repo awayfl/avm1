@@ -1722,7 +1722,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 
 		this.isDragging = true;
-		const parentNode = stage.pool.getNode(this.adaptee.parent);
+		const parentNode = stage.view.getNode(this.adaptee.parent);
 
 		const localX = stage.getLocalMouseX(parentNode);
 		const localY = stage.getLocalMouseY(parentNode);
@@ -1771,7 +1771,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return;
 		}
 
-		const parentNode = this._stage.pool.getNode(this.adaptee.parent);
+		const parentNode = this._stage.view.getNode(this.adaptee.parent);
 
 		const localX = this._stage.getLocalMouseX(parentNode);
 		const localY = this._stage.getLocalMouseY(parentNode);
