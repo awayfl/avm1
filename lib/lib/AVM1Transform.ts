@@ -21,7 +21,7 @@ import { AVM1Matrix, toAS3Matrix } from './AVM1Matrix';
 import { AVM1ColorTransform, toAwayColorTransform } from './AVM1ColorTransform';
 import { AVM1Rectangle } from './AVM1Rectangle';
 import { DisplayObject, DisplayObjectContainer } from '@awayjs/scene';
-import { Matrix, Transform } from '@awayjs/core';
+import { Transform } from '@awayjs/core';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 
 export class AVM1Transform extends AVM1Object {

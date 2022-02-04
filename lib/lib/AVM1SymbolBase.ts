@@ -113,7 +113,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		release || assert(awayObject);
 		this.adaptee = awayObject;
 		this.adaptee.partitionClass = BasicPartition;
-		this.node = AVM1Stage.avmStage.pool.getNode(this.adaptee);
+		this.node = AVM1Stage.avmStage.view.getNode(this.adaptee);
 		const name = awayObject.name;
 		const parent = this.get_parent();
 		if (name && parent) {
@@ -427,7 +427,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	public get_height() {
 		const box: Box = AVM1Stage.avmStage.pickGroup
 			.getBoundsPicker(this.node.partition)
-			.getBoxBounds(AVM1Stage.avmStage.pool.getNode(this.adaptee.parent || AVM1Stage.avmStage.root));
+			.getBoxBounds(AVM1Stage.avmStage.view.getNode(this.adaptee.parent || AVM1Stage.avmStage.root));
 		return (box == null) ? 0 : toTwipFloor(box.height);
 	}
 
@@ -682,7 +682,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	public get_width(): number {
 		const box: Box = AVM1Stage.avmStage.pickGroup
 			.getBoundsPicker(this.node.partition)
-			.getBoxBounds(AVM1Stage.avmStage.pool.getNode(this.adaptee.parent || AVM1Stage.avmStage.root));
+			.getBoxBounds(AVM1Stage.avmStage.view.getNode(this.adaptee.parent || AVM1Stage.avmStage.root));
 
 		return (box == null) ? 0 : toTwipRound(box.width);
 	}
