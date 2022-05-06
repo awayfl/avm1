@@ -604,6 +604,9 @@ export class AVM1NativeActions {
 	}
 
 	private _gotoFrame(mc: MovieClip, frame: any, offset: number): void {
+		if (typeof frame === 'undefined')
+			return;
+
 		if (Array.isArray(frame)) {
 			if (frame.length == 0)
 				return;
