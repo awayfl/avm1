@@ -2,7 +2,7 @@ import { IAVMHandler, AVMStage, SWFParser, StageAlign, StageScaleMode } from '@a
 import { SWFFile } from '@awayfl/swf-loader';
 import { AVM1SceneGraphFactory } from './AVM1SceneGraphFactory';
 import { ISceneGraphFactory, MouseEvent, KeyboardEvent, MovieClip,
-	FrameScriptManager, DisplayObject } from '@awayjs/scene';
+	FrameScriptManager, DisplayObject, DisplayObjectContainer } from '@awayjs/scene';
 import { AssetLibrary, IAsset, EventBase } from '@awayjs/core';
 import { AVMVERSION } from '@awayfl/swf-loader';
 import { AVM1ContextImpl } from './interpreter';
@@ -83,18 +83,18 @@ export class AVM1Handler implements IAVMHandler {
 		callback(true);
 	}
 
-	private executeEnterFrame(child: DisplayObject, enterFramesChilds) {
-		let child2: DisplayObject;
-		let c = (<any>child).numChildren;
+	private collectMCs(mc: MovieClip, ouput: MovieClip[], event: EventBase) {
+		let child: DisplayObject;
+		let c = mc.numChildren;
 		while (c > 0) {
 			c--;
-			child2 = (<any>child).getChildAt(c);
-			this.executeEnterFrame(child2, enterFramesChilds);
+			child = mc.getChildAt(c);
+
+			if (child.isAsset(MovieClip))
+				this.collectMCs(<MovieClip> child, ouput, event);
 		}
-		if (child.isAsset(MovieClip)) {
-			if (child.hasEventListener(this.enterEvent.type))
-				enterFramesChilds.push(child);
-		}
+		if (mc.hasEventListener(event.type))
+			ouput.push(mc);
 	}
 
 	public enterFrame(dt: number) {
@@ -107,16 +107,13 @@ export class AVM1Handler implements IAVMHandler {
 
 		//FrameScriptManager.execute_queue();
 
-		// now dispatch the onEnterFrame
-		const enterFramesChilds = [];
-		for (let i = 0; i < this._avmStage.root.numChildren; i++) {
-			const child = this._avmStage.root.getChildAt(i);
-			this.executeEnterFrame(child, enterFramesChilds);
-		}
+		// collect all enterEvent movieclips
+		const enterMCs: MovieClip[] = [];
+		this.collectMCs(<MovieClip> this._avmStage.root, enterMCs, this.enterEvent);
 
-		for (let i = 0; i < enterFramesChilds.length; i++) {
-			(<MovieClip>enterFramesChilds[i]).dispatchEvent(this.enterEvent);
-		}
+		// now dispatch the onEnterFrame
+		for (let i = 0; i < enterMCs.length; i++)
+			(enterMCs[i]).dispatchEvent(this.enterEvent);
 
 		//we should register clip events after dispatching
 		AVM1SymbolBase.CompleteEventRegistering();
@@ -126,12 +123,13 @@ export class AVM1Handler implements IAVMHandler {
 		FrameScriptManager.execute_intervals(dt);
 		FrameScriptManager.execute_queue();
 
-		for (let i = 0; i < this._avmStage.root.numChildren; i++) {
-			const child = this._avmStage.root.getChildAt(i);
-			if (child.isAsset(MovieClip)) {
-				(<MovieClip>child).dispatchExitFrame(this.exitEvent);
-			}
-		}
+		// collect all enterEvent movieclips
+		const exitMCs: MovieClip[] = [];
+		this.collectMCs(<MovieClip> this._avmStage.root, exitMCs, this.exitEvent);
+
+		// now dispatch the onExitFrame
+		for (let i = 0; i < exitMCs.length; i++)
+			(exitMCs[i]).dispatchEvent(this.exitEvent);
 
 		FrameScriptManager.execute_queue();
 	}
