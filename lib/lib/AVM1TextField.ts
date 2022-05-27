@@ -432,7 +432,7 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 			value = false;
 		}
 		value = alToBoolean(this.context, value);
-		if (!value && (<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager.getFocus() == this.adaptee) {
+		if (!value && (<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager.getFocus().container == this.adaptee) {
 			(<AVM1Stage> this.context.globals.Stage).avmStage.mouseManager.setFocus(null);
 		}
 		this.adaptee.selectable = value;

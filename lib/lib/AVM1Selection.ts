@@ -41,7 +41,7 @@ export class AVM1Selection extends AVM1Object {
 
 	getBeginIndex(): number {
 		const objectinFocus: DisplayObjectContainer = <DisplayObjectContainer> AVMStage.instance().mouseManager
-			.getFocus();
+			.getFocus().container;
 
 		if (objectinFocus && objectinFocus.isAsset(TextField))
 			return (<TextField>objectinFocus).selectionBeginIndex;
@@ -51,7 +51,7 @@ export class AVM1Selection extends AVM1Object {
 
 	getEndIndex(): number {
 		const objectinFocus: DisplayObjectContainer = <DisplayObjectContainer> AVMStage.instance().mouseManager
-			.getFocus();
+			.getFocus().container;
 
 		if (objectinFocus && objectinFocus.isAsset(TextField))
 			return (<TextField>objectinFocus).selectionEndIndex;
@@ -61,7 +61,7 @@ export class AVM1Selection extends AVM1Object {
 
 	getCaretIndex(): number {
 		const objectinFocus: DisplayObjectContainer = <DisplayObjectContainer> AVMStage.instance().mouseManager
-			.getFocus();
+			.getFocus().container;
 
 		if (objectinFocus && objectinFocus.isAsset(TextField))
 			return (<TextField>objectinFocus).selectionBeginIndex;
@@ -72,7 +72,7 @@ export class AVM1Selection extends AVM1Object {
 	// 	Returns a string specifying the target path of the object that has focus.
 	getFocus(): string {
 		let objectinFocus: DisplayObjectContainer = <DisplayObjectContainer> AVMStage.instance().mouseManager
-			.getFocus();
+			.getFocus().container;
 
 		if (objectinFocus) {
 			const names: string[] = [];
@@ -113,24 +113,24 @@ export class AVM1Selection extends AVM1Object {
 		let focusObj;
 		if (typeof newFocus === 'string') {
 			focusObj = this.context.resolveTarget(newFocus);
-			if (focusObj && focusObj.adaptee) {
+			if (focusObj && focusObj.node) {
 				AVMStage.instance().mouseManager
-					.setFocus(focusObj.adaptee);
+					.setFocus(focusObj.node);
 				return;
 			}
 			focusObj = this.context.resolveTarget(newFocus + '_internal_TF');
-			if (focusObj && focusObj.adaptee) {
+			if (focusObj && focusObj.node) {
 				AVMStage.instance().mouseManager
-					.setFocus(focusObj.adaptee);
+					.setFocus(focusObj.node);
 				return;
 			}
 			console.warn('AVM1Selection.setFocus - no object found for string ' + newFocus);
 			return;
 		}
 		focusObj = this.context.resolveTarget(newFocus);
-		if (focusObj && focusObj.adaptee) {
+		if (focusObj && focusObj.node) {
 			AVMStage.instance().mouseManager
-				.setFocus(focusObj.adaptee);
+				.setFocus(focusObj.node);
 		} else {
 			console.warn('AVM1Selection.setFocus - no object found \'' + newFocus.toString() + '\'');
 		}
@@ -141,7 +141,7 @@ export class AVM1Selection extends AVM1Object {
 
 	setSelection(beginIndex: number, endIndex: number) {
 		const objectinFocus: DisplayObjectContainer = <DisplayObjectContainer> AVMStage.instance().mouseManager
-			.getFocus();
+			.getFocus().container;
 		if (objectinFocus && objectinFocus.isAsset(TextField)) {
 			(<TextField>objectinFocus).setSelection(beginIndex, endIndex);
 		}
