@@ -1345,8 +1345,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	}
 
 	public get_framesloaded() {
+		// Unimplemented: this.adaptee.framesLoaded
 		console.warn('[AVM1MovieClip] get_framesloaded');
-		return 0;//this.adaptee.framesLoaded;
+		return this.adaptee.numFrames;
 	}
 
 	public getBounds(bounds: AVM1SymbolBase<DisplayObjectContainer>): AVM1Object {
