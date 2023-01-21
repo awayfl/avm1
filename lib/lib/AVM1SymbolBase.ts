@@ -676,7 +676,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	}
 
 	public get_url(): string {
-		return this.adaptee.assetNamespace;
+		return new URL(this.adaptee.assetNamespace, window.location.href).href;
 	}
 
 	public get_width(): number {
