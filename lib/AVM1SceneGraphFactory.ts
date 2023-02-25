@@ -1,9 +1,12 @@
 import { BitmapImage2D, Image2D } from '@awayjs/stage';
 import { IFrameScript, Timeline, MovieClip, Sprite, DisplayObjectContainer, Billboard,
-	ISceneGraphFactory, TextField, PrefabBase, DefaultSceneGraphFactory } from '@awayjs/scene';
-import { MaterialBase } from '@awayjs/materials';
+	ISceneGraphFactory, TextField, PrefabBase, DefaultSceneGraphFactory, MorphSprite, DisplayObject, FrameScriptManager } from '@awayjs/scene';
+import { MaterialBase, MethodMaterial } from '@awayjs/materials';
 import { AVM1Context } from './context';
 import { getAVM1Object } from './lib/AVM1Utils';
+import { BasicPartition } from '@awayjs/view';
+import { Graphics } from '@awayjs/graphics';
+import { IAsset } from '@awayjs/core';
 
 export class AVM1SceneGraphFactory extends DefaultSceneGraphFactory implements ISceneGraphFactory {
 	public static _instance: AVM1SceneGraphFactory;
@@ -34,7 +37,7 @@ export class AVM1SceneGraphFactory extends DefaultSceneGraphFactory implements I
 	}
 
 	public createMovieClip(timeline: Timeline = null, symbol: any = null): MovieClip {
-		const awayMovieClip: MovieClip = new MovieClip(timeline || new Timeline());
+		const awayMovieClip: MovieClip = new MovieClip(timeline || new Timeline(this));
 		getAVM1Object(awayMovieClip, this.avm1Context);
 		awayMovieClip._symbol = symbol;
 		return awayMovieClip;
@@ -75,6 +78,53 @@ export class AVM1SceneGraphFactory extends DefaultSceneGraphFactory implements I
 			outputFrameScripts.sort(this.compareAVM1FrameScripts);
 		}
 		return outputFrameScripts;
+	}
+
+	/**
+	 * Get a instance for a given SymbolID and assign a sessionID to it.
+	 * This is used by timeline to create children
+	 *
+	 * @param symbolID
+	 * @param sessionID
+	 */
+	public createChildInstanceForTimeline(timeline: Timeline, symbolID: number, sessionID: number): IAsset {
+
+		// if this was called we might have new constructors from timeline to process
+		FrameScriptManager.invalidAS3Constructors = true;
+
+		const asset: IAsset = this.awaySymbols[symbolID];
+		let clone: DisplayObject;
+		if (asset.isAsset(Graphics)) {
+			clone = Sprite.getNewSprite(<Graphics> asset);
+			clone.mouseEnabled = false;
+		} else if (asset.isAsset(Sprite)) {
+			clone = Sprite.getNewSprite((<Sprite> asset).graphics);
+			clone.mouseEnabled = false;
+		} else if (asset.isAsset(MorphSprite)) {
+			clone = MorphSprite.getNewMorphSprite((<MorphSprite> asset).graphics);
+			clone.mouseEnabled = false;
+		} else if (asset.isAsset(BitmapImage2D)) {
+			// enable blending for symbols, because if you place image directly on stage
+			// it not enable blend mode
+			const m = new MethodMaterial(<BitmapImage2D>asset);
+			m.alphaBlending = (<BitmapImage2D>asset).transparent;
+			clone = Billboard.getNewBillboard(m);
+			clone.mouseEnabled = false;
+		} else {
+			clone = (<any> asset.adapter).clone(false).adaptee;
+		}
+
+		const placeObjectTag: any = timeline.placeObjectTagsForSessionIDs[sessionID];
+		if (placeObjectTag
+			&& ((<any>placeObjectTag).variableName
+			|| (placeObjectTag.events && placeObjectTag.events.length > 0))) {
+			(<any>clone.adapter).placeObjectTag = placeObjectTag;
+			(<any>clone.adapter).initEvents = placeObjectTag;
+		}
+
+		clone.partitionClass = BasicPartition;
+		clone._sessionID = sessionID;
+		return clone;
 	}
 
 	// this is used for ordering AVM1 Framescripts into correct order

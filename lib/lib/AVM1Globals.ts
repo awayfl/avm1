@@ -50,7 +50,7 @@ import { AVM1ExternalInterface } from './AVM1ExternalInterface';
 import { createFiltersClasses } from './AVM1Filters';
 import { URLLoaderEvent, AudioManager, URLRequest, URLLoader, URLLoaderDataFormat } from '@awayjs/core';
 import { MovieClip, FrameScriptManager, DisplayObject,
-	DisplayObjectContainer, IDisplayObjectAdapter } from '@awayjs/scene';
+	DisplayObjectContainer, IDisplayObjectAdapter, ISceneGraphFactory, Timeline } from '@awayjs/scene';
 import { create, RandomSeed } from 'random-seed';
 
 import { AVM1Object } from '../runtime/AVM1Object';
@@ -74,7 +74,7 @@ export class TraceLevel {
 
 export class AVM1Globals extends AVM1Object {
 
-	public static _scenegraphFactory: any;
+	public static _scenegraphFactory: ISceneGraphFactory;
 	public static instance: AVM1Globals;
 
 	public static swfStartTime = Date.now();
@@ -706,7 +706,7 @@ export class AVM1NativeActions {
 			return;
 		}
 
-		const newLevel = this.context.globals._addRoot(level, new MovieClip());
+		const newLevel = this.context.globals._addRoot(level, new MovieClip(new Timeline(AVM1Globals._scenegraphFactory)));
 
 		// make all relative urls raltive to first loaded game-swf:
 		if (url.indexOf('http://') !== 0 && url.indexOf('https://') !== 0) {

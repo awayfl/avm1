@@ -71,6 +71,7 @@ import { AVM1LoaderHelper } from './AVM1LoaderHelper';
 import { AVM1InterpretedFunction } from '../interpreter';
 import { EntityNode, PickEntity } from '@awayjs/view';
 import { AVM1Function } from '../runtime/AVM1Function';
+import { AVM1Globals } from './AVM1Globals';
 
 interface IVirtualSceneGraphItem {
 	sessionID: number,
@@ -709,7 +710,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		// execute the init-actionscript that is stored on timeline
 		for (const key in this.adaptee.timeline.avm1InitActions)
-			this.executeScript(this.adaptee.timeline.symbolDecoder.prepareFrameScriptsForAVM1(
+			this.executeScript(AVM1Globals._scenegraphFactory.createFrameScripts(
 				this.adaptee.timeline.avm1InitActions[key], 0, 'initActionsData' + key, this.adaptee.id));
 
 		if ((<any> this).initEvents) {
@@ -1203,10 +1204,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		//	if a mc already exists at same depth, it will replace the existing movieclip with the new one
 
 		name = alToString(this.context, name);
-		const mc: MovieClip = new MovieClip();
+		const mc: MovieClip = AVM1Globals._scenegraphFactory.createMovieClip();
 		mc.name = name;
 		mc.assetNamespace = this.adaptee.assetNamespace;
-		getAVM1Object(mc, <AVM1Context> this._avm1Context);
 
 		//console.log("createEmptyMovieClip", name, avm2AwayDepth(depth));
 		const avmMC: AVM1MovieClip = <AVM1MovieClip> this.addChildAtDepth(mc, avm2AwayDepth(depth));
