@@ -264,16 +264,11 @@ export class AVM1ContextImpl extends AVM1Context {
 		}
 		let caughtError;
 		let result;
-		try {
-			result = fn.alCall(thisArg, args);
-		} catch (e) {
-			caughtError = e;
-		}
+
+		result = fn.alCall(thisArg, args);
+
 		this.isActive = savedIsActive;
-		if (caughtError) {
-			// Note: this doesn't use `finally` because that's a no-go for performance.
-			throw caughtError;
-		}
+
 		return result;
 	}
 }
@@ -950,20 +945,14 @@ export class AVM1InterpretedFunction extends AVM1EvalFunction {
 			throw new AVM1CriticalError('long running script -- AVM1 recursion limit is reached');
 		}
 
-		try {
-			result = interpretActionsData(ectx, actionsData);
-		} catch (e) {
-			caughtError = e;
-		}
+		result = interpretActionsData(ectx, actionsData);
+
 
 		currentContext.stackDepth--;
 		currentContext.popCallFrame();
 		ectx.dispose();
 		release || (actionTracer && actionTracer.unindent());
-		if (caughtError) {
-			// Note: this doesn't use `finally` because that's a no-go for performance.
-			throw caughtError;
-		}
+
 		return result;
 	}
 }
