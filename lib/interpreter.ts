@@ -947,7 +947,6 @@ export class AVM1InterpretedFunction extends AVM1EvalFunction {
 
 		result = interpretActionsData(ectx, actionsData);
 
-
 		currentContext.stackDepth--;
 		currentContext.popCallFrame();
 		ectx.dispose();
