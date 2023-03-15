@@ -31,7 +31,6 @@ export const enum ASNativeMouseCodes {
 	MIDDLE = 4,
 }
 
-
 export class AVM1Mouse extends AVM1Object {
 	public static createAVM1Class(context: AVM1Context): AVM1Object {
 		const wrapped = wrapAVM1NativeClass(context, false, AVM1Mouse, ['show', 'hide'], []);
