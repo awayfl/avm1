@@ -21,7 +21,7 @@ import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1Stage } from './AVM1Stage';
 import { AVM1Globals } from './AVM1Globals';
 import { AVMStage } from '@awayfl/swf-loader';
-import { MouseEvent as AwayMouseEvent } from '@awayjs/scene';
+import { MouseButtons, MouseEvent as AwayMouseEvent } from '@awayjs/scene';
 import { Stage } from '@awayjs/stage';
 
 export const enum ASNativeMouseCodes {
@@ -31,11 +31,6 @@ export const enum ASNativeMouseCodes {
 	MIDDLE = 4,
 }
 
-export const JS_TO_AS_CODE_MAP = {
-	[0]: ASNativeMouseCodes.LEFT,
-	[1]: ASNativeMouseCodes.MIDDLE,
-	[2]: ASNativeMouseCodes.RIGHT
-};
 
 export class AVM1Mouse extends AVM1Object {
 	public static createAVM1Class(context: AVM1Context): AVM1Object {
@@ -78,12 +73,14 @@ export class AVM1Mouse extends AVM1Object {
 
 		AVM1Mouse.mouseDownDelegate = (e: AwayMouseEvent) => {
 			// ?? = (a === undef || null) ? b : a;
-			const button = (<any>e).button ?? 0;
+			const buttons = e.buttons ?? 0;
 
-			AVM1Mouse.mouseButtonsState[JS_TO_AS_CODE_MAP[button]] = 1;
+			AVM1Mouse.mouseButtonsState[buttons & MouseButtons.PRIMARY_BUTTON] = 1;
+			AVM1Mouse.mouseButtonsState[buttons & MouseButtons.SECONDARY_BUTTON] = 1;
+			AVM1Mouse.mouseButtonsState[buttons & MouseButtons.AUXILLARY_BUTTON] = 1;
 
 			// we should not handle middle mouse, because FLASH can use it
-			if (button === 1) {
+			if (buttons === 4) {
 				return;
 			}
 
@@ -101,13 +98,15 @@ export class AVM1Mouse extends AVM1Object {
 		AVM1Mouse.mouseUpDelegate = (e: AwayMouseEvent)=>{
 
 			// ?? = (a === undef || null) ? b : a;
-			const button = (<any>e).button ?? 0;
+			const buttons = e.buttons ?? 0;
 
 			// reset latest mouse,  but this is not fully valid implementation
-			AVM1Mouse.mouseButtonsState[JS_TO_AS_CODE_MAP[button]] = 0;
+			AVM1Mouse.mouseButtonsState[buttons & MouseButtons.PRIMARY_BUTTON] = 1;
+			AVM1Mouse.mouseButtonsState[buttons & MouseButtons.SECONDARY_BUTTON] = 1;
+			AVM1Mouse.mouseButtonsState[buttons & MouseButtons.AUXILLARY_BUTTON] = 1;
 
-			// we should not handle middle mouse, because FLASH can use it
-			if (button === 1) {
+			// we should not handle middle mouse, because FLASH can't use it
+			if (buttons === 4) {
 				return;
 			}
 
