@@ -40,7 +40,6 @@ export class AVM1Sound extends AVM1Object {
 	private _target: AVM1SymbolBase<MovieClip>;
 	private _sound: WaveAudio;
 	private _channel: SoundChannel;
-	private _linkageID: string;
 	private _assetNameSpace: string;
 	private _onCompleteCallback: Function;
 	private _playAfterLoading: boolean;
@@ -49,7 +48,6 @@ export class AVM1Sound extends AVM1Object {
 		this._target = this.context.resolveTarget(target_mc);
 		this._sound = null;
 		this._channel = null;
-		this._linkageID = null;
 		this._playAfterLoading = false;
 		this._assetNameSpace = AVM1MovieClip.currentMCAssetNameSpace;
 	}
@@ -79,7 +77,6 @@ export class AVM1Sound extends AVM1Object {
 			return;
 		}
 
-		this._linkageID = id;
 		this._sound = (<WaveAudio>symbol).clone();
 		if (!this._sound) {
 			warning('AVM1Sound.attachSound no WaveAudio found ' + id);
@@ -133,9 +130,7 @@ export class AVM1Sound extends AVM1Object {
 		const asset: IAsset = event.asset;
 		if (asset.isAsset(WaveAudio)) {
 			this._sound = <WaveAudio>asset;
-			/*if(this._playedCompleteCallback){
-				this._audio.onSoundComplete=this._playedCompleteCallback;
-			}*/
+
 			if (this._playAfterLoading) {
 				this._sound.play(0);
 			}
@@ -230,7 +225,6 @@ export class AVM1Sound extends AVM1Object {
 
 		if (this._target && this._target.adaptee) {
 			this._target.adaptee.startSound(
-				this._linkageID,
 				this._sound,
 				loops,
 				this.soundCompleteInternal
@@ -244,7 +238,7 @@ export class AVM1Sound extends AVM1Object {
 			return;
 		}
 		if (this._target && this._target.adaptee) {
-			this._target.adaptee.stopSounds(this._linkageID);
+			this._target.adaptee.stopSounds(this._sound);
 		}
 	}
 
