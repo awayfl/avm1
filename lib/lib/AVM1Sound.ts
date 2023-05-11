@@ -20,7 +20,7 @@ import { warning } from '@awayfl/swf-loader';
 import { wrapAVM1NativeClass } from './AVM1Utils';
 import { AVM1MovieClip } from './AVM1MovieClip';
 import { WaveAudio, AssetLibrary, Loader, AssetEvent,
-	LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset } from '@awayjs/core';
+	LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset, AudioManager } from '@awayjs/core';
 import { MovieClip } from '@awayjs/scene';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 
@@ -204,14 +204,17 @@ export class AVM1Sound extends AVM1Object {
 	}
 
 	public setVolume(value: number): void {
-		if (!this._sound) {
-			console.warn('AVM1Sound.setVolume called, but no WaveAudio set');
+		if (!this._sound && !this._target) {
+			//global volume control
+			AudioManager.setVolume(value);
 			return;
 		}
-		if (this._target && this._target.adaptee) {
+
+		if (this._target && this._target.adaptee)
 			this._target.adaptee.soundVolume = value / 100;
-		}
-		this._sound.volume = value / 100;
+
+		if (this._sound)
+			this._sound.volume = value / 100;
 	}
 
 	public start(secondOffset?: number, loops?: number): void {
