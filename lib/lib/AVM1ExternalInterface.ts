@@ -67,13 +67,7 @@ export class AVM1ExternalInterface extends AVM1Object {
 		let args = [];// [alCoerceString(context, methodName)];
 		const paramsLength: number = parameters.length;
 		let i: number = 0;
-		for (i = 0; i < paramsLength; i++) {
-			// TODO convert AVM1 objects to AVM2
-			args.push(parameters[i]);
-		}
-		if (args.length == 1) {
-			args = args[0];
-		}
+
 		try {
 			const methodnames = methodName.split('.');
 			let method: any = window;
@@ -81,14 +75,8 @@ export class AVM1ExternalInterface extends AVM1Object {
 				method = method[methodnames[i]];
 			}
 
-			method(args);
-			/*var result = context.sec.flash.external.ExternalInterface.axClass.call.apply(
-				context.sec.flash.external.ExternalInterface.axClass, args);
-				*/
-
-			const result = '';
 			// TODO convert AVM2 result to AVM1
-			return result;
+			return method.apply(window, parameters);
 		} catch (e) {
 			return undefined;
 		}
