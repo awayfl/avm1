@@ -64,7 +64,7 @@ export class AVM1ExternalInterface extends AVM1Object {
 	}
 
 	public static call(context: AVM1Context, methodName: string, ...parameters: any[]): any {
-		let args = [];// [alCoerceString(context, methodName)];
+		const args = [];// [alCoerceString(context, methodName)];
 		const paramsLength: number = parameters.length;
 		let i: number = 0;
 
