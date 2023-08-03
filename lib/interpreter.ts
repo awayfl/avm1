@@ -2752,7 +2752,7 @@ function avm1_0x66_ActionStrictEquals(ectx: ExecutionContext) {
 	stack.push(b === a);
 }
 
-function avm1_0x67_ActionGreater(ectx: ExecutionContext, args? : [any, any]) {
+function avm1_0x67_ActionGreater(ectx: ExecutionContext, args?: [any, any]) {
 	const stack = ectx.stack;
 
 	const a = args ? args[1] : stack.pop();
