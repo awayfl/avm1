@@ -204,6 +204,7 @@ export class AVM1Sound extends AVM1Object {
 	}
 
 	public setVolume(value: number): void {
+		if (isNaN(value)) { value = 0; }
 		if (!this._sound && !this._target) {
 			//global volume control
 			AudioManager.setVolume(value);
