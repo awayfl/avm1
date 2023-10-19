@@ -71,13 +71,14 @@ export class AVM1Sound extends AVM1Object {
 		if (typeof id !== 'string' && typeof id !== 'number')
 			return;
 
-		const symbol = AssetLibrary.getAsset(id, this._assetNameSpace);
+		const symbol = <WaveAudio> AssetLibrary.getAsset(id, this._assetNameSpace);
+
 		if (!symbol) {
 			warning('AVM1Sound.attachSound no symbol found ' + id);
 			return;
 		}
 
-		this._sound = (<WaveAudio>symbol).clone();
+		this._sound = symbol.clone();
 		if (!this._sound) {
 			warning('AVM1Sound.attachSound no WaveAudio found ' + id);
 			return;
@@ -196,18 +197,22 @@ export class AVM1Sound extends AVM1Object {
 	}
 
 	public getVolume(): number {
-		if (!this._sound) {
-			console.warn('AVM1Sound.getVolume called, but no WaveAudio set');
-			return 100;
-		}
-		return this._sound.volume * 100;
+		if (this._sound)
+			return this._sound.volume * 100;
+
+		if (this._target && this._target.adaptee)
+			return this._target.adaptee.soundVolume * 100;
+
+		console.warn('AVM1Sound.getVolume called, but no Sound object attached or target mc set');
+		return 100;
+
 	}
 
 	public setVolume(value: number): void {
 		if (isNaN(value)) { value = 0; }
-		if (!this._sound && !this._target) {
+		if (!this._sound && (!this._target || this._target.adaptee.isAVMScene)) {
 			//global volume control
-			AudioManager.setVolume(value);
+			AudioManager.setVolume(value / 100);
 			return;
 		}
 
