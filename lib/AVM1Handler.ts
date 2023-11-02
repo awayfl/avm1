@@ -2,7 +2,7 @@ import { IAVMHandler, AVMStage, SWFParser, StageAlign, StageScaleMode } from '@a
 import { SWFFile } from '@awayfl/swf-loader';
 import { AVM1SceneGraphFactory } from './AVM1SceneGraphFactory';
 import { ISceneGraphFactory, MouseEvent, KeyboardEvent, MovieClip,
-	FrameScriptManager, DisplayObject, DisplayObjectContainer } from '@awayjs/scene';
+	FrameScriptManager, DisplayObject, TextField } from '@awayjs/scene';
 import { AssetLibrary, IAsset, EventBase } from '@awayjs/core';
 import { AVMVERSION } from '@awayfl/swf-loader';
 import { AVM1ContextImpl } from './interpreter';
@@ -83,18 +83,19 @@ export class AVM1Handler implements IAVMHandler {
 		callback(true);
 	}
 
-	private collectMCs(mc: MovieClip, ouput: MovieClip[], event: EventBase) {
-		let child: DisplayObject;
+	private collectMCs(mc: MovieClip, ouput: (MovieClip | TextField)[], event: EventBase) {
+		let child: MovieClip | TextField;
 		let c = mc.numChildren;
 		while (c > 0) {
 			c--;
-			child = mc.getChildAt(c);
+			child = <MovieClip | TextField> mc.getChildAt(c);
 
 			if (child.isAsset(MovieClip))
 				this.collectMCs(<MovieClip> child, ouput, event);
+
+			if (child.hasEventListener(event.type))
+				ouput.push(child);
 		}
-		if (mc.hasEventListener(event.type))
-			ouput.push(mc);
 	}
 
 	public enterFrame(dt: number) {
@@ -108,7 +109,7 @@ export class AVM1Handler implements IAVMHandler {
 		//FrameScriptManager.execute_queue();
 
 		// collect all enterEvent movieclips
-		const enterMCs: MovieClip[] = [];
+		const enterMCs: (MovieClip | TextField)[] = [];
 		this.collectMCs(<MovieClip> this._avmStage.root, enterMCs, this.enterEvent);
 
 		// now dispatch the onEnterFrame
@@ -124,7 +125,7 @@ export class AVM1Handler implements IAVMHandler {
 		FrameScriptManager.execute_queue();
 
 		// collect all enterEvent movieclips
-		const exitMCs: MovieClip[] = [];
+		const exitMCs: (MovieClip | TextField)[] = [];
 		this.collectMCs(<MovieClip> this._avmStage.root, exitMCs, this.exitEvent);
 
 		// now dispatch the onExitFrame
