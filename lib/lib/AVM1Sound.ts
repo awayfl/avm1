@@ -20,13 +20,10 @@ import { warning } from '@awayfl/swf-loader';
 import { wrapAVM1NativeClass } from './AVM1Utils';
 import { AVM1MovieClip } from './AVM1MovieClip';
 import { WaveAudio, AssetLibrary, Loader, AssetEvent,
-	LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset, AudioManager } from '@awayjs/core';
+	LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset, AudioManager, EventBase } from '@awayjs/core';
 import { MovieClip } from '@awayjs/scene';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 
-class SoundChannel {
-	soundTransform: any;
-}
 export class AVM1Sound extends AVM1Object {
 	static createAVM1Class(context: AVM1Context): AVM1Object {
 		return wrapAVM1NativeClass(context, true, AVM1Sound,
@@ -39,15 +36,13 @@ export class AVM1Sound extends AVM1Object {
 
 	private _target: AVM1SymbolBase<MovieClip>;
 	private _sound: WaveAudio;
-	private _channel: SoundChannel;
 	private _assetNameSpace: string;
-	private _onCompleteCallback: Function;
+	private _onSoundCompleteInternal: () => void;
 	private _playAfterLoading: boolean;
 
 	public avm1Constructor(target_mc) {
 		this._target = this.context.resolveTarget(target_mc);
 		this._sound = null;
-		this._channel = null;
 		this._playAfterLoading = false;
 		this._assetNameSpace = AVM1MovieClip.currentMCAssetNameSpace;
 	}
@@ -83,28 +78,11 @@ export class AVM1Sound extends AVM1Object {
 			warning('AVM1Sound.attachSound no WaveAudio found ' + id);
 			return;
 		}
-
-		this.soundCompleteInternal = this.soundCompleteInternal.bind(this);
 	}
 
-	private soundCompleteInternal() {
-		this._onCompleteCallback && this._onCompleteCallback();
-	}
-
-	public onSoundComplete(callback: any = null): void {
-		const myThis = this;
-		this._onCompleteCallback = null;
-
-		if (callback) {
-			this._onCompleteCallback = function() {
-				callback.alCall(myThis);
-			};
-		}
-
-		if (!this._sound) {
-			warning('AVM1Sound.onSoundComplete called, but no WaveAudio set');
-			return;
-		}
+	public onSoundComplete(callback: any = null): void
+	{
+		this._onSoundCompleteInternal = callback? () => callback.alCall(this) : null;
 	}
 
 	public loadSound(url: string, isStreaming: boolean): void {
@@ -132,9 +110,8 @@ export class AVM1Sound extends AVM1Object {
 		if (asset.isAsset(WaveAudio)) {
 			this._sound = <WaveAudio>asset;
 
-			if (this._playAfterLoading) {
+			if (this._playAfterLoading)
 				this._sound.play(0);
-			}
 		}
 	}
 
@@ -236,7 +213,7 @@ export class AVM1Sound extends AVM1Object {
 			this._target.adaptee.startSound(
 				this._sound,
 				loops,
-				this.soundCompleteInternal
+				this._onSoundCompleteInternal
 			);
 		}
 	}
