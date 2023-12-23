@@ -74,9 +74,8 @@ export class AVM1Sound extends AVM1Object {
 		}
 	}
 
-	public onSoundComplete(callback: any = null): void
-	{
-		this._onSoundCompleteInternal = callback? () => callback.alCall(this) : null;
+	public onSoundComplete(callback: any = null): void {
+		this._onSoundCompleteInternal = callback ? () => callback.alCall(this) : null;
 	}
 
 	public loadSound(url: string, isStreaming: boolean): void {
@@ -213,7 +212,7 @@ export class AVM1Sound extends AVM1Object {
 	}
 
 	public stop(linkageID?: string): void {
-		const sound = linkageID? <WaveAudio> AssetLibrary.getAsset(linkageID, this._assetNameSpace) : this._sound;
+		const sound = linkageID ? <WaveAudio> AssetLibrary.getAsset(linkageID, this._assetNameSpace) : this._sound;
 
 		if (this._target && this._target.adaptee)
 			this._target.adaptee.stopSounds(sound);
