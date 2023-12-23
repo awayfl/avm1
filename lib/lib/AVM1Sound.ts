@@ -62,20 +62,14 @@ export class AVM1Sound extends AVM1Object {
 		return true;
 	}
 
-	public attachSound(id: string): void {
-		if (typeof id !== 'string' && typeof id !== 'number')
+	public attachSound(linkageID: string): void {
+		if (typeof linkageID !== 'string')
 			return;
 
-		const symbol = <WaveAudio> AssetLibrary.getAsset(id, this._assetNameSpace);
+		this._sound = <WaveAudio> AssetLibrary.getAsset(linkageID, this._assetNameSpace);
 
-		if (!symbol) {
-			warning('AVM1Sound.attachSound no symbol found ' + id);
-			return;
-		}
-
-		this._sound = symbol.clone();
 		if (!this._sound) {
-			warning('AVM1Sound.attachSound no WaveAudio found ' + id);
+			warning('AVM1Sound.attachSound no WaveAudio found ' + linkageID);
 			return;
 		}
 	}
@@ -219,13 +213,12 @@ export class AVM1Sound extends AVM1Object {
 	}
 
 	public stop(linkageID?: string): void {
-		if (!this._sound) {
-			warning('AVM1Sound.stop called, but no WaveAudio set');
-			return;
-		}
-		if (this._target && this._target.adaptee) {
-			this._target.adaptee.stopSounds(this._sound);
-		}
+		const sound = linkageID? <WaveAudio> AssetLibrary.getAsset(linkageID, this._assetNameSpace) : this._sound;
+
+		if (this._target && this._target.adaptee)
+			this._target.adaptee.stopSounds(sound);
+		else
+			MovieClip.stopSounds(sound);
 	}
 
 }
