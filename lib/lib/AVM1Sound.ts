@@ -45,6 +45,8 @@ export class AVM1Sound extends AVM1Object {
 		this._sound = null;
 		this._playAfterLoading = false;
 		this._assetNameSpace = AVM1MovieClip.currentMCAssetNameSpace;
+
+		this._soundCompleteInternal = this._soundCompleteInternal.bind(this);
 	}
 
 	public alPut(p, v) {
@@ -206,7 +208,7 @@ export class AVM1Sound extends AVM1Object {
 			this._target.adaptee.startSound(
 				this._sound,
 				loops,
-				this._onSoundCompleteInternal
+				this._soundCompleteInternal
 			);
 		}
 	}
@@ -220,4 +222,8 @@ export class AVM1Sound extends AVM1Object {
 			MovieClip.stopSounds(sound);
 	}
 
+	private _soundCompleteInternal() {
+		//separate soundCompleteInternal function in case onSoundComplete is set after sound is started
+		this._onSoundCompleteInternal && this._onSoundCompleteInternal();
+	}
 }
