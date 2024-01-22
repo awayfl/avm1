@@ -20,7 +20,6 @@ import {
 } from '../context';
 import {
 	isNullOrUndefined,
-	MapObject,
 	notImplemented,
 	somewhatImplemented,
 	warning,
@@ -124,41 +123,32 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	// event handling:
 
 	protected _mouseListenerCount: number;
-	private _eventsMap: MapObject<AVM1EventHandler>;
+	private _eventsMap: Record<string, AVM1EventHandler> = {};
 	private _events: AVM1EventHandler[];
-	protected _eventsListeners: MapObject<Function>;
+	protected _eventsListeners: Record<string, Function> = {};
 	protected _onClipEventsListeners: any[];
-	protected _eventHandlers: MapObject<AVM1EventHandler>;
+	protected _eventHandlers: Record<string, AVM1EventHandler> = {};
 	protected enabled: boolean=true;
 
 	private avmColor: AVM1Color;
 
 	public bindEvents(events: AVM1EventHandler[], autoUnbind: boolean = true) {
 		this._events = events;
-		const eventsMap = Object.create(null);
-		this._eventsMap = eventsMap;
-		this._eventsListeners = Object.create(null);
-		this._eventHandlers = Object.create(null);
-		const observer = this;
-		const context: AVM1Context = (<any> this).context;
-		events.forEach(function (event: AVM1EventHandler) {
+		events.forEach((event: AVM1EventHandler) => {
 			// Normalization will always stay valid in a player instance, so we can safely modify
 			// the event itself, here.
-			const propertyName = event.propertyName = context.normalizeName(event.propertyName);
-			eventsMap[propertyName] = event;
+			const propertyName = event.propertyName = this.context.normalizeName(event.propertyName);
+			this._eventsMap[propertyName] = event;
 			//context.registerEventPropertyObserver(propertyName, observer);
-			observer._updateEvent(event);
+			this._updateEvent(event);
 		});
 
 	}
 
 	public unbindEvents() {
-		const events = this._events;
-		const observer = this;
-		const context = this.context;
-		events.forEach(function (event: AVM1EventHandler) {
-			context.unregisterEventPropertyObserver(event.propertyName, observer);
-			observer._removeEventListener(event);
+		this._events.forEach(event => {
+			this.context.unregisterEventPropertyObserver(event.propertyName, this);
+			this._removeEventListener(event);
 		});
 		this._events = null;
 		this._eventsMap = null;

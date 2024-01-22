@@ -22,7 +22,7 @@ import { AnalyzerResults } from './analyze';
 import { alCoerceString, alToString, IAVM1Builtins, IAVM1Context } from './runtime';
 import { AVM1Globals } from './lib/AVM1Globals';
 import { installBuiltins } from './natives';
-import { MapObject, Debug, release, assert, AVMStage } from '@awayfl/swf-loader';
+import { Debug, release, assert, AVMStage } from '@awayfl/swf-loader';
 import { AVM1Key } from './lib/AVM1Key';
 import { AVM1Mouse } from './lib/AVM1Mouse';
 import { AVM1Stage } from './lib/AVM1Stage';
@@ -110,12 +110,12 @@ export class AVM1Context implements IAVM1Context {
 	public swfVersion: number;
 	public levelsContainer: AVM1Movie;
 
-	private eventObservers: MapObject<IAVM1EventPropertyObserver[]>;
-	private assets: MapObject<number>;
-	private awayAssets: any;
-	private assetsSymbols: Array<any>;
-	private assetsClasses: Array<any>;
-	private staticStates: WeakMap<typeof AVM1Object, any>;
+	private eventObservers: Record<string, IAVM1EventPropertyObserver[]> = {};
+	private assets: Record<string, number> = {};
+	private awayAssets: any = {};
+	private assetsSymbols: Array<any> = [];
+	private assetsClasses: Array<any> = [];
+	private staticStates: WeakMap<typeof AVM1Object, any> = new WeakMap<typeof AVM1Object, any>();
 
 	constructor(swfVersion: number) {
 		this.swfVersion = swfVersion;
@@ -132,13 +132,6 @@ export class AVM1Context implements IAVM1Context {
 
 		this.builtins = <any>{};
 		installBuiltins(this);
-
-		this.eventObservers = Object.create(null);
-		this.assets = {};
-		this.assetsSymbols = [];
-		this.assetsClasses = [];
-		this.awayAssets = {};
-		this.staticStates = new WeakMap<typeof AVM1Object, any>();
 	}
 
 	public utils: IAVM1RuntimeUtils;
