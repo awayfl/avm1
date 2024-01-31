@@ -1222,7 +1222,6 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		name = alToString(this.context, name);
 		const text: TextField = new TextField();
 		text.name = name;
-		text.textFormat = new TextFormat();
 		getAVM1Object(text, <AVM1Context> this._avm1Context);
 		const myTF = <AVM1TextField> this.addChildAtDepth(text, avm2AwayDepth(depth));
 		this.registerScriptObject(text, false);

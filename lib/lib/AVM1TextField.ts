@@ -454,9 +454,6 @@ export class AVM1TextField extends AVM1SymbolBase<TextField> {
 			console.log('AVM1Textfield.setNewtextFormat - trying to set something other than a TextFormat', value);
 			return;
 		}
-		if (!this.adaptee.textFormat) {
-			this.adaptee.textFormat = new TextFormat();
-		}
 
 		//away3TextFormat.font_table=this.adaptee.textFormat.font_table;
 		this.adaptee.newTextFormat = away3TextFormat;

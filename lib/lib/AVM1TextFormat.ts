@@ -261,7 +261,7 @@ export class AVM1TextFormat extends AVM1Object {
 		} else {
 			measureTextField.wordWrap = false;
 		}
-		measureTextField.textFormat = this.adaptee;
+		measureTextField.newTextFormat = this.adaptee;
 		measureTextField.text = text;
 		const result: AVM1Object = alNewObject(this.context);
 		const textWidth = measureTextField.textWidth;
