@@ -1756,7 +1756,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		collision.rootNode = dragNode;
 
 		//console.log(collision, dragNode);
-		stage.mouseManager.startDragObject(collision);
+		stage.mouseManager.startDragObject(collision, true);
 
 	}
 
