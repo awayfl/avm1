@@ -293,6 +293,12 @@ function isAVM1MovieClip(obj): boolean {
 		obj instanceof AVM1MovieClip;
 }
 
+// function stopIfClipRemoved(ectx: ExecutionContext, clip: AVM1Object | AVM1Function) {
+// 	if (isAVM1MovieClip(clip) && clip.isGhost) {
+// 		ectx.isEndOfActions = true;
+// 	}
+// }
+
 function as2GetType(v): string {
 	if (v === null) {
 		return 'null';
@@ -2233,6 +2239,7 @@ function avm1_callableHelper(ectx: ExecutionContext, obj: AVM1Object | AVM1Funct
 	}
 	frame.resetCallee();
 
+	// stopIfClipRemoved(ectx, obj);
 	return { result, called };
 }
 
