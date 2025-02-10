@@ -235,8 +235,8 @@ export class AVM1BitmapData extends AVM1Object {
 			return;
 
 		for (const billboard of this._linkedBillboards) {
-			billboard.parent.removeChild(billboard);
-			billboard.dispose();
+			billboard.parent && billboard.parent.removeChild(billboard);
+			//billboard.dispose();
 		}
 
 		this._linkedBillboards = [];
