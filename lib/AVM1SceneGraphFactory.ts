@@ -4,7 +4,6 @@ import { IFrameScript, Timeline, MovieClip, Sprite, DisplayObjectContainer, Bill
 import { MaterialBase, MethodMaterial } from '@awayjs/materials';
 import { AVM1Context } from './context';
 import { getAVM1Object } from './lib/AVM1Utils';
-import { BasicPartition } from '@awayjs/view';
 import { Graphics } from '@awayjs/graphics';
 import { IAsset } from '@awayjs/core';
 
@@ -122,7 +121,6 @@ export class AVM1SceneGraphFactory extends DefaultSceneGraphFactory implements I
 			(<any>clone.adapter).initEvents = placeObjectTag;
 		}
 
-		clone.partitionClass = BasicPartition;
 		clone._sessionID = sessionID;
 		return clone;
 	}

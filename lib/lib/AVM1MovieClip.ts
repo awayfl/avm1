@@ -69,7 +69,7 @@ import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
 import { AVM1EventHandler, EventsListForMC } from './AVM1EventHandler';
 import { AVM1LoaderHelper } from './AVM1LoaderHelper';
 import { AVM1InterpretedFunction } from '../interpreter';
-import { EntityNode, PickEntity } from '@awayjs/view';
+import { PickEntity } from '@awayjs/view';
 import { AVM1Function } from '../runtime/AVM1Function';
 import { AVM1Globals } from './AVM1Globals';
 
@@ -1353,7 +1353,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return undefined;
 
 		const box = this._stage.pickGroup
-			.getBoundsPicker(this.node.partition)
+			.getBoundsPicker(this.node)
 			.getBoxBounds(bounds.node, true, true);
 
 		if (!box) {
@@ -1396,7 +1396,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return undefined;
 
 		return convertAS3RectangeToBounds(
-			this._stage.pickGroup.getBoundsPicker(this.node.partition).getBoxBounds(bounds.node, false, true),
+			this._stage.pickGroup.getBoundsPicker(this.node).getBoxBounds(bounds.node, false, true),
 			this.context
 		);
 	}
@@ -1534,9 +1534,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 				return false; // target is undefined or not a AVM1 display object, returning false.
 
 			return AVM1Stage.avmStage.pickGroup
-				.getBoundsPicker(this.node.partition)
+				.getBoundsPicker(this.node)
 				.hitTestObject(
-					AVM1Stage.avmStage.pickGroup.getBoundsPicker(target.node.partition));
+					AVM1Stage.avmStage.pickGroup.getBoundsPicker(target.node));
 		}
 
 		x = alToNumber(this.context, x);
@@ -1563,7 +1563,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		shapeFlag = alToBoolean(this.context, shapeFlag);
 
-		return this._stage.pickGroup.getBoundsPicker(this.node.partition).hitTestPoint(x, y, shapeFlag);
+		return this._stage.pickGroup.getBoundsPicker(this.node).hitTestPoint(x, y, shapeFlag);
 	}
 
 	public lineGradientStyle(fillType: GradientType, colors: AVM1Object, alphas: AVM1Object,
@@ -1743,12 +1743,9 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		stage.view.stage.addEventListener(AwayMouseEvent.MOUSE_MOVE, this.dragListenerDelegate);
 
 		// PLZ, never set this! Because this damage a dragging when it started without event
-		//stage.mousePicker.dragNode = dragNode;
+		//stage.mousePicker.dragNode = dragNode
 
-		const dragEntity = this.adaptee.getAbstraction<EntityNode>(dragNode.partition);
-		dragEntity.setParent(dragNode);
-
-		const collision = dragEntity
+		const collision = dragNode
 			.getAbstraction<PickEntity>(stage.mousePicker.pickGroup)
 			.pickingCollision;
 

@@ -34,7 +34,7 @@ import { AVM1Object } from '../runtime/AVM1Object';
 import { AVM1PropertyDescriptor } from '../runtime/AVM1PropertyDescriptor';
 import { AVM1EventHandler } from './AVM1EventHandler';
 import { AVM1Color } from './AVM1Color';
-import { BasicPartition, ContainerNode } from '@awayjs/view';
+import { ContainerNode } from '@awayjs/view';
 import { AVM1Stage } from './AVM1Stage';
 import { AVM1Transform } from './AVM1Transform';
 import { AVM1Function } from '../runtime/AVM1Function';
@@ -111,7 +111,6 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 
 		release || assert(awayObject);
 		this.adaptee = awayObject;
-		this.adaptee.partitionClass = BasicPartition;
 		this.node = AVM1Stage.avmStage.view.getNode(this.adaptee);
 		const name = awayObject.name;
 		const parent = this.get_parent();
@@ -416,7 +415,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 
 	public get_height() {
 		const box: Box = AVM1Stage.avmStage.pickGroup
-			.getBoundsPicker(this.node.partition)
+			.getBoundsPicker(this.node)
 			.getBoxBounds(AVM1Stage.avmStage.view.getNode(this.adaptee.parent || AVM1Stage.avmStage.root));
 		return (box == null) ? 0 : toTwipFloor(box.height);
 	}
@@ -430,7 +429,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 			return;
 
 		AVM1Stage.avmStage.pickGroup
-			.getBoundsPicker(this.node.partition).height = value;
+			.getBoundsPicker(this.node).height = value;
 	}
 
 	public get_highquality(): number {
@@ -671,7 +670,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 
 	public get_width(): number {
 		const box: Box = AVM1Stage.avmStage.pickGroup
-			.getBoundsPicker(this.node.partition)
+			.getBoundsPicker(this.node)
 			.getBoxBounds(AVM1Stage.avmStage.view.getNode(this.adaptee.parent || AVM1Stage.avmStage.root));
 
 		return (box == null) ? 0 : toTwipRound(box.width);
@@ -686,7 +685,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 			return;
 
 		AVM1Stage.avmStage.pickGroup
-			.getBoundsPicker(this.node.partition).width = value;
+			.getBoundsPicker(this.node).width = value;
 	}
 
 	public get_x(): number {
