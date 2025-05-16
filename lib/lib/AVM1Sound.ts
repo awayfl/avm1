@@ -20,7 +20,7 @@ import { warning } from '@awayfl/swf-loader';
 import { wrapAVM1NativeClass } from './AVM1Utils';
 import { AVM1MovieClip } from './AVM1MovieClip';
 import { WaveAudio, AssetLibrary, Loader, AssetEvent,
-	LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset, AudioManager, EventBase } from '@awayjs/core';
+	LoaderEvent, URLLoaderEvent, URLRequest, WaveAudioParser, IAsset, AudioManager } from '@awayjs/core';
 import { MovieClip } from '@awayjs/scene';
 import { AVM1SymbolBase } from './AVM1SymbolBase';
 

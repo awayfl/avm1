@@ -54,7 +54,6 @@ import {
 	MouseEvent as AwayMouseEvent,
 	MovieClip,
 	TextField,
-	TextFormat,
 	Timeline,
 } from '@awayjs/scene';
 import { AssetLibrary, Matrix3D, Point, Rectangle, WaveAudio, } from '@awayjs/core';
