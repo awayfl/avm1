@@ -90,6 +90,7 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 		this._mouseListenerCount = 0;
 		this._avm1Context = context;
 		this._ownProperties = Object.create(null);
+		this._eventsListeners = {};
 		this._prototype = null;
 
 		const self = this;
@@ -203,6 +204,8 @@ export class AVM1SymbolBase<T extends DisplayObjectContainer> extends AVM1Object
 	public _addEventListener(event: AVM1EventHandler, callback: Function = null) {
 		const propertyName = this.context.normalizeName(event.propertyName);
 		let listener: any = this._eventsListeners[propertyName];
+		if (listener)
+			this.removeEventListenerOnAdapter(event, listener);
 		const myThis = this;
 		if (!listener) {
 			if (!callback) {
