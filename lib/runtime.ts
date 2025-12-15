@@ -239,7 +239,7 @@ export function alToInteger(context: IAVM1Context, v): number {
 
 export function alToInt32(context: IAVM1Context, v): number  {
 	const n = alToNumber(context, v);
-	return n | 0;
+	return Math.floor(n);
 }
 
 export function alToString(context: IAVM1Context, v): string {
