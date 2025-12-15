@@ -56,9 +56,9 @@ export class AVM1BitmapData extends AVM1Object {
 	private _isSymbolSource: boolean = false;
 
 	public getBillboard(snap: string, smooth: boolean): Billboard {
-		const billboardMaterial = MaterialManager.getMaterialForBitmap(<SceneImage2D> this.adaptee);
+		const billboardMaterial = MaterialManager.getMaterialForBitmap();
 		const billboard = new Billboard(billboardMaterial, snap, smooth);
-
+		billboard.style.image = <SceneImage2D> this.adaptee;
 		this._linkedBillboards.push(billboard);
 
 		return billboard;
