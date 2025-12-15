@@ -1744,8 +1744,8 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		// PLZ, never set this! Because this damage a dragging when it started without event
 		//stage.mousePicker.dragNode = dragNode
 
-		const collision = dragNode
-			.getAbstraction<PickEntity>(stage.mousePicker.pickGroup)
+		const collision = stage.mousePicker.pickGroup.abstractions
+			.getAbstraction<PickEntity>(dragNode)
 			.pickingCollision;
 
 		// collision MUST has rootNode, otherwise will be drag bug
