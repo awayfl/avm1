@@ -462,7 +462,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 						if (!(<IDisplayObjectAdapter> newChildren[i].adapter).isBlockedByScript()
 							&& !(<any>newChildren[i]).noTimelineUpdate) {
 							newChildren[i].transform.clearMatrix3D();
-							newChildren[i].updateTimelineMask(null);
+							newChildren[i].timelineMasks = undefined;
 						}
 						if (!(<IDisplayObjectAdapter> newChildren[i].adapter).isVisibilityByScript()) {
 							newChildren[i].visible = true;
@@ -471,7 +471,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 						newChildren[i].transform.clearColorTransform();
 						newChildren[i].transform.clearMatrix3D();
 						newChildren[i].visible = true;
-						newChildren[i].updateTimelineMask(null);
+						newChildren[i].timelineMasks = undefined;
 					}
 				}
 			} else {
@@ -1675,14 +1675,14 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 	public setMask(mask: AVM1SymbolBase<DisplayObjectContainer>) {
 		if (mask == null) {
 			// Cancel a mask.
-			this.adaptee.scriptMask = null;
+			this.adaptee.mask = undefined;
 			return;
 		}
 		mask.scriptMaskee = this;
 		mask = this.context.resolveTarget(mask);
 
 		if (mask)
-			this.adaptee.scriptMask = mask.adaptee;
+			this.adaptee.mask = mask.adaptee;
 	}
 
 	public startDrag(lock?: boolean, left?: number, top?: number, right?: number, bottom?: number): void {
