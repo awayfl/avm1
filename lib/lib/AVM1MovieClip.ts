@@ -637,6 +637,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 	}
 
+	public updateGraphics(): void {
+
+	}
+
 	public executeScript(actionsBlocks: IFrameScript[]) {
 		AVM1MovieClip.currentMCAssetNameSpace = this.adaptee.assetNamespace;
 		AVM1TextField.syncQueedTextfields();
@@ -1351,7 +1355,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		if (!bounds)
 			return undefined;
 
-		const box = this._stage.pickGroup
+		const box = this._stage.pickPool
 			.getBoundsPicker(this.node)
 			.getBoxBounds(bounds.node, true, true);
 
@@ -1395,7 +1399,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return undefined;
 
 		return convertAS3RectangeToBounds(
-			this._stage.pickGroup.getBoundsPicker(this.node).getBoxBounds(bounds.node, false, true),
+			this._stage.pickPool.getBoundsPicker(this.node).getBoxBounds(bounds.node, false, true),
 			this.context
 		);
 	}
@@ -1532,10 +1536,10 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			if (target == undefined || !target.node)
 				return false; // target is undefined or not a AVM1 display object, returning false.
 
-			return AVM1Stage.avmStage.pickGroup
+			return AVM1Stage.avmStage.pickPool
 				.getBoundsPicker(this.node)
 				.hitTestObject(
-					AVM1Stage.avmStage.pickGroup.getBoundsPicker(target.node));
+					AVM1Stage.avmStage.pickPool.getBoundsPicker(target.node));
 		}
 
 		x = alToNumber(this.context, x);
@@ -1562,7 +1566,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 
 		shapeFlag = alToBoolean(this.context, shapeFlag);
 
-		return this._stage.pickGroup.getBoundsPicker(this.node).hitTestPoint(x, y, shapeFlag);
+		return this._stage.pickPool.getBoundsPicker(this.node).hitTestPoint(x, y, shapeFlag);
 	}
 
 	public lineGradientStyle(fillType: GradientType, colors: AVM1Object, alphas: AVM1Object,
@@ -1719,7 +1723,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		}
 
 		this.isDragging = true;
-		const parentNode = stage.view.getNode(this.adaptee.parent);
+		const parentNode = stage.root.getNode(this.adaptee.parent);
 
 		const localX = stage.getLocalMouseX(parentNode);
 		const localY = stage.getLocalMouseY(parentNode);
@@ -1744,7 +1748,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 		// PLZ, never set this! Because this damage a dragging when it started without event
 		//stage.mousePicker.dragNode = dragNode
 
-		const collision = stage.mousePicker.pickGroup.abstractions
+		const collision = stage.mousePicker.pickPool.abstractions
 			.getAbstraction<PickEntity>(dragNode)
 			.pickingCollision;
 
@@ -1767,7 +1771,7 @@ export class AVM1MovieClip extends AVM1SymbolBase<MovieClip> implements IMovieCl
 			return;
 		}
 
-		const parentNode = this._stage.view.getNode(this.adaptee.parent);
+		const parentNode = this._stage.root.getNode(this.adaptee.parent);
 
 		const localX = this._stage.getLocalMouseX(parentNode);
 		const localY = this._stage.getLocalMouseY(parentNode);
